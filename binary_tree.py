@@ -202,7 +202,7 @@ if __name__ == '__main__':
     plt.scatter([3]*5 + [5]*5 + [10]*5, all_means)
     plt.xlabel("Depth")
     plt.ylabel("Mean messages sent")
-    plt.title("Binary tree graph (depth=[3,5,10], n_iters=5)")
+    plt.title("Binary tree graph - mean messages (depth=[3,5,10], n_iters=5)")
     plt.savefig(f"images/preliminary-binary-tree/means-depth-3-5-10.png", bbox_inches='tight')
 
     # plot median for multiple depths for n iterations
@@ -210,6 +210,6 @@ if __name__ == '__main__':
     plt.scatter([3]*5 + [5]*5 + [10]*5, all_medians)
     plt.xlabel("Depth")
     plt.ylabel("Median messages sent")
-    plt.title("Binary tree graph (depth=[3,5,10], n_iters=5)")
+    plt.title("Binary tree graph - median messages (depth=[3,5,10], n_iters=5)")
     plt.savefig(f"images/preliminary-binary-tree/medians-depth-3-5-10.png", bbox_inches='tight')
     
