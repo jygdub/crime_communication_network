@@ -17,7 +17,7 @@ def init_binary(depth=3):
 
     Parameters:
     - depth: depth (or height) of binary tree
-    
+
     Returns:
     - G: networkx graph
     """
@@ -47,17 +47,17 @@ def visualize(G):
     nx.draw(G, pos, labels=nx.get_node_attributes(G,'state'))
     plt.show()
 
-def simulate_forward(G,total_messages):
+def simulate_forward(G,M):
     """
     Function to forward root node's message throughout the entire network.
     Every downstream node copies root node's message into position.
 
     Parameters:
     - G: networkx graph
-    - total_messages: counter for total messages send in network simulation
+    - M: counter for total messages send in network simulation
 
     Returns:
-    - total_messages: counter for total messages send in network simulation
+    - M: counter for total messages send in network simulation
     """
 
     # pick random bit from state
@@ -80,11 +80,11 @@ def simulate_forward(G,total_messages):
             # copy received bit at given position (redundant if bit is already agreed)
             new_state = current_state[:index] + message + current_state[index + 1:]
             G.nodes[neighbor]['state'] = new_state
-            total_messages += 1
+            M += 1
     
-    return total_messages
+    return M
 
-def simulate_random(G,total_messages):
+def simulate_random(G,M):
     """
     Function to send messages containing a random bit through the entire network.
     Every node copies the bit from message into position.
@@ -92,10 +92,10 @@ def simulate_random(G,total_messages):
 
     Parameters:
     - G: networkx graph
-    - total_messages: counter for total messages send in network simulation
+    - M: counter for total messages send in network simulation
 
     Returns:
-    - total_messages: counter for total messages send in network simulation
+    - M: counter for total messages send in network simulation
     """
     
     # randomly generate node's message
@@ -118,34 +118,59 @@ def simulate_random(G,total_messages):
             # copy received bit at given position (redundant if bit is already agreed)
             new_state = current_state[:index] + message + current_state[index + 1:]
             G.nodes[neighbor]['state'] = new_state
-            total_messages += 1
+            M += 1
 
         print(f"{G.nodes(data=True)}\n")
     
-    return total_messages
+    return M
 
 
 if __name__ == '__main__':
-    # initialize binary tree
-    G = init_binary(depth=3)
 
-    # visualize initial state of tree
-    # visualize(G)
+    # initials
+    total_messages = []
+    n_iters = 100
 
-    # initial settings
-    total_messages = 0
-    attributes = nx.get_node_attributes(G, "state")
+    # simulate for n_iters
+    for i in range(n_iters):
+        print(f"iter={i}\n")
 
-    # converge when all nodes agree on state
-    while np.unique(list(attributes.values())).size > 1:
+        # initialize binary tree
+        depth = 3
+        G = init_binary(depth=depth)
 
-        # propagate root node's message through network
-        # total_messages = simulate_forward(G=G, total_messages=total_messages)
+        # visualize initial state of tree
+        # visualize(G)
 
-        # simulate network
-        total_messages = simulate_random(G=G, total_messages=total_messages)
-
-        # update attributes dictionary
+        # initial settings
+        M = 0
         attributes = nx.get_node_attributes(G, "state")
 
-    print(f"Number of messages send until consensus = {total_messages}")
+        # converge when all nodes agree on state
+        while np.unique(list(attributes.values())).size > 1:
+
+            # propagate root node's message through network
+            # M = simulate_forward(G=G, M=M)
+
+            # simulate network
+            M = simulate_random(G=G, M=M)
+
+            # update attributes dictionary
+            attributes = nx.get_node_attributes(G, "state")
+
+        print(f"Number of messages send until consensus = {M}")
+
+        total_messages.append(M)
+
+    # compute mean and median total message sent
+    print(total_messages)
+    mean = np.mean(total_messages)
+    median = np.median(total_messages)
+    print(f"Mean total messages sent = {mean} | Median total messages sent = {median}")
+
+    # scatterplot all simulations
+    plt.scatter(range(n_iters),total_messages)
+    plt.xlabel("Iterations")
+    plt.ylabel("Total messages sent")
+    plt.title(f"Binary tree graph (depth = {depth}; n_iters = {n_iters}) - mean = {mean}; median = {median}")
+    plt.show()
