@@ -46,7 +46,7 @@ def visualize(G):
     nx.draw(G, pos, labels=nx.get_node_attributes(G,'state'))
     plt.show()
 
-def simulate_forward(G,M):
+def forward_messaging(G,M):
     """
     Function to forward root node's message throughout the entire network.
     Every downstream node copies root node's message into position.
@@ -83,7 +83,7 @@ def simulate_forward(G,M):
     
     return M
 
-def simulate_random(G,M):
+def random_messaging(G,M):
     """
     Function to send messages containing a random bit through the entire network.
     Every node copies the bit from message into position.
@@ -123,21 +123,13 @@ def simulate_random(G,M):
     
     return M
 
-
-if __name__ == '__main__':
-    
-    start = timeit.default_timer()
-
-    # initials
-    total_messages = []
-    n_iters = 100
+def simulate(depth, n_iters, total_messages):
 
     # simulate for n_iters
-    for i in range(n_iters):
-        print(f"iter={i}\n")
+    for iter in range(n_iters):
+        print(f"iter={iter}\n")
 
         # initialize binary tree
-        depth = 3
         G = init_binary(depth=depth)
 
         # visualize initial state of tree
@@ -151,10 +143,10 @@ if __name__ == '__main__':
         while np.unique(list(attributes.values())).size > 1:
 
             # propagate root node's message through network
-            # M = simulate_forward(G=G, M=M)
+            # M = forward_messaging(G=G, M=M)
 
-            # simulate network
-            M = simulate_random(G=G, M=M)
+            # send random messages to downstream neighbors
+            M = random_messaging(G=G, M=M)
 
             # update attributes dictionary
             attributes = nx.get_node_attributes(G, "state")
@@ -162,19 +154,62 @@ if __name__ == '__main__':
         print(f"Number of messages send until consensus = {M}")
 
         total_messages.append(M)
+    
+    return total_messages
 
-    # compute mean and median total message sent
-    print(total_messages)
-    mean = np.mean(total_messages)
-    median = np.median(total_messages)
-    print(f"Mean total messages sent = {mean} | Median total messages sent = {median}\n")
 
-    stop = timeit.default_timer()
-    execution_time = stop - start
+if __name__ == '__main__':
 
-    # scatterplot all simulations
-    plt.scatter(range(n_iters),total_messages)
-    plt.xlabel("Iterations")
-    plt.ylabel("Total messages sent")
-    plt.title(f"Binary tree graph (depth={depth}; n_iters={n_iters}; runtime={round(execution_time,5)}) - mean={mean}; median={median}")
-    plt.show()
+    all_means = []
+    all_medians = []
+
+    # differing binary tree depths
+    for depth in [3,5,10]:
+    
+        # N simulations
+        for N in range(5):
+
+            # initials
+            n_iters = 100
+            total_messages = []
+
+            # simulate network
+            start = timeit.default_timer()
+
+            total_messages = simulate(depth=depth,n_iters=n_iters,total_messages=total_messages)
+
+            stop = timeit.default_timer()
+            execution_time = stop - start
+
+            # compute mean and median total message sent
+            print(total_messages)
+            mean = np.mean(total_messages)
+            all_means.append(mean)
+            median = np.median(total_messages)
+            all_medians.append(median)
+            print(f"Mean total messages sent = {mean} | Median total messages sent = {median}\n")
+
+            # scatterplot all simulations
+            fig = plt.figure()
+            plt.scatter(range(n_iters),total_messages)
+            plt.xlabel("Iterations")
+            plt.ylabel("Total messages sent")
+            plt.title(f"Binary tree graph (depth={depth}; n_iters={n_iters}; runtime={round(execution_time,5)} sec.) - mean={mean}; median={median}")
+            plt.savefig(f"images/preliminary-binary-tree/simulate{n_iters}-binary-tree-depth{depth}({N}).png", bbox_inches='tight')
+
+    # plot mean for multiple depths for n iterations
+    fig = plt.figure()
+    plt.scatter([3]*5 + [5]*5 + [10]*5, all_means)
+    plt.xlabel("Depth")
+    plt.ylabel("Mean messages sent")
+    plt.title("Binary tree graph (depth=[3,5,10], n_iters=5)")
+    plt.savefig(f"images/preliminary-binary-tree/means-depth-3-5-10.png", bbox_inches='tight')
+
+    # plot median for multiple depths for n iterations
+    fig = plt.figure()
+    plt.scatter([3]*5 + [5]*5 + [10]*5, all_medians)
+    plt.xlabel("Depth")
+    plt.ylabel("Median messages sent")
+    plt.title("Binary tree graph (depth=[3,5,10], n_iters=5)")
+    plt.savefig(f"images/preliminary-binary-tree/medians-depth-3-5-10.png", bbox_inches='tight')
+    
