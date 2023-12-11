@@ -32,7 +32,7 @@ def visualize(G):
 
 if __name__ == '__main__':
     # initialize binary tree
-    G = init_binary(branch=2,depth=3)
+    G = init_binary(depth=3)
 
     # visualize initial state of tree
     visualize(G)
