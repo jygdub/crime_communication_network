@@ -5,8 +5,7 @@ Written by Jade Dubbeld
 07/12/2023
 """
 
-import random
-import numpy as np
+import random, timeit, numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -31,7 +30,7 @@ def init_binary(depth=3):
         G.nodes[node]['state'] = binary_string
 
     # show initial configuration
-    print(G.nodes(data=True))
+    # print(G.nodes(data=True))
     return G
 
 def visualize(G):
@@ -62,7 +61,7 @@ def simulate_forward(G,M):
 
     # pick random bit from state
     index = random.choice([0,1,2])
-    print(index)
+    # print(index)
 
     message = G.nodes[0]['state'][index]
     
@@ -103,7 +102,7 @@ def simulate_random(G,M):
 
         # pick random bit from state
         index = random.choice([0,1,2])
-        print(f"Bit-string index = {index} | Node = {node}")
+        # print(f"Bit-string index = {index} | Node = {node}")
         
         message = G.nodes[0]['state'][index]
 
@@ -120,12 +119,14 @@ def simulate_random(G,M):
             G.nodes[neighbor]['state'] = new_state
             M += 1
 
-        print(f"{G.nodes(data=True)}\n")
+        # print(f"{G.nodes(data=True)}\n")
     
     return M
 
 
 if __name__ == '__main__':
+    
+    start = timeit.default_timer()
 
     # initials
     total_messages = []
@@ -166,11 +167,14 @@ if __name__ == '__main__':
     print(total_messages)
     mean = np.mean(total_messages)
     median = np.median(total_messages)
-    print(f"Mean total messages sent = {mean} | Median total messages sent = {median}")
+    print(f"Mean total messages sent = {mean} | Median total messages sent = {median}\n")
+
+    stop = timeit.default_timer()
+    execution_time = stop - start
 
     # scatterplot all simulations
     plt.scatter(range(n_iters),total_messages)
     plt.xlabel("Iterations")
     plt.ylabel("Total messages sent")
-    plt.title(f"Binary tree graph (depth = {depth}; n_iters = {n_iters}) - mean = {mean}; median = {median}")
+    plt.title(f"Binary tree graph (depth={depth}; n_iters={n_iters}; runtime={round(execution_time,5)}) - mean={mean}; median={median}")
     plt.show()
