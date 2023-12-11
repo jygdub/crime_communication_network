@@ -38,12 +38,16 @@ def visualize(G):
     nx.draw(G, pos, labels=nx.get_node_attributes(G,'state'))
     plt.show()
 
-def forward_message(G,index,total_messages):
+def forward_message(G,total_messages):
     """
     Function to forward root node's message throughout the entire network.
     Every downstream node copies root node's message into position.
 
     """
+
+    # pick random bit from state
+    index = random.choice([0,1,2])
+    print(index)
 
     message = G.nodes[0]['state'][index]
     
@@ -77,18 +81,13 @@ if __name__ == '__main__':
     total_messages = 0
     attributes = nx.get_node_attributes(G, "state")
 
-    # converge when all nodes agree states
+    # converge when all nodes agree on state
     while np.unique(list(attributes.values())).size > 1:
 
-        # pick random bit from state
-        index = random.choice([0,1,2])
-        print(index)
-
         # propagate root node's message through network
-        total_messages = forward_message(G=G, index=index, total_messages=total_messages)
+        total_messages = forward_message(G=G, total_messages=total_messages)
 
         # update attributes dictionary
         attributes = nx.get_node_attributes(G, "state")
-        # visualize(G)
 
     print(f"Number of messages send until consensus = {total_messages}")
