@@ -123,7 +123,19 @@ def random_messaging(G,M):
     
     return M
 
-def simulate(depth, n_iters, total_messages):
+def hamming_distance(string1, string2): 
+    # Start with a distance of zero, and count up
+    distance = 0
+    # Loop over the indices of the string
+    L = len(string1)
+    for i in range(L):
+        # Add 1 to the distance if these two characters are not equal
+        if string1[i] != string2[i]:
+            distance += 1
+    # Return the final count of differences
+    return distance
+
+def simulate(depth, n_iters):
     """
     Function to run network simulation on binary tree with given method of 
     message passing [forward, random]
@@ -136,9 +148,13 @@ def simulate(depth, n_iters, total_messages):
     - total_messages: list containing all total messages sent for each simulation run
     """
 
+    total_messages = []
+    all_similarities = []
+
     # simulate for n_iters
     for iter in range(n_iters):
         print(f"iter={iter}\n")
+        similarity = []
 
         # initialize binary tree
         G = init_binary(depth=depth)
@@ -150,8 +166,13 @@ def simulate(depth, n_iters, total_messages):
         M = 0
         attributes = nx.get_node_attributes(G, "state")
 
+        round = 0
+
         # converge when all nodes agree on state
         while np.unique(list(attributes.values())).size > 1:
+
+            # print(f"Round {round}")
+            S = []
 
             # propagate root node's message through network
             # M = forward_messaging(G=G, M=M)
@@ -162,8 +183,27 @@ def simulate(depth, n_iters, total_messages):
             # update attributes dictionary
             attributes = nx.get_node_attributes(G, "state")
 
-        print(f"Number of messages send until consensus = {M}")
+            # string similarity using Hamming distance    
+            for node in G.nodes():
+                distance = hamming_distance(attributes[0],attributes[node])
+                S.append(distance)
+                
+            # print(f"Similarity = {S}")
+            # print(f"Average string similarity in current round = {np.mean(S)}")
+            similarity.append(np.mean(S))
 
+            round += 1
+
+        print(f"Number of messages send until consensus = {M}")
         total_messages.append(M)
+
+        # print(f"Average similarity in iteration {iter} = {similarity}")
+        
+        all_similarities.append(list(similarity))
     
-    return total_messages
+    print(f"All similarities = {all_similarities}")
+    return total_messages, all_similarities
+
+
+G = init_binary()
+visualize(G)
