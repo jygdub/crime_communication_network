@@ -5,7 +5,7 @@ Written by Jade Dubbeld
 07/12/2023
 """
 
-import random, timeit, numpy as np
+import random, numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
