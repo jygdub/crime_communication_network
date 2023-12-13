@@ -145,30 +145,58 @@ def efficient_messaging(G,M):
     # randomly pick a nonmatching bit as node's message
     for node in G.nodes:
 
-        # pick random bit from state
-        index = random.choice([0,1,2])
-        # print(f"Bit-string index = {index} | Node = {node}")
+        if node == 0:
+            continue
+
+        correct = []
+
+        # find correct bits in current node's state
+        for position, bit in enumerate(G.nodes[node]['state']):
+            if bit == G.nodes[0]['state'][position]:
+                correct.append(position)
+
+        # find nonmatching bits between current node and parent
+        parent = [(neighbor) for neighbor in G.neighbors(node) if neighbor < node]
+
+        # separate messages to downstream neighbors
+        nonmatching = []
+
+        # find nonmatching bits between current node (out of correct bits) and downstream neighbor
+        for position, bit in enumerate(G.nodes[parent[0]]['state']):
+            if bit != G.nodes[node]['state'][position] and position not in correct:
+                nonmatching.append(position)
+
+        # pick random correct bit from state
+        if nonmatching == []:
+            index = random.choice([0,1,2])
+        else:
+            index = random.choice(nonmatching)
         
-        message = G.nodes[0]['state'][index]
+        # message nonmatching but already correct bit from parent to child
+        message = G.nodes[parent[0]]['state'][index]
 
-        # send message to its downstream neigbors
-        for neighbor in G.neighbors(node):
-            if neighbor < node:
-                continue
+        # get current state of selected downstream neighbor
+        current_state = G.nodes[node]['state']
 
-            # get current state of selected neighbor
-            current_state = G.nodes[neighbor]['state']
-
-            # copy received bit at given position (redundant if bit is already agreed)
-            new_state = current_state[:index] + message + current_state[index + 1:]
-            G.nodes[neighbor]['state'] = new_state
-            M += 1
-
-        # print(f"{G.nodes(data=True)}\n")
+        # copy received bit at given position (redundant if bit is already agreed)
+        new_state = current_state[:index] + message + current_state[index + 1:]
+        G.nodes[node]['state'] = new_state
+        M += 1
     
     return M
 
-def hamming_distance(string1, string2): 
+def hamming_distance(string1, string2):
+    """
+    Function to compute string similarity using Hamming distance.
+
+    Parameters:
+    - string1: First string in comparison
+    - string2: Second string in comparison
+
+    Returns:
+    - distance: number differing characters between string1 and string2
+    """
+
     # Start with a distance of zero, and count up
     distance = 0
     # Loop over the indices of the string
@@ -201,7 +229,7 @@ def simulate(depth, n_iters, messaging='forward'):
 
     # simulate for n_iters
     for iter in range(n_iters):
-        print(f"iter={iter}\n")
+        print(f"iter={iter}")
         similarity = []
 
         # initialize binary tree
@@ -227,6 +255,10 @@ def simulate(depth, n_iters, messaging='forward'):
             elif messaging == 'random':
                 # send random messages to downstream neighbors
                 M = random_messaging(G=G, M=M)
+            
+            elif messaging == 'efficient':
+                # send nonmatching and correct bit to downstream neighbors
+                M = efficient_messaging(G=G, M=M)
 
             # update attributes dictionary
             attributes = nx.get_node_attributes(G, "state")
@@ -244,7 +276,7 @@ def simulate(depth, n_iters, messaging='forward'):
 
             round += 1
 
-        print(f"Number of messages send until consensus = {M}")
+        print(f"Number of messages send until consensus = {M} \n")
 
         # append total messages sent in current iteration
         total_messages.append(M)

@@ -30,9 +30,9 @@ def tolerant_mean(arrs):
     return arr.mean(axis = -1), arr.std(axis=-1)
 
 # initials
-depth = 3
+depth = 10
 n_iters = 10
-messaging = 'random'
+messaging = 'efficient'
 
 # simulate network
 start = timeit.default_timer()
