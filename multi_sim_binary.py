@@ -22,11 +22,12 @@ for depth in [3,5,10]:
 
         # initials
         n_iters = 100
+        messaging = 'random'
 
         # simulate network
         start = timeit.default_timer()
 
-        total_messages, all_similarities = simulate(depth=depth,n_iters=n_iters)
+        total_messages, all_similarities = simulate(depth=depth,n_iters=n_iters,messaging=messaging)
 
         stop = timeit.default_timer()
         execution_time = stop - start

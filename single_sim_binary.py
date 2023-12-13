@@ -12,6 +12,9 @@ import matplotlib.pyplot as plt
 from binary_tree import simulate
 
 def tolerant_mean(arrs):
+    """
+    Function to compute mean of curves with differing lengths
+    """
     lens = [len(i) for i in arrs]
     arr = np.ma.empty((np.max(lens),len(arrs)))
     arr.mask = True
@@ -22,11 +25,12 @@ def tolerant_mean(arrs):
 # initials
 depth = 3
 n_iters = 10
+messaging = 'random'
 
 # simulate network
 start = timeit.default_timer()
 
-total_messages, all_similarities = simulate(depth=depth,n_iters=n_iters)
+total_messages, all_similarities = simulate(depth=depth,n_iters=n_iters,messaging=messaging)
 
 stop = timeit.default_timer()
 execution_time = stop - start
@@ -68,5 +72,3 @@ plt.yticks(fontsize=14)
 plt.title(f"Mean convergence of all simulations on binary tree - depth = {depth} (N={n_iters})")
 plt.legend()
 plt.savefig(f"images/preliminary-binary-tree/single-run/average-convergence{n_iters}-binary-tree-depth{depth}.png")
-
-plt.show()
