@@ -60,6 +60,7 @@ plt.title(f"Convergence of all simulations on binary tree - depth = {depth} (N={
 plt.legend()
 plt.savefig(f"images/preliminary-binary-tree/single-run/convergence{n_iters}-binary-tree-depth{depth}.png")
 
+# mean convergence plot over all simulations
 fig = plt.figure()
 y, error = tolerant_mean(all_similarities)
 plt.plot(np.arange(len(y))+1, y, label=f"Mean of {n_iters} iterations")
