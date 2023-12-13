@@ -48,7 +48,7 @@ for depth in [3,5,10]:
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         plt.title(f"Binary tree graph (depth={depth}; n_iters={n_iters}; runtime={round(execution_time,5)} sec.) - mean={mean}; median={median}")
-        plt.savefig(f"images/preliminary-binary-tree/multi-run/simulate{n_iters}-binary-tree-depth{depth}({N}).png"
+        plt.savefig(f"images/preliminary-binary-tree/multi-run/{messaging}-depth{depth}-simulate{n_iters}-binomial-repeats{N}.png"
                     , bbox_inches='tight')
 
 # plot mean for multiple depths for n iterations
@@ -59,7 +59,7 @@ plt.ylabel("Mean messages sent", fontsize=14)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title("Binary tree graph - mean messages (depth=[3,5,10], n_iters=5)")
-plt.savefig(f"images/preliminary-binary-tree/multi-run/means-depth-3-5-10.png", bbox_inches='tight')
+plt.savefig(f"images/preliminary-binary-tree/multi-run/{messaging}-means-depth-3-5-10.png", bbox_inches='tight')
 
 # plot median for multiple depths for n iterations
 fig = plt.figure()
@@ -69,4 +69,4 @@ plt.ylabel("Median messages sent", fontsize=14)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title("Binary tree graph - median messages (depth=[3,5,10], n_iters=5)")
-plt.savefig(f"images/preliminary-binary-tree/multi-run/medians-depth-3-5-10.png", bbox_inches='tight')
+plt.savefig(f"images/preliminary-binary-tree/multi-run/{messaging}-medians-depth-3-5-10.png", bbox_inches='tight')

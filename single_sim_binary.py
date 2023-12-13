@@ -14,6 +14,13 @@ from binary_tree import simulate
 def tolerant_mean(arrs):
     """
     Function to compute mean of curves with differing lengths
+
+    Parameters:
+    - arrs: nested list with sublists of different lengths
+
+    Returns:
+    - arr.mean: computed mean over all sublists
+    - arr.std: computed standard deviation over all sublists
     """
     lens = [len(i) for i in arrs]
     arr = np.ma.empty((np.max(lens),len(arrs)))
@@ -43,7 +50,7 @@ plt.ylabel("Total messages sent", fontsize=14)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Binary tree graph (depth={depth}; n_iters={n_iters}; runtime={round(execution_time,5)} sec.)")
-plt.savefig(f"images/preliminary-binary-tree/single-run/simulate{n_iters}-binary-tree-depth{depth}.png"
+plt.savefig(f"images/preliminary-binary-tree/single-run/{messaging}-depth{depth}-simulate{n_iters}-binomial.png"
             , bbox_inches='tight')
 
 # convergence plot all simulations
@@ -58,7 +65,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Convergence of all simulations on binary tree - depth = {depth} (N={n_iters})")
 plt.legend()
-plt.savefig(f"images/preliminary-binary-tree/single-run/convergence{n_iters}-binary-tree-depth{depth}.png")
+plt.savefig(f"images/preliminary-binary-tree/single-run/{messaging}-depth{depth}-convergence{n_iters}-binomial.png")
 
 # mean convergence plot over all simulations
 fig = plt.figure()
@@ -72,4 +79,4 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Mean convergence of all simulations on binary tree - depth = {depth} (N={n_iters})")
 plt.legend()
-plt.savefig(f"images/preliminary-binary-tree/single-run/average-convergence{n_iters}-binary-tree-depth{depth}.png")
+plt.savefig(f"images/preliminary-binary-tree/single-run/{messaging}-depth{depth}-average-convergence{n_iters}-binomial.png")

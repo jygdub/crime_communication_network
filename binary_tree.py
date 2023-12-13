@@ -49,7 +49,7 @@ def visualize(G):
 def forward_messaging(G,M):
     """
     Function to forward root node's message throughout the entire network.
-    Every downstream node copies root node's message into position.
+    Every downstream neighbor copies root node's message into position.
 
     Parameters:
     - G: networkx graph
@@ -86,7 +86,7 @@ def forward_messaging(G,M):
 def random_messaging(G,M):
     """
     Function to send messages containing a random bit through the entire network.
-    Every node copies the bit from message into position.
+    Every downstream neighbor copies the bit from message into position.
     Then randomly sends a bit from its own state to its downstream neighbors, until leaf nodes are reached.
 
     Parameters:
@@ -98,6 +98,51 @@ def random_messaging(G,M):
     """
     
     # randomly generate node's message
+    for node in G.nodes:
+
+        # pick random bit from state
+        index = random.choice([0,1,2])
+        # print(f"Bit-string index = {index} | Node = {node}")
+        
+        message = G.nodes[node]['state'][index]
+
+        # send message to its downstream neigbors
+        for neighbor in G.neighbors(node):
+            if neighbor < node:
+                continue
+
+            # get current state of selected neighbor
+            current_state = G.nodes[neighbor]['state']
+
+            # copy received bit at given position (redundant if bit is already agreed)
+            new_state = current_state[:index] + message + current_state[index + 1:]
+            G.nodes[neighbor]['state'] = new_state
+            M += 1
+
+        # print(f"{G.nodes(data=True)}\n")
+    
+    return M
+
+def efficient_messaging(G,M):
+    """
+    Function to send messages through the entire network.
+    Message contains a random but correct bit (according to kingpin's state) in current node's state 
+        but nonmatching with its downstream neighbor.
+    Every downstream neighbor copies the bit from message into position.
+    Then randomly sends a nonmatching, but correct bit from its own state to its downstream neighbors, 
+        until leaf nodes are reached.
+
+    NOTE: Messages passed can differ for each neighbor!
+
+    Parameters:
+    - G: networkx graph
+    - M: counter for total messages send in network simulation
+
+    Returns:
+    - M: counter for total messages send in network simulation
+    """
+
+    # randomly pick a nonmatching bit as node's message
     for node in G.nodes:
 
         # pick random bit from state
