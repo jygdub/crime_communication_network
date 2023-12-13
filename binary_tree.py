@@ -145,8 +145,13 @@ def efficient_messaging(G,M):
     # randomly pick a nonmatching bit as node's message
     for node in G.nodes:
 
-        if node == 0:
+        if node == 0 or G.nodes[0]['state'] == G.nodes[node]['state']:
             continue
+
+        print(f"Node {node}")
+        print(f"Current number of messages: {M}")
+        print(f"Kingpin's state = {G.nodes[0]['state']}")
+        print(f"Node {node} state = {G.nodes[node]['state']}")
 
         correct = []
 
@@ -154,6 +159,7 @@ def efficient_messaging(G,M):
         for position, bit in enumerate(G.nodes[node]['state']):
             if bit == G.nodes[0]['state'][position]:
                 correct.append(position)
+
 
         # find nonmatching bits between current node and parent
         parent = [(neighbor) for neighbor in G.neighbors(node) if neighbor < node]
@@ -174,6 +180,8 @@ def efficient_messaging(G,M):
         
         # message nonmatching but already correct bit from parent to child
         message = G.nodes[parent[0]]['state'][index]
+
+        print("Message sent")
 
         # get current state of selected downstream neighbor
         current_state = G.nodes[node]['state']

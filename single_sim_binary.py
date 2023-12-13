@@ -30,7 +30,7 @@ def tolerant_mean(arrs):
     return arr.mean(axis = -1), arr.std(axis=-1)
 
 # initials
-depth = 10
+depth = 3
 n_iters = 10
 messaging = 'efficient'
 
