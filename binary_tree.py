@@ -148,11 +148,6 @@ def efficient_messaging(G,M):
         if node == 0 or G.nodes[0]['state'] == G.nodes[node]['state']:
             continue
 
-        print(f"Node {node}")
-        print(f"Current number of messages: {M}")
-        print(f"Kingpin's state = {G.nodes[0]['state']}")
-        print(f"Node {node} state = {G.nodes[node]['state']}")
-
         correct = []
 
         # find correct bits in current node's state
@@ -180,8 +175,6 @@ def efficient_messaging(G,M):
         
         # message nonmatching but already correct bit from parent to child
         message = G.nodes[parent[0]]['state'][index]
-
-        print("Message sent")
 
         # get current state of selected downstream neighbor
         current_state = G.nodes[node]['state']

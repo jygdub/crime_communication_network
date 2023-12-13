@@ -31,7 +31,7 @@ def tolerant_mean(arrs):
 
 # initials
 depth = 3
-n_iters = 10
+n_iters = 100
 messaging = 'efficient'
 
 # simulate network
