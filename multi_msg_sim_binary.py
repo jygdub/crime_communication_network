@@ -1,9 +1,9 @@
 """
 Script for preliminary network of message passing until consensus in a binary tree graph
-    Simulation for multiple tree depth for N repeats, each simulation takes n_iters
+    Simulation for multiple messaging methods of n_iters on given tree depth
 
 Written by Jade Dubbeld
-12/12/2023
+13/12/2023
 """
 
 import timeit, numpy as np
@@ -37,7 +37,7 @@ n_iters = 100
 depth = 3
 convergence = plt.figure()
 
-# differing binary tree depths
+# differing messaging methods
 for messaging in ['forward','random','efficient']:
         
     # simulate network
@@ -59,7 +59,7 @@ for messaging in ['forward','random','efficient']:
     plt.savefig(f"images/preliminary-binary-tree/converged-messaging/{messaging}-depth{depth}-simulate{n_iters}-binomial.png"
                 , bbox_inches='tight')
     
-    # convergence plot all simulations
+    # convergence plot all simulations of given depth for differing messagings
     fig = plt.figure()
 
     for iter in range(n_iters):
@@ -73,7 +73,7 @@ for messaging in ['forward','random','efficient']:
     plt.legend()
     plt.savefig(f"images/preliminary-binary-tree/converged-messaging/{messaging}-depth{depth}-convergence{n_iters}-binomial.png")
 
-    # mean convergence plot over all simulations
+    # mean convergence plot over all simulations of given depth for differing messagings
     plt.figure(convergence)
     y, error = tolerant_mean(all_similarities)
     plt.plot(np.arange(len(y))+1, y, label=f"Mean of {n_iters} iterations - {messaging}")
