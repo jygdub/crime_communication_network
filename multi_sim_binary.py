@@ -22,7 +22,7 @@ for depth in [3,5,10]:
 
         # initials
         n_iters = 100
-        messaging = 'random'
+        messaging = 'efficient'
 
         # simulate network
         start = timeit.default_timer()
