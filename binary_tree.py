@@ -150,28 +150,37 @@ def efficient_messaging(G,M):
 
         correct = []
 
-        # find correct bits in current node's state
+        # find correct bits in current node's state compared to kingpin's state
         for position, bit in enumerate(G.nodes[node]['state']):
             if bit == G.nodes[0]['state'][position]:
                 correct.append(position)
 
-
-        # find nonmatching bits between current node and parent
+        # get parent node of current node
         parent = [(neighbor) for neighbor in G.neighbors(node) if neighbor < node]
 
-        # separate messages to downstream neighbors
-        nonmatching = []
+        # print(f"Kingpin: {G.nodes[0]['state']}")
+        # print(f"Current node: {G.nodes[node]['state']}")
+        # print(f"Parent node: {G.nodes[parent[0]]['state']}")
 
-        # find nonmatching bits between current node (out of correct bits) and downstream neighbor
-        for position, bit in enumerate(G.nodes[parent[0]]['state']):
-            if bit != G.nodes[node]['state'][position] and position not in correct:
-                nonmatching.append(position)
 
-        # pick random correct bit from state
-        if nonmatching == []:
+        # nonmatching = []
+        # # find nonmatching bits between current node (out of correct bits) and current node
+        # for position, bit in enumerate(G.nodes[parent[0]]['state']):
+        #     if bit != G.nodes[node]['state'][position] and position in correct:
+        #         nonmatching.append(position)
+
+        # print(f"correct: {correct} | nonmatching: {nonmatching}")
+
+        # pick random bit when no correct bits in current state
+        if correct == []:
             index = random.choice([0,1,2])
+
+        # pick random incorrect bit from parent's state
         else:
-            index = random.choice(nonmatching)
+            incorrect = [i for i in [0,1,2] if i not in correct]
+            index = random.choice(incorrect)
+
+        # print(f"Index {index}")
         
         # message nonmatching but already correct bit from parent to child
         message = G.nodes[parent[0]]['state'][index]

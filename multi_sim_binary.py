@@ -33,9 +33,9 @@ all_means = []
 all_medians = []
 
 # initials
-n_iters = 10
+n_iters = 100
 repeats = 5
-messaging = 'forward'
+messaging = 'efficient'
 
 # differing binary tree depths
 for depth in [3,5,10]:
