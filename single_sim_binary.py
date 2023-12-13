@@ -1,3 +1,11 @@
+"""
+Script for preliminary network of message passing until consensus in a binary tree graph
+    Single simulation for given tree depth and n_iters
+
+Written by Jade Dubbeld
+12/12/2023
+"""
+
 import timeit, numpy as np
 import matplotlib.pyplot as plt
 

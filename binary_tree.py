@@ -203,7 +203,3 @@ def simulate(depth, n_iters):
     
     print(f"All similarities = {all_similarities}")
     return total_messages, all_similarities
-
-
-G = init_binary()
-visualize(G)
