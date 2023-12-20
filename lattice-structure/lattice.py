@@ -114,3 +114,47 @@ def message(G, source, destination, alpha=1.0, beta=0.0):
     G.nodes[destination]['state'] = new_state
 
     return G
+
+
+def hamming_distance(string1, string2):
+    """
+    Function to compute string similarity using Hamming distance.
+
+    Parameters:
+    - string1: First string in comparison
+    - string2: Second string in comparison
+
+    Returns:
+    - distance: number differing characters between string1 and string2
+    """
+
+    # Start with a distance of zero, and count up
+    distance = 0
+    # Loop over the indices of the string
+    L = len(string1)
+    for i in range(L):
+        # Add 1 to the distance if these two characters are not equal
+        if string1[i] != string2[i]:
+            distance += 1
+    # Return the final count of differences
+    return distance
+
+
+def simulate(G, M, alpha=1.0, beta=0.0):
+
+    attributes = nx.get_node_attributes(G, "state")
+
+    # converge when all nodes agree on state
+    while np.unique(list(attributes.values())).size > 1:
+        source = random.choice(list(G.nodes))
+        destination = random.choice(list(G.neighbors(source)))
+        print(f"{source} -> {destination}")
+
+        G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
+
+        print(G.nodes(data=True))
+
+        M += 1
+        attributes = nx.get_node_attributes(G, "state")   
+
+    return G, M

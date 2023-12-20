@@ -10,29 +10,18 @@ import timeit, numpy as np, random
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from lattice import init_lattice, visualize, message
+from lattice import init_lattice, simulate
 
 # initialize network
-G = init_lattice((2,2))
-
-attributes = nx.get_node_attributes(G, "state")
-
+G = init_lattice((5,5))
 M = 0
+alpha = 1.0
+beta = 0.0
 
 start = timeit.default_timer()
 
-# converge when all nodes agree on state
-while np.unique(list(attributes.values())).size > 1:
-    source = random.choice(list(G.nodes))
-    destination = random.choice(list(G.neighbors(source)))
-    print(f"{source} -> {destination}")
-
-    G = message(G=G,source=source,destination=destination,alpha=1.0,beta=0.0)
-
-    print(G.nodes(data=True))
-
-    M += 1
-    attributes = nx.get_node_attributes(G, "state")
+# simulate until consensus in network
+G, M = simulate(G,M,alpha,beta)
 
 stop = timeit.default_timer()
 execution_time = stop - start
