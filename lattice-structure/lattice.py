@@ -84,12 +84,12 @@ def message(G, source, destination, alpha=1.0, beta=0.0):
 
     # random pick if no bits in common
     # pick from correct list with probability alpha (incorrect with probability 1 - alpha)
-    if mismatch == []:
-        index = random.choice([0,1,2])
-    elif P_Matching > alpha:
+    if P_Matching > alpha and match != []:
         index = random.choice(match)
-    elif P_Matching <= alpha:
+    elif P_Matching <= alpha and mismatch != []:
         index = random.choice(mismatch)
+    else:
+        index = random.choice([0,1,2])
 
     # generate message
     message = G.nodes[source]['state'][index]
@@ -140,21 +140,49 @@ def hamming_distance(string1, string2):
     return distance
 
 
-def simulate(G, M, alpha=1.0, beta=0.0):
+def simulate(dimensions, alpha=1.0, beta=0.0, n_iters=10):
 
-    attributes = nx.get_node_attributes(G, "state")
+    # initials
+    total_messages = []
+    all_similarities = []
 
-    # converge when all nodes agree on state
-    while np.unique(list(attributes.values())).size > 1:
-        source = random.choice(list(G.nodes))
-        destination = random.choice(list(G.neighbors(source)))
-        print(f"{source} -> {destination}")
+    # simulate for n_iters
+    for iteration in range(n_iters):
+        print(f"iter={iter}")
+        similarity = []
 
-        G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
+        G = init_lattice(dimensions)
+        M = 0
+        attributes = nx.get_node_attributes(G, "state")
 
-        print(G.nodes(data=True))
+        # converge when all nodes agree on state
+        while np.unique(list(attributes.values())).size > 1:
+            
+            S = []
 
-        M += 1
-        attributes = nx.get_node_attributes(G, "state")   
+            source = random.choice(list(G.nodes))
+            destination = random.choice(list(G.neighbors(source)))
+            print(f"{source} -> {destination}")
 
-    return G, M
+            G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
+
+            print(G.nodes(data=True))
+
+            M += 1
+            attributes = nx.get_node_attributes(G, "state")   
+
+            # string similarity using Hamming distance    
+            for node1 in G.nodes():
+                for node2 in G.nodes():
+                    if node1 == node2:
+                        continue
+
+                    distance = hamming_distance(attributes[node1],attributes[node2])
+                    S.append(distance)
+
+            similarity.append(np.mean(S))
+
+        total_messages.append(M)
+        all_similarities.append(list(similarity))
+    
+    return total_messages, all_similarities
