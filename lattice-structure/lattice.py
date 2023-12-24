@@ -56,6 +56,7 @@ def visualize(G):
     Parameters:
     - G: networkx graph to display
     """
+
     pos = nx.nx_agraph.graphviz_layout(G, prog="dot")
 
     nx.draw(G, pos, labels=nx.get_node_attributes(G,'state'))
