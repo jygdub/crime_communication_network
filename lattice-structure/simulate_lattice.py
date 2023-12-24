@@ -1,6 +1,6 @@
 """
 Script for preliminary network of message passing until consensus in a lattice structured graph
-    Simulation 
+    Simulation for given number of iterations and alpha and beta noise parameter settings
 
 Written by Jade Dubbeld
 20/12/2023
@@ -30,7 +30,7 @@ import timeit, numpy as np, random
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from lattice import init_lattice, simulate
+from lattice import simulate
 
 # initials
 dimensions = (5,5)

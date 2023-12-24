@@ -1,6 +1,6 @@
 """
 Script for preliminary network of message passing until consensus in a lattice structured graph
-    Simulation 
+    Simulation for given number of iterations and alpha and beta noise parameter settings 
 
 Written by Jade Dubbeld
 21/12/2023

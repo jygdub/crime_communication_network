@@ -1,5 +1,11 @@
 """
-Script for preliminary network of message passing until consensus in a lattice structured graph
+Script for preliminary network of message passing until consensus in a lattice structured graph.
+
+Using scalable noise parameters alpha and beta for sender bias and receiver bias, respectively.
+- High alpha means higher probability of sending information the receiver does NOT know yet; 
+    low alpha means higher probability of sending information the receiver ALREADY knows, prolonging the convergence.
+- Low beta means lower probability of no receiving error and therefore no change in information;
+    high beta means higher probability of interpreting message incorrectly and therefore change in information.
 
 Written by Jade Dubbeld
 20/12/2023
@@ -19,7 +25,7 @@ def init_lattice(dimensions=(5,5)):
     - dimensions: dimensions of lattice
 
     Returns:
-    - G: networkx graph
+    - G: initialized networkx graph
     """
 
     # set up bounded lattice with given dimensions
@@ -48,7 +54,7 @@ def visualize(G):
     Each node is labeled with its current state.
 
     Parameters:
-    - G: networkx graph
+    - G: networkx graph to display
     """
     pos = nx.nx_agraph.graphviz_layout(G, prog="dot")
 
@@ -63,10 +69,14 @@ def message(G, source, destination, alpha=1.0, beta=0.0):
     Receiver bias depends on probability beta (0.0 is never mistaken - 1.0 is always mistaken).
 
     Parameters:
-    - source
-    - destination
-    - alpha
-    - beta
+    - G: current state of networkx graph
+    - source: selected sender node in network
+    - destination: selected receiver node in network
+    - alpha: probability of sender bias (sending match or mismatch bits)
+    - beta: probability of receiver bias (flipping message or not)
+
+    Returns:
+    - G: new state of networkx graph
 
     """
 
@@ -141,10 +151,23 @@ def hamming_distance(string1, string2):
 
 
 def simulate(dimensions, alpha=1.0, beta=0.0, n_iters=10):
+    """
+    Function to run a simulation for n_iters on a lattice.
+
+    Parameters:
+    - dimensions: dimensions of lattice
+    - alpha: probability of sender bias (sending match or mismatch bits)
+    - beta: probability of receiver bias (flipping message or not)
+    - n_iters: number of iterations to simulate for
+
+    Returns:
+    - total_messages: list of total messages sent in all simulations
+    - all_diffScores: list of all string difference scores in all simulations
+    """
 
     # initials
     total_messages = []
-    all_similarities = []
+    all_diffScores = []
 
     # simulate for n_iters
     for iteration in range(n_iters):
@@ -183,6 +206,6 @@ def simulate(dimensions, alpha=1.0, beta=0.0, n_iters=10):
             similarity.append(np.mean(S))
 
         total_messages.append(M)
-        all_similarities.append(list(similarity))
+        all_diffScores.append(list(similarity))
     
-    return total_messages, all_similarities
+    return total_messages, all_diffScores
