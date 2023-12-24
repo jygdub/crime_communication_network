@@ -43,7 +43,7 @@ for messaging in ['forward','random','efficient']:
     # simulate network
     start = timeit.default_timer()
 
-    total_messages, all_similarities = simulate(depth=depth,n_iters=n_iters,messaging=messaging)
+    total_messages, all_diffScores = simulate(depth=depth,n_iters=n_iters,messaging=messaging)
 
     stop = timeit.default_timer()
     execution_time = stop - start
@@ -63,7 +63,7 @@ for messaging in ['forward','random','efficient']:
     fig = plt.figure()
 
     for iter in range(n_iters):
-        plt.plot(np.arange(len(all_similarities[iter]))+1, all_similarities[iter],label=f"Iteration {iter}")
+        plt.plot(np.arange(len(all_diffScores[iter]))+1, all_diffScores[iter],label=f"Iteration {iter}")
 
     plt.xlabel("Rounds", fontsize=14)
     plt.ylabel("Average string similarity (Hamming distance)", fontsize=14)
@@ -75,7 +75,7 @@ for messaging in ['forward','random','efficient']:
 
     # mean convergence plot over all simulations of given depth for differing messagings
     plt.figure(convergence)
-    y, error = tolerant_mean(all_similarities)
+    y, error = tolerant_mean(all_diffScores)
     plt.plot(np.arange(len(y))+1, y, label=f"Mean of {n_iters} iterations - {messaging}")
     plt.fill_between(np.arange(len(y))+1, y-error, y+error, alpha=0.5, label=f"Std. dv. of {n_iters} iterations - {messaging}")
 

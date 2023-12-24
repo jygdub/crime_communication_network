@@ -235,7 +235,7 @@ def simulate(depth, n_iters, messaging='forward'):
 
     # initials
     total_messages = []
-    all_similarities = []
+    all_diffScores = []
 
     # simulate for n_iters
     for iter in range(n_iters):
@@ -294,7 +294,7 @@ def simulate(depth, n_iters, messaging='forward'):
         # print(f"Average similarity in iteration {iter} = {similarity}")
         
         # append complete list of string similarity in current iteration
-        all_similarities.append(list(similarity))
+        all_diffScores.append(list(similarity))
     
-    print(f"All similarities = {all_similarities}")
-    return total_messages, all_similarities
+    print(f"All similarities = {all_diffScores}")
+    return total_messages, all_diffScores

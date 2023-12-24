@@ -30,7 +30,7 @@ import timeit, numpy as np, random
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from lattice import init_lattice, simulate
+from lattice import simulate
 
 # initials
 dimensions = (5,5)
@@ -45,7 +45,7 @@ for alpha in [1.0, 0.75, 0.5]:
     start = timeit.default_timer()
 
     # simulate until consensus in network
-    total_messages, all_similarities = simulate(dimensions,alpha,beta,n_iters)
+    total_messages, all_diffScores = simulate(dimensions,alpha,beta,n_iters)
 
     stop = timeit.default_timer()
     execution_time = stop - start
@@ -68,7 +68,7 @@ for alpha in [1.0, 0.75, 0.5]:
     fig = plt.figure()
 
     for iter in range(n_iters):
-        plt.plot(np.arange(len(all_similarities[iter]))+1, all_similarities[iter],label=f"Run{iter}")
+        plt.plot(np.arange(len(all_diffScores[iter]))+1, all_diffScores[iter],label=f"Run{iter}")
 
     plt.xlabel("Total messages sent", fontsize=14)
     plt.ylabel("Average string difference (Hamming distance)", fontsize=14)
@@ -80,7 +80,7 @@ for alpha in [1.0, 0.75, 0.5]:
 
     # mean convergence plot over all simulations
     fig = plt.figure()
-    y, error = tolerant_mean(all_similarities)
+    y, error = tolerant_mean(all_diffScores)
     plt.plot(np.arange(len(y))+1, y, label=f"Mean of {n_iters} iterations")
     plt.fill_between(np.arange(len(y))+1, y-error, y+error, alpha=0.5, label=f"Std. dv. of {n_iters} runs")
 
