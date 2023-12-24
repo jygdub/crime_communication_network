@@ -1,5 +1,5 @@
 """
-Script for preliminary network of message passing until consensus in a binary tree graph
+Script for preliminary network of message passing until consensus in a binomial tree graph
     Simulation for multiple messaging methods of n_iters on given tree depth
 
 Written by Jade Dubbeld
@@ -9,7 +9,7 @@ Written by Jade Dubbeld
 import timeit, numpy as np
 import matplotlib.pyplot as plt
 
-from binary_tree import simulate
+from binomial_tree import simulate
 
 def tolerant_mean(arrs):
     """
@@ -55,8 +55,8 @@ for messaging in ['forward','random','efficient']:
     plt.ylabel("Total messages sent", fontsize=14)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
-    plt.title(f"Binary tree graph (depth={depth}; n_iters={n_iters}; runtime={round(execution_time,5)} sec.)")
-    plt.savefig(f"images/preliminary-binary-tree/converged-messaging/{messaging}-depth{depth}-simulate{n_iters}-binomial.png"
+    plt.title(f"Binomial tree graph (depth={depth}; n_iters={n_iters}; runtime={round(execution_time,5)} sec.)")
+    plt.savefig(f"images/preliminary-binomial-tree/converged-messaging/{messaging}-depth{depth}-simulate{n_iters}-binomial.png"
                 , bbox_inches='tight')
     
     # convergence plot all simulations of given depth for differing messagings
@@ -69,9 +69,9 @@ for messaging in ['forward','random','efficient']:
     plt.ylabel("Average string similarity (Hamming distance)", fontsize=14)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
-    plt.title(f"Convergence of all simulations on binary tree - depth = {depth} (N={n_iters})")
+    plt.title(f"Convergence of all simulations on binomial tree - depth = {depth} (N={n_iters})")
     plt.legend()
-    plt.savefig(f"images/preliminary-binary-tree/converged-messaging/{messaging}-depth{depth}-convergence{n_iters}-binomial.png")
+    plt.savefig(f"images/preliminary-binomial-tree/converged-messaging/{messaging}-depth{depth}-convergence{n_iters}-binomial.png")
 
     # mean convergence plot over all simulations of given depth for differing messagings
     plt.figure(convergence)
@@ -84,6 +84,6 @@ plt.xlabel("Rounds", fontsize=14)
 plt.ylabel("Average string similarity (Hamming distance)", fontsize=14)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
-plt.title(f"Mean convergence of all simulations on binary tree - depth = {depth} (N={n_iters})")
+plt.title(f"Mean convergence of all simulations on binomial tree - depth = {depth} (N={n_iters})")
 plt.legend()
-plt.savefig(f"images/preliminary-binary-tree/converged-messaging/depth{depth}-average-convergence{n_iters}-binomial.png")
+plt.savefig(f"images/preliminary-binomial-tree/converged-messaging/depth{depth}-average-convergence{n_iters}-binomial.png")

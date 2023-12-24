@@ -1,5 +1,5 @@
 """
-Script for preliminary network of message passing until consensus in a binary tree graph
+Script for preliminary network of message passing until consensus in a binomial tree graph
     Simulation for multiple tree depth for N repeats, each simulation takes n_iters
 
 Written by Jade Dubbeld
@@ -9,7 +9,7 @@ Written by Jade Dubbeld
 import timeit, numpy as np
 import matplotlib.pyplot as plt
 
-from binary_tree import simulate
+from binomial_tree import simulate
 
 def tolerant_mean(arrs):
     """
@@ -66,8 +66,8 @@ for depth in [3,5,10]:
         plt.ylabel("Total messages sent", fontsize=14)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
-        plt.title(f"Binary tree graph (depth={depth}; n_iters={n_iters}; runtime={round(execution_time,5)} sec.) - mean={mean}; median={median}")
-        plt.savefig(f"images/preliminary-binary-tree/multi-run/{messaging}-depth{depth}-simulate{n_iters}-binomial-repeat{N}.png"
+        plt.title(f"Binomial tree graph (depth={depth}; n_iters={n_iters}; runtime={round(execution_time,5)} sec.) - mean={mean}; median={median}")
+        plt.savefig(f"images/preliminary-binomial-tree/multi-run/{messaging}-depth{depth}-simulate{n_iters}-binomial-repeat{N}.png"
                     , bbox_inches='tight')
         
         # convergence plot all simulations
@@ -80,9 +80,9 @@ for depth in [3,5,10]:
         plt.ylabel("Average string similarity (Hamming distance)", fontsize=14)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
-        plt.title(f"Convergence of all simulations on binary tree - depth = {depth} (N={n_iters})")
+        plt.title(f"Convergence of all simulations on binomial tree - depth = {depth} (N={n_iters})")
         plt.legend()
-        plt.savefig(f"images/preliminary-binary-tree/multi-run/{messaging}-depth{depth}-convergence{n_iters}-binomial-repeat{N}.png")
+        plt.savefig(f"images/preliminary-binomial-tree/multi-run/{messaging}-depth{depth}-convergence{n_iters}-binomial-repeat{N}.png")
 
         # mean convergence plot over all simulations
         fig = plt.figure()
@@ -94,9 +94,9 @@ for depth in [3,5,10]:
         plt.ylabel("Average string similarity (Hamming distance)", fontsize=14)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
-        plt.title(f"Mean convergence of all simulations on binary tree - depth = {depth} (N={n_iters})")
+        plt.title(f"Mean convergence of all simulations on binomial tree - depth = {depth} (N={n_iters})")
         plt.legend()
-        plt.savefig(f"images/preliminary-binary-tree/multi-run/{messaging}-depth{depth}-average-convergence{n_iters}-binomial-repeat{N}.png")
+        plt.savefig(f"images/preliminary-binomial-tree/multi-run/{messaging}-depth{depth}-average-convergence{n_iters}-binomial-repeat{N}.png")
 
 # plot mean nr. messages for multiple depths for n iterations
 fig = plt.figure()
@@ -105,8 +105,8 @@ plt.xlabel("Depth", fontsize=14)
 plt.ylabel("Mean messages sent", fontsize=14)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
-plt.title(f"Binary tree graph - mean messages (depth=[3,5,10], n_iters={n_iters}, repeats={repeats})")
-plt.savefig(f"images/preliminary-binary-tree/multi-run/{messaging}-means-depth-3-5-10.png", bbox_inches='tight')
+plt.title(f"Binomial tree graph - mean messages (depth=[3,5,10], n_iters={n_iters}, repeats={repeats})")
+plt.savefig(f"images/preliminary-binomial-tree/multi-run/{messaging}-means-depth-3-5-10.png", bbox_inches='tight')
 
 # plot median nr. messages for multiple depths for n iterations
 fig = plt.figure()
@@ -115,5 +115,5 @@ plt.xlabel("Depth", fontsize=14)
 plt.ylabel("Median messages sent", fontsize=14)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
-plt.title(f"Binary tree graph - median messages (depth=[3,5,10], n_iters={n_iters}, repeats={repeats})")
-plt.savefig(f"images/preliminary-binary-tree/multi-run/{messaging}-medians-depth-3-5-10.png", bbox_inches='tight')
+plt.title(f"Binomial tree graph - median messages (depth=[3,5,10], n_iters={n_iters}, repeats={repeats})")
+plt.savefig(f"images/preliminary-binomial-tree/multi-run/{messaging}-medians-depth-3-5-10.png", bbox_inches='tight')
