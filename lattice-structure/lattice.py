@@ -44,7 +44,7 @@ def init_lattice(dimensions=(5,5)):
         G.nodes[node]['state'] = binary_string
 
     # show initial configuration
-    print(G.nodes(data=True))
+    # print(G.nodes(data=True))
     return G
 
 
