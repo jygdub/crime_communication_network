@@ -66,7 +66,7 @@ for messaging in ['forward','random','efficient']:
         plt.plot(np.arange(len(all_diffScores[iter]))+1, all_diffScores[iter],label=f"Iteration {iter}")
 
     plt.xlabel("Rounds", fontsize=14)
-    plt.ylabel("Average string similarity (Hamming distance)", fontsize=14)
+    plt.ylabel("Average string difference (Hamming distance)", fontsize=14)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     plt.title(f"Convergence of all simulations on binomial tree - depth = {depth} (N={n_iters})")
@@ -81,7 +81,7 @@ for messaging in ['forward','random','efficient']:
 
 plt.figure(convergence)
 plt.xlabel("Rounds", fontsize=14)
-plt.ylabel("Average string similarity (Hamming distance)", fontsize=14)
+plt.ylabel("Average string difference (Hamming distance)", fontsize=14)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Mean convergence of all simulations on binomial tree - depth = {depth} (N={n_iters})")

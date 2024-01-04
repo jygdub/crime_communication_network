@@ -77,7 +77,7 @@ for depth in [3,5,10]:
             plt.plot(np.arange(len(all_diffScores[iter]))+1, all_diffScores[iter],label=f"Iteration {iter}")
 
         plt.xlabel("Rounds", fontsize=14)
-        plt.ylabel("Average string similarity (Hamming distance)", fontsize=14)
+        plt.ylabel("Average string difference (Hamming distance)", fontsize=14)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         plt.title(f"Convergence of all simulations on binomial tree - depth = {depth} (N={n_iters})")
@@ -91,7 +91,7 @@ for depth in [3,5,10]:
         plt.fill_between(np.arange(len(y))+1, y-error, y+error, alpha=0.5, label=f"Std. dv. of {n_iters} iterations")
 
         plt.xlabel("Rounds", fontsize=14)
-        plt.ylabel("Average string similarity (Hamming distance)", fontsize=14)
+        plt.ylabel("Average string difference (Hamming distance)", fontsize=14)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         plt.title(f"Mean convergence of all simulations on binomial tree - depth = {depth} (N={n_iters})")
