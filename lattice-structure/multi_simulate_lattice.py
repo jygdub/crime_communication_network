@@ -43,6 +43,8 @@ for beta in [0.0, 0.05]:
 
     for alpha in [1.0, 0.75, 0.5]:
 
+        print(f"alpha = {alpha} - beta = {beta}")
+
         start = timeit.default_timer()
 
         # simulate until consensus in network
