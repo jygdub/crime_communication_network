@@ -105,7 +105,7 @@ def message(G, source, destination, alpha=1.0, beta=0.0):
     # generate message
     message = G.nodes[source]['state'][index]
 
-    print(f"index = {index}, message = {message}")
+    # print(f"index = {index}, message = {message}")
 
     # generate random float representing miscommunication/receiver bias
     P_Miss = random.random()
@@ -172,7 +172,7 @@ def simulate(dimensions, alpha=1.0, beta=0.0, n_iters=10):
 
     # simulate for n_iters
     for iteration in range(n_iters):
-        print(f"iter={iter}")
+        # print(f"iter={iter}")
         similarity = []
 
         G = init_lattice(dimensions)
@@ -186,11 +186,11 @@ def simulate(dimensions, alpha=1.0, beta=0.0, n_iters=10):
 
             source = random.choice(list(G.nodes))
             destination = random.choice(list(G.neighbors(source)))
-            print(f"{source} -> {destination}")
+            # print(f"{source} -> {destination}")
 
             G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
 
-            print(G.nodes(data=True))
+            # print(G.nodes(data=True))
 
             M += 1
             attributes = nx.get_node_attributes(G, "state")   
