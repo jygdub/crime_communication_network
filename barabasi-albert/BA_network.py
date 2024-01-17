@@ -152,47 +152,38 @@ def simulate(n, m, alpha=1.0, beta=0.0, n_iters=10):
     - all_diffScores: list of all string difference scores in all simulations
     """
 
-    # initials
-    total_messages = []
-    all_diffScores = []
+    similarity = []
 
-    # simulate for n_iters
-    for iteration in range(n_iters):
-        print(f"iter={iteration}")
-        similarity = []
+    G_init = init_BA(n,m)
+    G = G_init
+    M = 0
+    attributes = nx.get_node_attributes(G, "state")
 
-        G = init_BA(n,m)
-        M = 0
-        attributes = nx.get_node_attributes(G, "state")
+    # converge when all nodes agree on state
+    while np.unique(list(attributes.values())).size > 1 or M > 500000:
+        
+        S = []
 
-        # converge when all nodes agree on state
-        while np.unique(list(attributes.values())).size > 1 or M > 500000:
-            
-            S = []
+        source = random.choice(list(G.nodes))
+        destination = random.choice(list(G.neighbors(source)))
+        # print(f"{source} -> {destination}")
 
-            source = random.choice(list(G.nodes))
-            destination = random.choice(list(G.neighbors(source)))
-            # print(f"{source} -> {destination}")
+        G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
 
-            G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
+        # print(G.nodes(data=True))
 
-            # print(G.nodes(data=True))
+        M += 1
+        attributes = nx.get_node_attributes(G, "state")   
 
-            M += 1
-            attributes = nx.get_node_attributes(G, "state")   
+        # string similarity using Hamming distance    
+        for node1 in G.nodes():
+            for node2 in G.nodes():
+                if node1 == node2:
+                    continue
 
-            # string similarity using Hamming distance    
-            for node1 in G.nodes():
-                for node2 in G.nodes():
-                    if node1 == node2:
-                        continue
+                distance = hamming_distance(attributes[node1],attributes[node2])
+                S.append(distance)
 
-                    distance = hamming_distance(attributes[node1],attributes[node2])
-                    S.append(distance)
-
-            similarity.append(np.mean(S))
-
-        total_messages.append(M)
-        all_diffScores.append(list(similarity))
+        similarity.append(np.mean(S))
     
-    return total_messages, all_diffScores
+    return M, similarity, G_init

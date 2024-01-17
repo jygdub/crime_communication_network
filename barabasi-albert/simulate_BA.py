@@ -37,7 +37,7 @@ import matplotlib.pyplot as plt
 from BA_network import simulate
 
 # initials
-n = 25
+n = 10
 m = 1
 alpha = 1.0
 beta = 0.0
@@ -48,11 +48,19 @@ combi = plt.figure()
 for m in [1,2,3,4]:
     
     print(f"m = {m}")
+    total_messages = []
+    all_diffScores = []
 
     start = timeit.default_timer()
 
-    # simulate until consensus in network
-    total_messages, all_diffScores = simulate(n,m,alpha,beta,n_iters)
+    for iter in range(n_iters):
+        print(f"iter={iter}")
+
+        # simulate until consensus in network
+        M, similarity, G_init = simulate(n,m,alpha,beta,n_iters)
+
+        total_messages.append(M)
+        all_diffScores.append(list(similarity))
 
     stop = timeit.default_timer()
     execution_time = stop - start
