@@ -160,7 +160,7 @@ def simulate(n, m, alpha=1.0, beta=0.0, n_iters=10):
     attributes = nx.get_node_attributes(G, "state")
 
     # converge when all nodes agree on state
-    while np.unique(list(attributes.values())).size > 1 or M > 500000:
+    while (np.unique(list(attributes.values())).size > 1 and M < 100000):
         
         S = []
 
