@@ -29,7 +29,7 @@ n_iters = 10
 betweenness = plt.figure()
 degree = plt.figure()
 
-for m in [4]:
+for m in [1,2,3,4]:
     
     print(f"m = {m}")
 
