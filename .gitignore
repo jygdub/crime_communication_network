@@ -1,5 +1,6 @@
 lattice-structure/images
 tree-structure/images
 barabasi-albert/images
+barabasi-albert/graphs
 __pycache__
 *.pyc
