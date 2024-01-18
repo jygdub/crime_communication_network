@@ -10,8 +10,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random, numpy as np
 
-
-def init_BA(n,m):
+def generate(n,m):
     """
     Function to generate a random Barabasi-Albert network (a.k.a. scale-free network).
 
@@ -21,10 +20,23 @@ def init_BA(n,m):
 
     Returns:
     - G: Randomly generated Barabasi-Albert network with given parameters.
-
     """
 
     G = nx.barabasi_albert_graph(n,m)
+
+    return G
+
+def init_BA(G):
+    """
+    Function to initialize a Barabasi-Albert network with initial 3-bit string states.
+
+    Parameters:
+    - G: Randomly generated Barabasi-Albert network.
+
+    Returns:
+    - G: Randomly generated Barabasi-Albert network with initial states.
+
+    """
 
     # initialize all nodes with 3-bit string state
     for node in G.nodes:
