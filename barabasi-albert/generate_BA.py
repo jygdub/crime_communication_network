@@ -6,7 +6,7 @@ Written by Jade Dubbeld
 18/01/2024
 """
 
-from BA_network import generate, init_BA, visualize
+from BA_network import generate
 
 import networkx as nx, numpy as np, pickle
 
