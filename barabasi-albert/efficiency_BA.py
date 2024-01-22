@@ -13,18 +13,19 @@ Written by Jade Dubbeld
 17/01/2024
 """
 
-import timeit, numpy as np, random
+import timeit, numpy as np, random, pickle
 import matplotlib.pyplot as plt
 import networkx as nx
 from datetime import datetime
 
-from BA_network import simulate
+from BA_network import simulate, init_BA, visualize
 
 # initials
 n = 100
 alpha = 1.0
 beta = 0.0
 n_iters = 10
+test = "test"
 
 betweenness = plt.figure()
 degree = plt.figure()
@@ -42,7 +43,7 @@ for m in [1,2,3,4]:
 
     start = timeit.default_timer()
 
-    for iter in range(n_iters):
+    for iter in range(1,n_iters+1):
         print(f"iter={iter}")
 
         start2 = timeit.default_timer()
@@ -51,8 +52,11 @@ for m in [1,2,3,4]:
         current_time = now.strftime("%H:%M:%S")
         print("Current Time =", current_time)
 
+        G_init = pickle.load(open(f"graphs/m={m}/graph{iter}-n={n}-m={m}.pickle", 'rb'))
+        G_init = init_BA(G_init)
+
         # simulate until consensus in network or reach cut-off
-        M, similarity, G_init = simulate(n,m,alpha,beta,n_iters)
+        M, similarity = simulate(G_init,alpha,beta)
 
         stop2 = timeit.default_timer()
         execution_time2 = stop2 - start2
@@ -95,7 +99,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. betweenness (n={n}, alpha={alpha}, beta={beta}, n_samples={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/betweenness-efficiency{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"images/{test}betweenness-efficiency{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 plt.figure(degree)
@@ -105,5 +109,5 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. degree (n={n}, alpha={alpha}, beta={beta}, n_samples={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/degree-efficiency{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"images/{test}degree-efficiency{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
