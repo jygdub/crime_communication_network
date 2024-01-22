@@ -148,16 +148,14 @@ def hamming_distance(string1, string2):
     return distance
 
 
-def simulate(n, m, alpha=1.0, beta=0.0, n_iters=10):
+def simulate(G, alpha=1.0, beta=0.0):
     """
     Function to run a simulation for n_iters on a lattice.
 
     Parameters:
-    - n: number of nodes in network
-    - m: number of edges to add between new node and existing nodes in network
+    - G: generated networkx graph
     - alpha: probability of sender bias (sending match or mismatch bits)
     - beta: probability of receiver bias (flipping message or not)
-    - n_iters: number of iterations to simulate for
 
     Returns:
     - total_messages: list of total messages sent in all simulations
@@ -166,13 +164,14 @@ def simulate(n, m, alpha=1.0, beta=0.0, n_iters=10):
 
     similarity = []
 
-    G_init = init_BA(n,m)
-    G = G_init
+    # G_init = generate(n,m)
+    # G_init = init_BA(G_init)
+    # G = G_init
     M = 0
     attributes = nx.get_node_attributes(G, "state")
 
     # converge when all nodes agree on state
-    while (np.unique(list(attributes.values())).size > 1 and M < 100000):
+    while (np.unique(list(attributes.values())).size > 1 and M < 150000):
         
         S = []
 
@@ -190,12 +189,12 @@ def simulate(n, m, alpha=1.0, beta=0.0, n_iters=10):
         # string similarity using Hamming distance    
         for node1 in G.nodes():
             for node2 in G.nodes():
-                if node1 == node2:
+                if node1 >= node2:
                     continue
 
                 distance = hamming_distance(attributes[node1],attributes[node2])
-                S.append(distance)
+                S.append(distance / len(attributes[node1]))     # normalize hamming distance
 
         similarity.append(np.mean(S))
     
-    return M, similarity, G_init
+    return M, similarity
