@@ -24,7 +24,7 @@ from BA_network import simulate, init_BA, visualize, generate
 n = 100
 alpha = 1.0
 beta = 0.0
-n_iters = 50
+n_iters = 10
 test = "test"
 
 betweenness = plt.figure()
@@ -50,7 +50,7 @@ for m in [1,2,3,4]:
 
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
-        print("Current Time =", current_time)
+        # print("Current Time =", current_time)
 
         G_init = pickle.load(open(f"graphs/m={m}/graph{iter}-n={n}-m={m}.pickle", 'rb'))
         G_init = init_BA(G_init)
@@ -78,9 +78,9 @@ for m in [1,2,3,4]:
     stop = timeit.default_timer()
     execution_time = stop - start
 
-    print(f"execution time = {execution_time} in seconds")
-    print(f"total messages = {total_messages}")
-    print(f"Average betweenness = {avgBetweenness}")
+    # print(f"execution time = {execution_time} in seconds")
+    # print(f"total messages = {total_messages}")
+    # print(f"Average betweenness = {avgBetweenness}")
     print(f"Global efficiency = {avgGlobal} (mean = {np.mean(avgGlobal)})")
     print(f"Local efficiency = {avgLocal} (mean = {np.mean(avgLocal)})")
 
