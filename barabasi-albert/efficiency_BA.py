@@ -18,13 +18,13 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from datetime import datetime
 
-from BA_network import simulate, init_BA, visualize
+from BA_network import simulate, init_BA, visualize, generate
 
 # initials
 n = 100
 alpha = 1.0
 beta = 0.0
-n_iters = 10
+n_iters = 50
 test = "test"
 
 betweenness = plt.figure()
@@ -99,7 +99,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. betweenness (n={n}, alpha={alpha}, beta={beta}, n_samples={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/{test}betweenness-efficiency{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"images/efficiency/{test}betweenness-efficiency{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 plt.figure(degree)
@@ -109,5 +109,5 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. degree (n={n}, alpha={alpha}, beta={beta}, n_samples={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/{test}degree-efficiency{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"images/efficiency/{test}degree-efficiency{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
