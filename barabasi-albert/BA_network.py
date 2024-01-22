@@ -162,22 +162,33 @@ def simulate(G, alpha=1.0, beta=0.0):
     - all_diffScores: list of all string difference scores in all simulations
     """
 
-    similarity = []
-
-    # G_init = generate(n,m)
-    # G_init = init_BA(G_init)
-    # G = G_init
+    N = len(G.nodes())
+    meanStringDifference = []
+    stringDifference = np.zeros((N,N))
     M = 0
     attributes = nx.get_node_attributes(G, "state")
 
+    # compute hamming distance for initial configuration
+    for index1, node1 in enumerate(G.nodes()):
+        for index2, node2 in enumerate(G.nodes()):
+            if node1 >= node2:
+                continue
+                
+            hammingDistance = hamming_distance(attributes[node1],attributes[node2])
+
+            # fill in normalized hamming distance array
+            stringDifference[index1,index2] = hammingDistance / len(attributes[node1])
+            stringDifference[index2,index1] = hammingDistance / len(attributes[node1])
+
+    # print(stringDifference)
+
     # converge when all nodes agree on state
     while (np.unique(list(attributes.values())).size > 1 and M < 150000):
-        
-        S = []
 
         source = random.choice(list(G.nodes))
         destination = random.choice(list(G.neighbors(source)))
         # print(f"{source} -> {destination}")
+        # print(attributes[source], attributes[destination])
 
         G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
 
@@ -186,15 +197,21 @@ def simulate(G, alpha=1.0, beta=0.0):
         M += 1
         attributes = nx.get_node_attributes(G, "state")   
 
-        # string similarity using Hamming distance    
-        for node1 in G.nodes():
-            for node2 in G.nodes():
-                if node1 >= node2:
-                    continue
+        # re-calculate normalized hamming distance for all pair combinations for node update
 
-                distance = hamming_distance(attributes[node1],attributes[node2])
-                S.append(distance / len(attributes[node1]))     # normalize hamming distance
+        for index, node in enumerate(G.nodes()): 
+            if destination == node:
+                continue
 
-        similarity.append(np.mean(S))
-    
-    return M, similarity
+            hammingDistance = hamming_distance(attributes[destination],attributes[node])
+            # print(hammingDistance)
+
+            # fill in normalized hamming distance array
+            stringDifference[node,destination] = hammingDistance / len(attributes[node])
+            stringDifference[destination,node] = hammingDistance / len(attributes[node])
+
+        meanStringDifference.append(np.mean(stringDifference))
+
+        # print(stringDifference)
+        
+    return M, meanStringDifference
