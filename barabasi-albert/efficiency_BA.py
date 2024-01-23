@@ -48,6 +48,7 @@ from datetime import datetime
 from BA_network import simulate, init_BA, visualize, generate
 
 test = ""
+path = "images/efficiency/various-graphs1-50"
 
 # initials
 n = 100
@@ -127,7 +128,7 @@ for m in [1,2,3,4]:
     avgGlobal = data[first-1:last-1,6]
     avgLocal = data[first-1:last-1,7]
 
-    pickle.dump(total_messages, open(f"images/efficiency/{test}consensus-rate-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.pickle",'wb'))
+    pickle.dump(total_messages, open(f"{path}/{test}consensus-rate-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.pickle",'wb'))
 
     # print(f"execution time = {executionTime} in seconds")
     print(f"total messages = {total_messages}")
@@ -148,7 +149,7 @@ for m in [1,2,3,4]:
     plt.yticks(fontsize=14)
     plt.title(f"Convergence per run on BA network - n={n}|m={m} (N={n_iters})")
     plt.legend(bbox_to_anchor=(1,1))
-    plt.savefig(f"images/efficiency/{test}convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png"
+    plt.savefig(f"{path}/{test}convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png"
                 , bbox_inches='tight')
     
     # mean convergence plot over all simulations
@@ -163,7 +164,7 @@ for m in [1,2,3,4]:
     plt.yticks(fontsize=14)
     plt.title(f"Mean convergence BA network - n={n}|m={m} (N={n_iters})")
     plt.legend()
-    plt.savefig(f"images/efficiency/{test}avg-convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png",
+    plt.savefig(f"{path}/{test}avg-convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png",
                 bbox_inches='tight')
     
     # combi plot of convergence for all combinations of BA parameters n, m
@@ -211,7 +212,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Mean convergence BA network (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/efficiency/{test}combi-avg-convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"{path}/{test}combi-avg-convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 # decorate link density plot
@@ -222,7 +223,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. link density (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/efficiency/{test}link-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"{path}/{test}link-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 # decorate degree centrality plot
@@ -233,7 +234,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. degree (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/efficiency/{test}degree-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"{path}/{test}degree-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 # decorate betweenness centrality plot
@@ -244,7 +245,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. betweenness (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/efficiency/{test}betweenness-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"{path}/{test}betweenness-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 # decorate closeness centrality plot
@@ -255,7 +256,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. closeness (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/efficiency/{test}closeness-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"{path}/{test}closeness-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 # decorate clustering coefficient plot
@@ -266,7 +267,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. clustering (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/efficiency/{test}clustering-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"{path}/{test}clustering-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 # decorate transitivity plot
@@ -277,7 +278,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. transitivity (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/efficiency/{test}transitivity-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"{path}/{test}transitivity-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 # decorate global efficiency plot
@@ -288,7 +289,7 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. global efficiency (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/efficiency/{test}global-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"{path}/{test}global-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
 
 # decorate local efficiency plot
@@ -299,5 +300,5 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. local efficiency (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/efficiency/{test}local-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+plt.savefig(f"{path}/{test}local-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
             bbox_inches='tight')
