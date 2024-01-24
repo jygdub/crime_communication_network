@@ -183,7 +183,7 @@ def simulate(G, alpha=1.0, beta=0.0):
     # print(stringDifference)
 
     # converge when all nodes agree on state
-    while (np.unique(list(attributes.values())).size > 1 and M < 150000):
+    while (np.unique(list(attributes.values())).size > 1): # and M < 500000):
 
         source = random.choice(list(G.nodes))
         destination = random.choice(list(G.neighbors(source)))
