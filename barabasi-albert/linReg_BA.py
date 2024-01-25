@@ -1,6 +1,8 @@
 """
 Script to correlate structural efficiency measures with operational efficiency measure.
 
+Using separate linear regressions.
+
 Written by Jade Dubbeld
 24/01/2024
 """
@@ -42,14 +44,17 @@ structural_m2 = pickle.load(open("graphs/m=2/measures-m=2.pickle",'rb'))
 structural_m3 = pickle.load(open("graphs/m=3/measures-m=3.pickle",'rb'))
 structural_m4 = pickle.load(open("graphs/m=4/measures-m=4.pickle",'rb'))
 
+# construct independent variable data
 X_data = np.append(structural_m1[first-1:last,column].reshape(-1,1), structural_m2[first-1:last,column].reshape(-1,1), axis=0)
 X_data = np.append(X_data, structural_m3[first-1:last,column].reshape(-1,1), axis=0)
 X_data = np.append(X_data, structural_m4[first-1:last,column].reshape(-1,1), axis=0)
 
+# construct dependent variable data
 y_data = np.append(consensus_m1, consensus_m2)
 y_data = np.append(y_data, consensus_m3)
 y_data = np.append(y_data, consensus_m4)
 
+# plot datapoints, depending on including m=1
 if eliminate1:
     start = 20          # change if necessary (leave out m=1 -> set to 20; else set to 0)
     
@@ -63,17 +68,20 @@ else:
         plt.scatter(X_data[0+start:20+start],y_data[0+start:20+start],label=f"m={i}")
         start += 20
 
+# change start depending on including m=1
 if eliminate1:
     start = 20          # change if necessary (leave out m=1 -> set to 20; else set to 0)
 else:
     start = 0
 
+# apply linear regression
 LinReg = LinearRegression().fit(X_data[start:],y_data[start:])
 
-X_test = np.linspace(min(X_data[start:]),max(X_data[start:]),100)
 # predict dummy y_test data based on the logistic model
+X_test = np.linspace(min(X_data[start:]),max(X_data[start:]),100)
 y_test = X_test * LinReg.coef_ + LinReg.intercept_
-# plt.figure(fig)
+
+# plot linear regression
 plt.plot(X_test,y_test,'k--',label=f"linear regression \n(coeff={round(LinReg.coef_[0])}; intercept={round(LinReg.intercept_)})")
 plt.xlabel(f"{measures[column]}")
 plt.ylabel("Total of messages until consensus")
@@ -81,6 +89,7 @@ plt.ylim(0)
 plt.legend(bbox_to_anchor=(1,1))
 plt.title(f"Relation between consensus formation and {measures[column].lower()}")
 
+# save figure according to inclusion of m=1 and simulation on various graphs
 if eliminate1:
     if variation:
         plt.savefig(f"{path}/linear-regression/{measures[column].lower().split(' ')[0]}-efficiency-graph{first}-{last}-m=[2,3,4]-alpha=1.0-beta=0.0-n=100-BA.png",
