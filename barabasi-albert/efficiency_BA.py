@@ -47,16 +47,21 @@ from datetime import datetime
 
 from BA_network import simulate, init_BA, visualize, generate
 
-test = ""
-graph = 3
-path = f"images/efficiency/graph{graph}/simulation"
-# path = "images/efficiency/various-graphs1-20/simulation"
+test = "test"
+variation = True
+
+if variation:
+    path = "images/efficiency/various-graphs1-50/simulation"
+else:
+    graph = 3
+    path = f"images/efficiency/graph{graph}/simulation"
+    
 
 # initials
 n = 100
 alpha = 1.0
 beta = 0.0
-n_iters = 20
+n_iters = 50
 
 # initialize figures
 link = plt.figure()
@@ -86,19 +91,20 @@ for m in [1,2,3,4]:
     total_messages = []
     all_diffScores = []
 
-    # load graph; topology remains fixed over simulation
-    G_init = pickle.load(open(f"graphs/m={m}/graph{graph}-n={n}-m={m}.pickle", 'rb'))
+    # load graph; if fixed graphs for each m
+    if not variation:
+        G_init = pickle.load(open(f"graphs/m={m}/graph{graph}-n={n}-m={m}.pickle", 'rb'))
 
-    # retrieve corresponding network measures
-    data = pickle.load(open(f"graphs/m={m}/measures-m={m}.pickle", 'rb'))
-    avgLink = [data[first-1,0]]*n_iters
-    avgDegree = [data[first-1,1]]*n_iters
-    avgBetweenness = [data[first-1,2]]*n_iters
-    avgCloseness = [data[first-1,3]]*n_iters
-    avgClustering = [data[first-1,4]]*n_iters
-    avgTransitivity = [data[first-1,5]]*n_iters
-    avgGlobal = [data[first-1,6]]*n_iters
-    avgLocal = [data[first-1,7]]*n_iters
+        # retrieve corresponding network measures; if fixed graphs for each m
+        data = pickle.load(open(f"graphs/m={m}/measures-m={m}.pickle", 'rb'))
+        avgLink = [data[first-1,0]]*n_iters
+        avgDegree = [data[first-1,1]]*n_iters
+        avgBetweenness = [data[first-1,2]]*n_iters
+        avgCloseness = [data[first-1,3]]*n_iters
+        avgClustering = [data[first-1,4]]*n_iters
+        avgTransitivity = [data[first-1,5]]*n_iters
+        avgGlobal = [data[first-1,6]]*n_iters
+        avgLocal = [data[first-1,7]]*n_iters
 
     # some time indications
     startTime = timeit.default_timer()
@@ -113,8 +119,9 @@ for m in [1,2,3,4]:
         current_time = now.strftime("%H:%M:%S")
         print("Current Time =", current_time)
 
-        # load graph per iteration
-        # G_init = pickle.load(open(f"graphs/m={m}/graph{iter}-n={n}-m={m}.pickle", 'rb'))
+        # load graph per iteration; if varying graphs
+        if variation:
+            G_init = pickle.load(open(f"graphs/m={m}/graph{iter}-n={n}-m={m}.pickle", 'rb'))
 
         # initialize agents in network
         G_init = init_BA(G_init)
@@ -135,19 +142,23 @@ for m in [1,2,3,4]:
     stopTime = timeit.default_timer()
     executionTime = stopTime - startTime
 
-    # retrieve corresponding network measures
-    # data = pickle.load(open(f"graphs/m={m}/measures-m={m}.pickle", 'rb'))
-    # avgLink = data[first-1:last-1,0]
-    # avgDegree = data[first-1:last-1,1]
-    # avgBetweenness = data[first-1:last-1,2]
-    # avgCloseness = data[first-1:last-1,3]
-    # avgClustering = data[first-1:last-1,4]
-    # avgTransitivity = data[first-1:last-1,5]
-    # avgGlobal = data[first-1:last-1,6]
-    # avgLocal = data[first-1:last-1,7]
+    # retrieve corresponding network measures; if varying graphs
+    if variation:
+        data = pickle.load(open(f"graphs/m={m}/measures-m={m}.pickle", 'rb'))
+        avgLink = data[first-1:last-1,0]
+        avgDegree = data[first-1:last-1,1]
+        avgBetweenness = data[first-1:last-1,2]
+        avgCloseness = data[first-1:last-1,3]
+        avgClustering = data[first-1:last-1,4]
+        avgTransitivity = data[first-1:last-1,5]
+        avgGlobal = data[first-1:last-1,6]
+        avgLocal = data[first-1:last-1,7]
 
-    pickle.dump(total_messages, open(f"{path}/{test}consensus-rate-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.pickle",'wb'))
-
+    if variation:
+        pickle.dump(total_messages, open(f"{path}/{test}consensus-rate-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.pickle",'wb'))
+    else:
+        pickle.dump(total_messages, open(f"{path}/{test}consensus-rate-graphs{graph}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.pickle",'wb'))
+    
     # print(f"execution time = {executionTime} in seconds")
     print(f"total messages = {total_messages}")
 
@@ -167,10 +178,13 @@ for m in [1,2,3,4]:
     plt.yticks(fontsize=14)
     plt.title(f"Convergence per run on BA network - n={n}|m={m} (N={n_iters})")
     plt.legend(bbox_to_anchor=(1,1))
-    # plt.savefig(f"{path}/{test}convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png"
-    #             , bbox_inches='tight')
-    plt.savefig(f"{path}/{test}convergence-graphs{first}-run{iter}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png"
-            , bbox_inches='tight')
+
+    if variation:
+        plt.savefig(f"{path}/{test}convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png"
+                    , bbox_inches='tight')
+    else:
+        plt.savefig(f"{path}/{test}convergence-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png"
+                    , bbox_inches='tight')
     
     # mean convergence plot over all simulations
     fig = plt.figure()
@@ -184,10 +198,13 @@ for m in [1,2,3,4]:
     plt.yticks(fontsize=14)
     plt.title(f"Mean convergence BA network - n={n}|m={m} (N={n_iters})")
     plt.legend()
-    # plt.savefig(f"{path}/{test}avg-convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png",
-    #             bbox_inches='tight')
-    plt.savefig(f"{path}/{test}avg-convergence-graphs{first}-run{iter}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png",
-                bbox_inches='tight')
+
+    if variation:
+        plt.savefig(f"{path}/{test}avg-convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png",
+                    bbox_inches='tight')
+    else:
+        plt.savefig(f"{path}/{test}avg-convergence-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-m={m}-BA.png",
+                    bbox_inches='tight')
     
     # combi plot of convergence for all combinations of BA parameters n, m
     plt.figure(combiMeanConvergence)
@@ -234,10 +251,13 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Mean convergence BA network (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-# plt.savefig(f"{path}/{test}combi-avg-convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-#             bbox_inches='tight')
-plt.savefig(f"{path}/{test}combi-avg-convergence-graph{first}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-            bbox_inches='tight')
+
+if variation:
+    plt.savefig(f"{path}/{test}combi-avg-convergence-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
+else:
+    plt.savefig(f"{path}/{test}combi-avg-convergence-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
 
 # decorate link density plot
 plt.figure(link)
@@ -247,10 +267,13 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. link density (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-# plt.savefig(f"{path}/{test}link-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-#             bbox_inches='tight')
-plt.savefig(f"{path}/{test}link-efficiency-graphs{first}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-            bbox_inches='tight')
+
+if variation:
+    plt.savefig(f"{path}/{test}link-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
+else:
+    plt.savefig(f"{path}/{test}link-efficiency-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
 
 # decorate degree centrality plot
 plt.figure(degree)
@@ -260,10 +283,13 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. degree (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-# plt.savefig(f"{path}/{test}degree-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-#             bbox_inches='tight')
-plt.savefig(f"{path}/{test}degree-efficiency-graphs{first}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-            bbox_inches='tight')
+
+if variation:
+    plt.savefig(f"{path}/{test}degree-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
+else:
+    plt.savefig(f"{path}/{test}degree-efficiency-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
 
 # decorate betweenness centrality plot
 plt.figure(betweenness)
@@ -273,10 +299,13 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. betweenness (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-# plt.savefig(f"{path}/{test}betweenness-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-#             bbox_inches='tight')
-plt.savefig(f"{path}/{test}betweenness-efficiency-graphs{first}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-            bbox_inches='tight')
+
+if variation:
+    plt.savefig(f"{path}/{test}betweenness-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
+else:
+    plt.savefig(f"{path}/{test}betweenness-efficiency-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
 
 # decorate closeness centrality plot
 plt.figure(closeness)
@@ -286,10 +315,13 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. closeness (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-# plt.savefig(f"{path}/{test}closeness-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-#             bbox_inches='tight')
-plt.savefig(f"{path}/{test}closeness-efficiency-graphs{first}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-            bbox_inches='tight')
+
+if variation:
+    plt.savefig(f"{path}/{test}closeness-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
+else:
+    plt.savefig(f"{path}/{test}closeness-efficiency-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
 
 # decorate clustering coefficient plot
 plt.figure(clustering)
@@ -299,10 +331,13 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. clustering (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-# plt.savefig(f"{path}/{test}clustering-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-#             bbox_inches='tight')
-plt.savefig(f"{path}/{test}clustering-efficiency-graphs{first}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-            bbox_inches='tight')
+
+if variation:
+    plt.savefig(f"{path}/{test}clustering-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
+else:
+    plt.savefig(f"{path}/{test}clustering-efficiency-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
 
 # decorate transitivity plot
 plt.figure(transitivity)
@@ -312,10 +347,13 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. transitivity (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-# plt.savefig(f"{path}/{test}transitivity-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-#             bbox_inches='tight')
-plt.savefig(f"{path}/{test}transitivity-efficiency-graphs{first}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-            bbox_inches='tight')
+
+if variation:
+    plt.savefig(f"{path}/{test}transitivity-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
+else:
+    plt.savefig(f"{path}/{test}transitivity-efficiency-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
 
 # decorate global efficiency plot
 plt.figure(globalEfficiency)
@@ -325,10 +363,13 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. global efficiency (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-# plt.savefig(f"{path}/{test}global-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-#             bbox_inches='tight')
-plt.savefig(f"{path}/{test}global-efficiency-graphs{first}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-            bbox_inches='tight')
+
+if variation:
+    plt.savefig(f"{path}/{test}global-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
+else:
+    plt.savefig(f"{path}/{test}global-efficiency-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
 
 # decorate local efficiency plot
 plt.figure(localEfficiency)
@@ -338,7 +379,10 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Correlation communication efficiency vs. local efficiency (N={n_iters})")
 plt.legend(bbox_to_anchor=(1,1))
-# plt.savefig(f"{path}/{test}local-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-#             bbox_inches='tight')
-plt.savefig(f"{path}/{test}local-efficiency-graphs{first}-alpha={alpha}-beta={beta}-n={n}-BA.png",
-            bbox_inches='tight')
+
+if variation:
+    plt.savefig(f"{path}/{test}local-efficiency-graphs{first}-{last-1}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
+else:
+    plt.savefig(f"{path}/{test}local-efficiency-graphs{first}-runs{n_iters}-alpha={alpha}-beta={beta}-n={n}-BA.png",
+                bbox_inches='tight')
