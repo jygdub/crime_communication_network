@@ -46,21 +46,21 @@ X_data = np.append(structural_m1[first-1:last,column].reshape(-1,1), structural_
 X_data = np.append(X_data, structural_m3[first-1:last,column].reshape(-1,1), axis=0)
 X_data = np.append(X_data, structural_m4[first-1:last,column].reshape(-1,1), axis=0)
 
-Y_data = np.append(consensus_m1, consensus_m2)
-Y_data = np.append(Y_data, consensus_m3)
-Y_data = np.append(Y_data, consensus_m4)
+y_data = np.append(consensus_m1, consensus_m2)
+y_data = np.append(y_data, consensus_m3)
+y_data = np.append(y_data, consensus_m4)
 
 if eliminate1:
     start = 20          # change if necessary (leave out m=1 -> set to 20; else set to 0)
     
     for i in range(2,5):    # change start of range (leave out m=1 -> set to 2; else set to 1)
-        plt.scatter(X_data[0+start:20+start],Y_data[0+start:20+start],label=f"m={i}")
+        plt.scatter(X_data[0+start:20+start],y_data[0+start:20+start],label=f"m={i}")
         start += 20
 else:
     start = 0
     
     for i in range(1,5):    # change start of range (leave out m=1 -> set to 2; else set to 1)
-        plt.scatter(X_data[0+start:20+start],Y_data[0+start:20+start],label=f"m={i}")
+        plt.scatter(X_data[0+start:20+start],y_data[0+start:20+start],label=f"m={i}")
         start += 20
 
 if eliminate1:
@@ -68,13 +68,13 @@ if eliminate1:
 else:
     start = 0
 
-LinReg = LinearRegression().fit(X_data[start:],Y_data[start:])
+LinReg = LinearRegression().fit(X_data[start:],y_data[start:])
 
-x_test = np.linspace(min(X_data[start:]),max(X_data[start:]),100)
+X_test = np.linspace(min(X_data[start:]),max(X_data[start:]),100)
 # predict dummy y_test data based on the logistic model
-y_test = x_test * LinReg.coef_ + LinReg.intercept_
+y_test = X_test * LinReg.coef_ + LinReg.intercept_
 # plt.figure(fig)
-plt.plot(x_test,y_test,'k--',label=f"linear regression \n(coeff={round(LinReg.coef_[0])}; intercept={round(LinReg.intercept_)})")
+plt.plot(X_test,y_test,'k--',label=f"linear regression \n(coeff={round(LinReg.coef_[0])}; intercept={round(LinReg.intercept_)})")
 plt.xlabel(f"{measures[column]}")
 plt.ylabel("Total of messages until consensus")
 plt.ylim(0)
