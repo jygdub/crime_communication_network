@@ -20,7 +20,15 @@ measures = {0: "Link density",
             6: "Global efficiency",
             7: "Local efficiency"}
 
-path = f"images/efficiency/various-graphs{first}-{last}"
+eliminate1 = True
+variation = True
+
+if variation:
+    path = f"images/efficiency/various-graphs{first}-{last}"
+else:
+    graph = 1
+    path = f"images/efficiency/graph{graph}"
+
 
 # load consensus formation for all runs on
 consensus_m1 = np.array(pickle.load(open(f"{path}/simulation/consensus-rate-graphs{first}-{last}-alpha=1.0-beta=0.0-n=100-m=1-BA.pickle",'rb')))
@@ -42,13 +50,23 @@ Y_data = np.append(consensus_m1, consensus_m2)
 Y_data = np.append(Y_data, consensus_m3)
 Y_data = np.append(Y_data, consensus_m4)
 
-start = 0          # change if necessary (leave out m=1 -> set to 20; else set to 0)
+if eliminate1:
+    start = 20          # change if necessary (leave out m=1 -> set to 20; else set to 0)
+    
+    for i in range(2,5):    # change start of range (leave out m=1 -> set to 2; else set to 1)
+        plt.scatter(X_data[0+start:20+start],Y_data[0+start:20+start],label=f"m={i}")
+        start += 20
+else:
+    start = 0
+    
+    for i in range(1,5):    # change start of range (leave out m=1 -> set to 2; else set to 1)
+        plt.scatter(X_data[0+start:20+start],Y_data[0+start:20+start],label=f"m={i}")
+        start += 20
 
-for i in range(1,5):    # change start of range (leave out m=1 -> set to 2; else set to 1)
-    plt.scatter(X_data[0+start:20+start],Y_data[0+start:20+start],label=f"m={i}")
-    start += 20
-
-start = 0          # change if necessary (leave out m=1 -> set to 20; else set to 0)
+if eliminate1:
+    start = 20          # change if necessary (leave out m=1 -> set to 20; else set to 0)
+else:
+    start = 0
 
 LinReg = LinearRegression().fit(X_data[start:],Y_data[start:])
 
@@ -62,6 +80,18 @@ plt.ylabel("Total of messages until consensus")
 plt.ylim(0)
 plt.legend(bbox_to_anchor=(1,1))
 plt.title(f"Relation between consensus formation and {measures[column].lower()}")
-plt.savefig(f"{path}/linear-regression/link-efficiency-graphs1-20-m=[1,2,3,4]-alpha=1.0-beta=0.0-n=100-BA.png",
-            bbox_inches='tight')
 
+if eliminate1:
+    if variation:
+        plt.savefig(f"{path}/linear-regression/{measures[column].lower().split(' ')[0]}-efficiency-graph{first}-{last}-m=[2,3,4]-alpha=1.0-beta=0.0-n=100-BA.png",
+                    bbox_inches='tight')
+    else:
+        plt.savefig(f"{path}/linear-regression/{measures[column].lower().split(' ')[0]}-efficiency-graphs{graph}-m=[2,3,4]-alpha=1.0-beta=0.0-n=100-BA.png",
+                    bbox_inches='tight')
+else:
+    if variation:
+        plt.savefig(f"{path}/linear-regression/{measures[column].lower().split(' ')[0]}-efficiency-graph{first}-{last}-m=[1,2,3,4]-alpha=1.0-beta=0.0-n=100-BA.png",
+                bbox_inches='tight')
+    else:
+        plt.savefig(f"{path}/linear-regression/{measures[column].lower().split(' ')[0]}-efficiency-graphs{graph}-m=[1,2,3,4]-alpha=1.0-beta=0.0-n=100-BA.png",
+                    bbox_inches='tight')
