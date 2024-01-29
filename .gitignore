@@ -2,5 +2,7 @@ lattice-structure/images
 tree-structure/images
 barabasi-albert/images
 barabasi-albert/graphs
+barabasi-albert/data
+barabasi-albert/.Rhistory
 __pycache__
 *.pyc
