@@ -1,16 +1,15 @@
 """
-Script to acquire contribution factor of each of the strucutral network measures to consensus formation.
+Script to acquire contribution factor of each of the strucutral network measures to predict consensus formation.
 
 Using Generalized Linear Model - multiple linear regression.
+- Main effects (single variables)
+- Interactions (pairwise relations)
 
 Written by Jade Dubbeld
 25/01/2024
 """
 
-import pickle, numpy as np, matplotlib.pyplot as plt, pandas as pd
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.metrics import r2_score
-from statsmodels.regression.linear_model import OLS
+import numpy as np, matplotlib.pyplot as plt, pandas as pd
 import statsmodels.formula.api as smf 
 
 def plot_coefficients(model,vars,enlarge):
