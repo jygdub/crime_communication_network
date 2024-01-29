@@ -11,7 +11,7 @@ import pickle, numpy as np, matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
 first = 1
-last = 20
+last = 50
 column = 0
 measures = {0: "Link density", 
             1: "Degree centrality", 
@@ -22,7 +22,7 @@ measures = {0: "Link density",
             6: "Global efficiency",
             7: "Local efficiency"}
 
-eliminate1 = True
+eliminate1 = False
 variation = True
 
 if variation:
@@ -56,21 +56,21 @@ y_data = np.append(y_data, consensus_m4)
 
 # plot datapoints, depending on including m=1
 if eliminate1:
-    start = 20          # change if necessary (leave out m=1 -> set to 20; else set to 0)
+    start = last          # change if necessary (leave out m=1 -> set to 20; else set to 0)
     
     for i in range(2,5):    # change start of range (leave out m=1 -> set to 2; else set to 1)
-        plt.scatter(X_data[0+start:20+start],y_data[0+start:20+start],label=f"m={i}")
-        start += 20
+        plt.scatter(X_data[0+start:last+start],y_data[0+start:last+start],label=f"m={i}")
+        start += last
 else:
     start = 0
     
     for i in range(1,5):    # change start of range (leave out m=1 -> set to 2; else set to 1)
         plt.scatter(X_data[0+start:20+start],y_data[0+start:20+start],label=f"m={i}")
-        start += 20
+        start += last
 
 # change start depending on including m=1
 if eliminate1:
-    start = 20          # change if necessary (leave out m=1 -> set to 20; else set to 0)
+    start = last          # change if necessary (leave out m=1 -> set to 20; else set to 0)
 else:
     start = 0
 
