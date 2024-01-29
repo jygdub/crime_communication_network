@@ -1,65 +1,76 @@
 """
 Script to acquire contribution factor of each of the strucutral network measures to consensus formation.
 
-Using Generalized Linear Model - multivariable regression.
+Using Generalized Linear Model - multiple linear regression.
 
 Written by Jade Dubbeld
 25/01/2024
 """
 
-import pickle, numpy as np, matplotlib.pyplot as plt
+import pickle, numpy as np, matplotlib.pyplot as plt, pandas as pd
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import r2_score
+from statsmodels.regression.linear_model import OLS
+import statsmodels.formula.api as smf 
 
-first = 1
-last = 20
+def plot_coefficients(model,vars,enlarge):
+    variables = model.params[1:]
+    y_pos = np.arange(len(vars))
 
-eliminate1 = True
-variation = True
+    if enlarge:
+        fig, ax = plt.subplots(figsize=(16,9))
+    else:
+        fig, ax = plt.subplots()
 
-if variation:
-    path = f"images/efficiency/various-graphs{first}-{last}"
-else:
-    graph = 1
-    path = f"images/efficiency/graph{graph}"
+    bars = plt.bar(y_pos, variables, align='center')
+    ax.bar_label(bars)
 
-# load consensus formation for all runs on
-consensus_m1 = np.array(pickle.load(open(f"{path}/simulation/consensus-rate-graphs{first}-{last}-alpha=1.0-beta=0.0-n=100-m=1-BA.pickle",'rb')))
-consensus_m2 = np.array(pickle.load(open(f"{path}/simulation/consensus-rate-graphs{first}-{last}-alpha=1.0-beta=0.0-n=100-m=2-BA.pickle",'rb')))
-consensus_m3 = np.array(pickle.load(open(f"{path}/simulation/consensus-rate-graphs{first}-{last}-alpha=1.0-beta=0.0-n=100-m=3-BA.pickle",'rb')))
-consensus_m4 = np.array(pickle.load(open(f"{path}/simulation/consensus-rate-graphs{first}-{last}-alpha=1.0-beta=0.0-n=100-m=4-BA.pickle",'rb')))
+    plt.xticks(y_pos, vars, rotation=90)
+    plt.xlabel('Structural network measure')
+    plt.ylabel('Coefficient')
+    plt.title('Predictive effects of structural network measures on consensus formation')
 
-# load structural efficiency measures for all graphs
-structural_m1 = pickle.load(open("graphs/m=1/measures-m=1.pickle",'rb'))[first-1:last]
-structural_m2 = pickle.load(open("graphs/m=2/measures-m=2.pickle",'rb'))[first-1:last]
-structural_m3 = pickle.load(open("graphs/m=3/measures-m=3.pickle",'rb'))[first-1:last]
-structural_m4 = pickle.load(open("graphs/m=4/measures-m=4.pickle",'rb'))[first-1:last]
+    return fig
 
-# combine all consensus
-y_train = np.append(consensus_m1[first-1:15],consensus_m2[first-1:15],axis=0)
-y_train = np.append(y_train, consensus_m3[first-1:15], axis=0)
-y_train = np.append(y_train, consensus_m4[first-1:15], axis=0)
 
-y_test = np.append(consensus_m1[15:last],consensus_m2[15:last],axis=0)
-y_test = np.append(y_test,consensus_m3[15:last],axis=0)
-y_test = np.append(y_test,consensus_m4[15:last],axis=0)
 
-# combine all network measures
-X_train = np.append(structural_m1[first-1:15],structural_m2[first-1:15], axis=0)
-X_train = np.append(X_train,structural_m3[first-1:15],axis=0)
-X_train = np.append(X_train,structural_m4[first-1:15],axis=0)
+data = pd.read_csv('data/measures-consensus-varying-graphs1-50.csv')
 
-X_test = np.append(structural_m1[15:last],structural_m2[15:last],axis=0)
-X_test = np.append(X_test,structural_m3[15:last],axis=0)
-X_test = np.append(X_test,structural_m4[15:last],axis=0)
+# create string to describe variables
+single_OLS = 'link + degree + betweenness + closeness + clustering + transitivity + global_efficiency + local_efficiency'
+link_OLS = 'link*degree + link*betweenness + link*closeness + link*clustering + link*transitivity + link*global_efficiency + link*local_efficiency'
+degree_OLS = '+ degree*betweenness + degree*closeness + degree*clustering + degree*transitivity + degree*global_efficiency + degree*local_efficiency'
+betweenness_OLS = '+ betweenness*closeness  + betweenness*clustering + betweenness*transitivity + betweenness*global_efficiency + betweenness*local_efficiency'
+closeness_OLS = '+ closeness*clustering + closeness*transitivity + closeness*global_efficiency + closeness*local_efficiency'
+clustering_OLS = '+ clustering*transitivity + clustering*global_efficiency + clustering*local_efficiency'
+transitivity_OLS = '+ transitivity*global_efficiency + transitivity*local_efficiency'
+globEff_OLS = '+ global_efficiency*local_efficiency'
+pairwise_OLS = link_OLS + degree_OLS + betweenness_OLS + closeness_OLS + clustering_OLS + transitivity_OLS + globEff_OLS
 
-# linear regression
-LinReg = LinearRegression().fit(X_train, y_train)
-print(LinReg.coef_)
-print(LinReg.intercept_)
+# run multiple linear regression
+model_single = smf.ols(f'consensus ~  {single_OLS}', data=data).fit()
+# print(model_single.summary())
 
-y_pred = LinReg.predict(X_test)
-print(y_pred)
-print(y_test)
-r2 = r2_score(y_test, y_pred)
-print(r2)
+model_single_pair = smf.ols(f'consensus ~ {single_OLS} + {pairwise_OLS}', data=data).fit()
+# print(model_single_pair.summary())
+
+# set variables for plot
+single_vars = ['link','degree','betweenness','closeness','clustering','transitivity','global efficiency', 'local efficiency']
+pairs_link = ['link*degree','link*betweenness','link*closeness','link*clustering','link*transitivity','link*global_efficiency','link*local_efficiency']
+pairs_degree = ['degree*betweenness','degree*closeness','degree*clustering','degree*transitivity','degree*global_efficiency','degree*local_efficiency']
+pairs_betweenness = ['betweenness*closeness','betweenness*clustering','betweenness*transitivity','betweenness*global_efficiency','betweenness*local_efficiency']
+pairs_closeness = ['closeness*clustering','closeness*transitivity','closeness*global_efficiency','closeness*local_efficiency']
+pairs_clustering = ['clustering*transitivity','clustering*global_efficiency','clustering*local_efficiency']
+pairs_transitivity = ['transitivity*global_efficiency','transitivity*local_efficiency']
+pairs_globEff = ['global_efficiency*local_efficiency']
+pairwise_vars = pairs_link + pairs_degree + pairs_betweenness + pairs_closeness + pairs_clustering + pairs_transitivity + pairs_globEff
+
+# make plots and save
+fig_single = plot_coefficients(model_single,single_vars,enlarge=False)
+fig_single_pair = plot_coefficients(model_single_pair,single_vars+pairwise_vars,enlarge=True)
+
+plt.figure(fig_single)
+plt.savefig('images/multiple-linear-regression/barplot-single-effects.png',bbox_inches='tight')
+
+plt.figure(fig_single_pair)
+plt.savefig('images/multiple-linear-regression/barplot-single-pairwise-effects.png',bbox_inches='tight')
