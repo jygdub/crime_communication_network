@@ -13,18 +13,34 @@ import numpy as np, matplotlib.pyplot as plt, pandas as pd
 import statsmodels.formula.api as smf 
 
 def plot_coefficients(model,vars,enlarge):
+    """
+    Function to plot network measures and its coefficients in a bar plot with errorbars.
+
+    Parameters:
+    - model: fitted multiple linear regression model
+    - vars: included variables from data
+    - enlarge: boolean to enlarge plot
+
+    Returns:
+    - fig: barplot
+
+    """
+    
     variables = model.params[1:]
-    y_pos = np.arange(len(vars))
+    error = model.bse[1:] #in theory to compute standard deviation multiply np.sqrt(50)
+    pos = np.arange(len(vars))
 
     if enlarge:
-        fig, ax = plt.subplots(figsize=(16,9))
+        fig, ax = plt.subplots(figsize=(13,6))
     else:
         fig, ax = plt.subplots()
 
-    bars = plt.bar(y_pos, variables, align='center')
-    ax.bar_label(bars)
+    plt.bar(pos, variables, align='center', yerr=error, ecolor='grey')
+    #ax.bar_label(bars)
 
-    plt.xticks(y_pos, vars, rotation=90)
+    plt.hlines(0,pos[0]-0.5,pos[-1]+0.5,color='k',linestyles='dashed',linewidth=0.5)
+
+    plt.xticks(pos, vars, rotation=90)
     plt.xlabel('Structural network measure')
     plt.ylabel('Coefficient')
     plt.title('Predictive effects of structural network measures on consensus formation')
