@@ -64,10 +64,10 @@ pairwise_OLS = link_OLS + degree_OLS + betweenness_OLS + closeness_OLS + cluster
 
 # run multiple linear regression
 model_single = smf.ols(f'consensus ~  {single_OLS}', data=data).fit()
-# print(model_single.summary())
+print(model_single.summary())
 
 model_single_pair = smf.ols(f'consensus ~ {single_OLS} + {pairwise_OLS}', data=data).fit()
-# print(model_single_pair.summary())
+print(model_single_pair.summary())
 
 # set variables for plot
 single_vars = ['link','degree','betweenness','closeness','clustering','transitivity','global efficiency', 'local efficiency']
@@ -86,6 +86,8 @@ fig_single_pair = plot_coefficients(model_single_pair,single_vars+pairwise_vars,
 
 plt.figure(fig_single)
 plt.savefig('images/multiple-linear-regression/barplot-single-effects.png',bbox_inches='tight')
+# plt.savefig('images/multiple-linear-regression/barplot-single-effects-NOefficiency.png',bbox_inches='tight')
 
 plt.figure(fig_single_pair)
 plt.savefig('images/multiple-linear-regression/barplot-single-pairwise-effects.png',bbox_inches='tight')
+# plt.savefig('images/multiple-linear-regression/barplot-single-pairwise-effects-NOefficiency.png',bbox_inches='tight')
