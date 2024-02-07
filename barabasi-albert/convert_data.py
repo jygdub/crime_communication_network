@@ -1,3 +1,10 @@
+"""
+Script to convert gathered data for separate graphs into one big data table.
+
+Written by Jade Dubbeld
+24/01/2024
+"""
+
 import pickle, pandas as pd, numpy as np
 
 variation = True
