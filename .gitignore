@@ -4,5 +4,6 @@ barabasi-albert/images
 barabasi-albert/graphs
 barabasi-albert/data
 barabasi-albert/.Rhistory
+LFR-networks/images
 __pycache__
 *.pyc
