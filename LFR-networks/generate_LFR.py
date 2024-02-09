@@ -123,14 +123,14 @@ min_community = 10
 exp_degree = 3.0
 exp_community = 1.5
 
-for P_intercommunity in [0.25,0.5,0.75]:
+for P_intercommunity in [0.75]:
         
     min_degree = None
     
-    for avg_degree in [5,10,15,20,25]:
+    for avg_degree in [25]:
         print(f"Average degree - {P_intercommunity,avg_degree}")
 
-        for seed in range(0,21):
+        for seed in range(21,41):
 
             if P_intercommunity == 0.5 and avg_degree == 15 and seed == 5:
                 continue
@@ -141,10 +141,22 @@ for P_intercommunity in [0.25,0.5,0.75]:
             if P_intercommunity == 0.75 and avg_degree == 15 and seed == 5:
                 continue
 
-            if P_intercommunity == 0.75 and avg_degree == 20 and seed == 7:
+            if P_intercommunity == 0.75 and avg_degree == 20 and (seed == 7 or seed == 19):
                 continue
 
-            if P_intercommunity == 0.75 and avg_degree == 20 and seed == 19:
+            if P_intercommunity == 0.5 and avg_degree == 20 and seed == 25:
+                continue
+
+            if P_intercommunity == 0.5 and avg_degree == 25 and seed == 25:
+                continue
+
+            if P_intercommunity == 0.75 and avg_degree == 10 and seed == 39:
+                continue
+
+            if P_intercommunity == 0.75 and avg_degree == 20 and (seed == 25 or seed == 27):
+                continue
+
+            if P_intercommunity == 0.75 and avg_degree == 25 and (seed == 25 or seed == 33):
                 continue
 
             try:
