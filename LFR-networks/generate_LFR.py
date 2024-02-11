@@ -60,12 +60,13 @@ def rewire(G):
     - G: Constructed LFR network in accordance with parameter settings.
     """
 
-    # delete self-loop and reconnect to connected component
+    # delete self-loop and randomly reconnect to connected component
     if nx.nodes_with_selfloops(G):
         for node in list(nx.nodes_with_selfloops(G)):
             G.remove_edge(node, node)
             G.add_edge(node, random.choice(list(G.nodes())))
 
+    # connect separated parts of graph randomly
     if not nx.is_connected(G):
         print("rewiring")
         components = sorted(nx.connected_components(G), key=len, reverse=True)
@@ -123,15 +124,16 @@ min_community = 10
 exp_degree = 3.0
 exp_community = 1.5
 
-for P_intercommunity in [0.75]:
+for P_intercommunity in [0.25,0.5,0.75]:
         
     min_degree = None
     
-    for avg_degree in [25]:
+    for avg_degree in [5,10,15,20,25]:
         print(f"Average degree - {P_intercommunity,avg_degree}")
 
-        for seed in range(21,41):
+        for seed in range(0,61): # change seed range accordingly
 
+            # skip seeds that take forever
             if P_intercommunity == 0.5 and avg_degree == 15 and seed == 5:
                 continue
 
