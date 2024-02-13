@@ -24,6 +24,7 @@ avg_degCloseness = plt.figure()
 clustering_currentFlow = plt.figure()
 clustering_degree = plt.figure()
 degree_currentFlow = plt.figure()
+degree_betweenness = plt.figure()
 
 """Uncomment to initialize 3D plot"""
 # degree = plt.figure()
@@ -89,6 +90,9 @@ for avg_deg in [5,10,15,20,25]:
 
         plt.figure(degree_currentFlow)
         plt.scatter(subset.currentFlowBetweenness,subset.degreeCentrality,color=cm[count],label=fr'$\langle k \rangle = {avg_deg}, \mu = {mu}$')
+
+        plt.figure(degree_betweenness)
+        plt.scatter(subset.betweennessCentrality,subset.degreeCentrality,color=cm[count],label=fr'$\langle k \rangle = {avg_deg}, \mu = {mu}$')
 
         """Uncomment to plt in 3D"""
         # plt.figure(degree)
@@ -212,6 +216,14 @@ plt.title('Degree centrality against current flow betweenness')
 plt.legend(bbox_to_anchor=(1,1))
 plt.tight_layout()
 plt.savefig(f"images/CFbetweenness-degree.png",bbox_inches='tight')
+
+plt.figure(degree_betweenness)
+plt.xlabel('Betweenness centrality')
+plt.ylabel('Degree centrality')
+plt.title('Degree centrality against betweenness centrality')
+plt.legend(bbox_to_anchor=(1,1))
+plt.tight_layout()
+plt.savefig(f"images/betweenness-degree.png",bbox_inches='tight')
 
 """Uncomment to decorate 3D plot"""
 # plt.figure(degree)
