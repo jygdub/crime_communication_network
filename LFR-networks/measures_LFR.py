@@ -24,6 +24,7 @@ min_community = 10
 # get all relevant filenames
 listFileNames = sorted(glob.glob(f'graphs/tau1={exp_degree}-tau2={exp_community}-*.pickle'))
 
+"""
 # create initial dataframe
 data = pd.DataFrame(None, index=np.arange(len(listFileNames)),
                      columns=['tau1',
@@ -42,17 +43,25 @@ data = pd.DataFrame(None, index=np.arange(len(listFileNames)),
 data['tau1'] = exp_degree
 data['tau2'] = exp_community
 data['min_community'] = min_community
+"""
+
+data = pd.read_csv(f'data/all-measures.tsv',sep='\t')
+data['globalEfficiency'] = None
+data['localEfficiency'] = None
+
+print(data)
 
 for i, filename in tqdm(enumerate(listFileNames)):
 
+    """
     # retrieve values from filename
     mu = (find_substring('mu=','-avg_deg'))
     avg_deg = (find_substring('avg_deg=','-min_comm'))
     seed = (find_substring('seed=','.pickle'))
-
+    """
     # load in graph
     G = pickle.load(open(filename, 'rb'))
-
+    """
     # compute average degree centrality
     dictDegree = nx.degree_centrality(G)
     degree = (sum(dictDegree.values()) / len(dictDegree))
@@ -74,6 +83,15 @@ for i, filename in tqdm(enumerate(listFileNames)):
 
     # insert row
     data.iloc[i,[2,3,5,6,7,8,9,10]] = [mu, avg_deg, seed, degree, betweenness, CFbetweenness, closeness, clustering]
+    """
+
+    # compute global efficiency (L-M measure)
+    globEff = (nx.global_efficiency(G))
+
+    # compute local efficiency (L-M measure)
+    locEff = (nx.local_efficiency(G))
+
+    data.iloc[i,[11,12]] = [globEff, locEff]
 
 print(data)
 
