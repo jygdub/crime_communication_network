@@ -27,3 +27,9 @@ print(model_closeness.summary())
 
 model_clustering = smf.ols(f'clusteringCoefficient ~  mu + average_degree', data=data).fit()
 print(model_clustering.summary())
+
+model_globEff = smf.ols(f'globalEfficiency ~  mu + average_degree', data=data).fit()
+print(model_globEff.summary())
+
+model_locEff = smf.ols(f'localEfficiency ~  mu + average_degree', data=data).fit()
+print(model_locEff.summary())
