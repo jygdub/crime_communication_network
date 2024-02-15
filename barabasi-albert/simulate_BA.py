@@ -34,7 +34,7 @@ def tolerant_mean(arrs):
 import timeit, numpy as np, random
 import matplotlib.pyplot as plt
 
-from BA_network import simulate
+from BA_network import simulate, init_BA, generate
 
 # initials
 n = 10
@@ -56,8 +56,12 @@ for m in [1,2,3,4]:
     for iter in range(n_iters):
         print(f"iter={iter}")
 
+        # generate and initialize random Barabasi-Albert network
+        G = generate(n,m)
+        G_init = init_BA(G)
+
         # simulate until consensus in network
-        M, similarity, G_init = simulate(n,m,alpha,beta,n_iters)
+        M, similarity = simulate(G_init,alpha,beta)
 
         total_messages.append(M)
         all_diffScores.append(list(similarity))
