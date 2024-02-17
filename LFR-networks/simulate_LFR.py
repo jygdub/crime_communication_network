@@ -1,5 +1,5 @@
 """
-Script to simulate Deffuant-like dynamics on LFR benchmark graphs.
+Trial script to simulate Deffuant-like dynamics on LFR benchmark graphs.
 
 Written by Jade Dubbeld
 14/02/2024
