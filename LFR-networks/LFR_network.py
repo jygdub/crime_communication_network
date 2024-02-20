@@ -94,7 +94,7 @@ def message(G, source, destination, alpha=1.0, beta=0.0):
 
 def hamming_distance(string1, string2):
     """
-    Function to compute string similarity using Hamming distance.
+    Function to compute string difference using Hamming distance.
 
     Parameters:
     - string1: First string in comparison
@@ -104,15 +104,13 @@ def hamming_distance(string1, string2):
     - distance: number differing characters between string1 and string2
     """
 
-    # Start with a distance of zero, and count up
     distance = 0
-    # Loop over the indices of the string
     L = len(string1)
+
     for i in range(L):
-        # Add 1 to the distance if these two characters are not equal
         if string1[i] != string2[i]:
             distance += 1
-    # Return the final count of differences
+
     return distance
 
 
@@ -165,7 +163,7 @@ def simulate(G, alpha=1.0, beta=0.0):
         M += 1
         attributes = nx.get_node_attributes(G, "state")   
 
-        if M % 50000 == 0:
+        if M % 2000 == 0:
             print(M)
 
         # re-calculate normalized hamming distance for all pair combinations for node update
