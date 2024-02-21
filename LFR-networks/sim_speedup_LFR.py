@@ -5,7 +5,7 @@ Written by Jade Dubbeld
 17/02/2024
 """
 
-import networkx as nx, random, numpy as np, matplotlib.pyplot as plt, pickle
+import networkx as nx, random, numpy as np, matplotlib.pyplot as plt, pickle, time
 
 from LFR_network import init, hamming_distance, simulate
 
@@ -27,5 +27,21 @@ G = init(G_init)
 
 print(filename)
 
+start = time.time()
 M, meanStringDifference = simulate(G,alpha=alpha,beta=beta)
-print(M)
+end = time.time()
+execution_time = end-start
+print(f"execution time = {execution_time} in seconds")
+print(f"total messages = {M}")
+
+# convergence plot simulation
+fig_converge = plt.figure(figsize=(13,8))
+plt.plot(np.arange(0,len(meanStringDifference)), np.reshape(meanStringDifference,(-1,1)))
+
+plt.xlabel("Total messages sent", fontsize=14)
+plt.ylabel("Average string difference (Hamming distance)", fontsize=14)
+plt.xticks(fontsize=14)
+plt.yticks(fontsize=14)
+plt.title(f"Convergence on LFR")
+# plt.legend(bbox_to_anchor=(1,1))
+plt.savefig(f"images/test-speedup-convergence.png", bbox_inches='tight')
