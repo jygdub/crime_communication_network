@@ -5,9 +5,8 @@ Written by Jade Dubbeld
 17/02/2024
 """
 
-import networkx as nx, random, numpy as np, matplotlib.pyplot as plt, pickle, glob, re, timeit
-from tqdm import tqdm
-from datetime import datetime
+import networkx as nx, random, numpy as np
+from scipy.sparse import dok_matrix
 
 def init(G):
     """
@@ -22,10 +21,10 @@ def init(G):
     """
 
     # initialize all nodes with 3-bit string state
-    for node in G.nodes:
+    for i, node in enumerate(G.nodes):
         binary_string = f'{random.getrandbits(3):=03b}'     # generate random 3-bit string
-        G.nodes[node]['state'] = binary_string
-
+        bits = bytes(binary_string, 'utf-8')
+        G.nodes[node]['state'] = bits
     return G
 
 def message(G, source, destination, alpha=1.0, beta=0.0):
@@ -68,7 +67,7 @@ def message(G, source, destination, alpha=1.0, beta=0.0):
         index = random.choice([0,1,2])
 
     # generate message
-    message = G.nodes[source]['state'][index]
+    message = G.nodes[source]['state'][index:index+1]
 
     # print(f"index = {index}, message = {message}")
 
@@ -77,10 +76,10 @@ def message(G, source, destination, alpha=1.0, beta=0.0):
 
     # copy message given probability beta, otherwise bitflip
     if P_Miss <= beta:
-        if message == '0':
-            message = '1'
-        elif message == '1':
-            message = '0'
+        if message == b'0':
+            message = b'1'
+        elif message == b'1':
+            message = b'0'
 
     # get current state of selected downstream neighbor
     current_state = G.nodes[destination]['state']
@@ -92,16 +91,16 @@ def message(G, source, destination, alpha=1.0, beta=0.0):
     return G
 
 
-def hamming_distance(string1, string2):
+def hamming_distance(string1: str, string2: str) -> int:
     """
     Function to compute string difference using Hamming distance.
 
     Parameters:
-    - string1: First string in comparison
-    - string2: Second string in comparison
+    - string1 (str): First string in comparison
+    - string2 (str): Second string in comparison
 
     Returns:
-    - distance: number differing characters between string1 and string2
+    - distance (int): number differing characters between string1 and string2
     """
 
     distance = 0
@@ -112,6 +111,12 @@ def hamming_distance(string1, string2):
             distance += 1
 
     return distance
+
+
+def hamming_distance_vector(a: bytes, b: bytes) -> int:
+    a = np.frombuffer(a, dtype = np.uint8)
+    b = np.frombuffer(b, dtype = np.uint8)
+    return np.bitwise_xor(a, b)
 
 
 def simulate(G, alpha=1.0, beta=0.0):
@@ -129,36 +134,33 @@ def simulate(G, alpha=1.0, beta=0.0):
     """
 
     N = len(G.nodes())
+    nPairs = (N*N/2-(N/2))
     meanStringDifference = []
     stringDifference = np.zeros((N,N))
     M = 0
     attributes = nx.get_node_attributes(G, "state")
 
-    # compute hamming distance for initial configuration
+    # for each node pair (no redundant calculations)
     for index1, node1 in enumerate(G.nodes()):
         for index2, node2 in enumerate(G.nodes()):
             if node1 >= node2:
                 continue
-                
-            hammingDistance = hamming_distance(attributes[node1],attributes[node2])
+            
+            # compute hamming distance for initial configuration
+            hammingDistance = hamming_distance(attributes[node1],attributes[node2]) / 3
 
             # fill in normalized hamming distance array
-            stringDifference[index1,index2] = hammingDistance / len(attributes[node1])
-            stringDifference[index2,index1] = hammingDistance / len(attributes[node1])
+            stringDifference[index1,index2] = hammingDistance
 
-    # print(stringDifference)
+    meanStringDifference.append(stringDifference.sum()/nPairs)
 
     # converge when all nodes agree on state
     while (np.unique(list(attributes.values())).size > 1):
 
         source = random.choice(list(G.nodes))
         destination = random.choice(list(G.neighbors(source)))
-        # print(f"{source} -> {destination}")
-        # print(attributes[source], attributes[destination])
 
         G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
-
-        # print(G.nodes(data=True))
 
         M += 1
         attributes = nx.get_node_attributes(G, "state")   
@@ -167,20 +169,18 @@ def simulate(G, alpha=1.0, beta=0.0):
             print(M)
 
         # re-calculate normalized hamming distance for all pair combinations for node update
-
-        for index, node in enumerate(G.nodes()): 
+        for node in G.nodes(): 
             if destination == node:
                 continue
 
-            hammingDistance = hamming_distance(attributes[destination],attributes[node])
-            # print(hammingDistance)
+            hammingDistance = hamming_distance(attributes[destination],attributes[node]) / 3
 
             # fill in normalized hamming distance array
-            stringDifference[node,destination] = hammingDistance / len(attributes[node])
-            stringDifference[destination,node] = hammingDistance / len(attributes[node])
+            if node < destination:
+                stringDifference[node,destination] = hammingDistance
+            elif node > destination:
+                stringDifference[destination,node] = hammingDistance
 
-        meanStringDifference.append(np.mean(stringDifference))
-
-        # print(stringDifference)
+        meanStringDifference.append(stringDifference.sum()/nPairs)
     
     return M, meanStringDifference
