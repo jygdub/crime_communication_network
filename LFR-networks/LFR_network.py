@@ -27,7 +27,7 @@ def init(G):
         G.nodes[node]['state'] = bits
     return G
 
-def message(G, source, destination, alpha=1.0, beta=0.0):
+def message(G, source: int, destination: int, alpha: float =1.0, beta: float =0.0):
     """
     Function to send some message from source to destination.
     Correctness of message depends on probability alpha (1.0 is always correct - 0.0 is never correct).
@@ -35,10 +35,10 @@ def message(G, source, destination, alpha=1.0, beta=0.0):
 
     Parameters:
     - G: current state of networkx graph
-    - source: selected sender node in network
-    - destination: selected receiver node in network
-    - alpha: probability of sender bias (sending match or mismatch bits)
-    - beta: probability of receiver bias (flipping message or not)
+    - source (int): selected sender node in network
+    - destination (int): selected receiver node in network
+    - alpha (float): probability of sender bias (sending match or mismatch bits)
+    - beta (float): probability of receiver bias (flipping message or not)
 
     Returns:
     - G: new state of networkx graph
@@ -114,23 +114,33 @@ def hamming_distance(string1: str, string2: str) -> int:
 
 
 def hamming_distance_vector(a: bytes, b: bytes) -> int:
+    """
+    Function to compute string difference using bitwise XOR (analogous to Hamming distance).
+
+    Parameters:
+    - a (bytes): First bitstring in comparison
+    - b (bytes): Second bitstring in comparison
+
+    Returns: list of bitwise differences
+    """
+
     a = np.frombuffer(a, dtype = np.uint8)
     b = np.frombuffer(b, dtype = np.uint8)
     return np.bitwise_xor(a, b)
 
 
-def simulate(G, alpha=1.0, beta=0.0):
+def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
     """
     Function to run a simulation for n_iters on a lattice.
 
     Parameters:
     - G: generated networkx graph
-    - alpha: probability of sender bias (sending match or mismatch bits)
-    - beta: probability of receiver bias (flipping message or not)
+    - alpha (float): probability of sender bias (sending match or mismatch bits)
+    - beta (float): probability of receiver bias (flipping message or not)
 
     Returns:
-    - total_messages: list of total messages sent in all simulations
-    - all_diffScores: list of all string difference scores in all simulations
+    - M (int): total messages sent in simulation
+    - meanStringDifference (list): list of all string difference scores in simulation
     """
 
     N = len(G.nodes())
@@ -147,7 +157,8 @@ def simulate(G, alpha=1.0, beta=0.0):
                 continue
             
             # compute hamming distance for initial configuration
-            hammingDistance = hamming_distance(attributes[node1],attributes[node2]) / 3
+            # hammingDistance = hamming_distance(attributes[node1],attributes[node2]) / 3
+            hammingDistance = np.mean(hamming_distance_vector(attributes[node1],attributes[node2]))
 
             # fill in normalized hamming distance array
             stringDifference[index1,index2] = hammingDistance
@@ -173,7 +184,8 @@ def simulate(G, alpha=1.0, beta=0.0):
             if destination == node:
                 continue
 
-            hammingDistance = hamming_distance(attributes[destination],attributes[node]) / 3
+            # hammingDistance = hamming_distance(attributes[destination],attributes[node]) / 3
+            hammingDistance = np.mean(hamming_distance_vector(attributes[node1],attributes[node2]))
 
             # fill in normalized hamming distance array
             if node < destination:
