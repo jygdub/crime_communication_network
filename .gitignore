@@ -9,3 +9,4 @@ LFR-networks/graphs
 LFR-networks/data
 __pycache__
 *.pyc
+*.prof
