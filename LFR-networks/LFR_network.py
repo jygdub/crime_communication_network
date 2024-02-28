@@ -5,9 +5,9 @@ Written by Jade Dubbeld
 17/02/2024
 """
 
-import networkx as nx, random, numpy as np
+import networkx as nx, random, numpy as np, pickle, time
 
-def init(G):
+def init(G: nx.classes.graph.Graph) -> nx.classes.graph.Graph:
     """
     Function to initialize a network with initial 3-bit string states.
 
@@ -19,14 +19,19 @@ def init(G):
 
     """
 
-    # initialize all nodes with 3-bit string state
-    for i, node in enumerate(G.nodes):
-        binary_string = f'{random.getrandbits(3):=03b}'     # generate random 3-bit string
-        bits = bytes(binary_string, 'utf-8')                # convert to bytes
-        G.nodes[node]['state'] = bits
+    # generate random integers for all agents in network
+    randNums = np.random.randint(0, 8, size=(len(list(G)),1), dtype = np.uint8)
+
+    # convert integers to array of bits
+    bits = np.unpackbits(randNums, axis=1)
+
+    # convert to dictionary to assign states in node attributes
+    states  = dict(list(enumerate(bits)))
+    nx.set_node_attributes(G, states,  'state')
+
     return G
 
-def message(G, source: int, destination: int, alpha: float = 1.0, beta: float = 0.0):
+def message(G: nx.classes.graph.Graph, source: int, destination: int, alpha: float = 1.0, beta: float = 0.0) -> nx.classes.graph.Graph:
     """
     Function to send some message from source to destination.
     Correctness of message depends on probability alpha (1.0 is always correct - 0.0 is never correct).
@@ -90,68 +95,62 @@ def message(G, source: int, destination: int, alpha: float = 1.0, beta: float = 
     return G
 
 
-def message_update(G, source: int, destination: int, attributes: dict, alpha: float = 1.0, beta: float = 0.0):
+def message_update(source: np.ndarray, destination: np.ndarray, alpha: float = 1.0, beta: float = 0.0) -> np.ndarray:
     """
     Function to send some message from source to destination.
     Correctness of message depends on probability alpha (1.0 is always correct - 0.0 is never correct).
     Receiver bias depends on probability beta (0.0 is never mistaken - 1.0 is always mistaken).
 
     Parameters:
-    - G: current state of networkx graph
-    - source (int): selected sender node in network
-    - destination (int): selected receiver node in network
-    - attributes (dict): states of all nodes in network
+    - source (numpy.ndarray): bit state of sender node
+    - destination (numpy.ndarray): bit state of receiver node
     - alpha (float): probability of sender bias (sending match or mismatch bits)
     - beta (float): probability of receiver bias (flipping message or not)
 
     Returns:
-    - G: new state of networkx graph
-    - attributes (dict): states of all nodes in network
+    - destination (numpy.ndarray): updated state of receiver node
 
     """
 
-    match = []
+    # compensate for 8-bit positions while only using last 3 bit positions
+    onset = 5
 
-    # find correct bits in source node's state compared to destination node's state
-    for position, bit in enumerate(attributes[source]):
-        if bit == attributes[destination][position]:
-            match.append(position)
-
-    mismatch = [i for i in [0,1,2] if i not in match]
+    # compare source and destination states
+    comparison = np.bitwise_xor(source[onset:],destination[onset:])
+    
+    # extract matching and mismatching position
+    match = np.where(comparison==0)[0] + onset
+    mismatch = np.where(comparison==1)[0] + onset
 
     # generate random float representing matching/sender bias
     P_Matching = random.random()
 
     # random pick if no bits in common
     # pick from correct list with probability alpha (incorrect with probability 1 - alpha)
-    if P_Matching > alpha and match != []:
+    if P_Matching > alpha and not match.size == 0:
         index = random.choice(match)
-    elif P_Matching <= alpha and mismatch != []:
+    elif P_Matching <= alpha and not mismatch.size ==0:
         index = random.choice(mismatch)
     else:
-        index = random.choice([0,1,2])
+        index = random.choice([5,6,7])
 
     # generate message
-    message = attributes[source][index:index+1]
+    message = source[index]
 
     # generate random float representing miscommunication/receiver bias
     P_Miss = random.random()
 
     # copy message given probability beta, otherwise bitflip
     if P_Miss <= beta:
-        if message == b'0':
-            message = b'1'
-        elif message == b'1':
-            message = b'0'
+        if message == 0:
+            message = 1
+        elif message == 1:
+            message = 0
 
-    # get current state of selected downstream neighbor
-    current_state = attributes[destination]
+    # copy received bit at given position (NOTE: redundant if bit is already agreed)
+    destination[index] = message
 
-    # copy received bit at given position (redundant if bit is already agreed)
-    new_state = current_state[:index] + message + current_state[index + 1:]
-    attributes[destination] = new_state
-
-    return G, attributes
+    return destination
 
 
 def hamming_distance(string1: str, string2: str) -> int:
@@ -176,28 +175,51 @@ def hamming_distance(string1: str, string2: str) -> int:
     return distance
 
 
-def hamming_distance_vector(a: bytes, b: bytes) -> int:
+def hamming_distance_vector(arr: np.ndarray) -> np.ndarray:
     """
     Function to compute string difference using bitwise XOR (analogous to Hamming distance).
 
     Parameters:
-    - a (bytes): First bitstring in comparison
-    - b (bytes): Second bitstring in comparison
+    - arr (numpy.ndarray): array containing all agents' bit states
 
-    Returns: list of bitwise differences
+    Returns: 
+    - hammDist (numpy.ndarray): array of pairwise hamming distances (integer values)
     """
 
-    a = np.frombuffer(a, dtype = np.uint8)
-    b = np.frombuffer(b, dtype = np.uint8)
-    return np.bitwise_xor(a, b)
+    # convert array of bits to integers
+    arr = np.packbits(arr,axis=1)
 
+    # representation bit shifts instead of strings (using mask)
+    # numpy broadcast np.bitwise_xor(array[None], array[:,None])
 
-def simulate(G, alpha: float = 1.0, beta: float = 0.0) -> int | list:
+    # compute pairwise hamming distance and return neater shaped array
+    hammDist = np.bitwise_xor(arr[np.newaxis,:], arr[:,np.newaxis])
+    return np.reshape(hammDist, (hammDist.shape[0]**2,1))
+
+def count_ones_vectorized(arr: np.ndarray) -> int:
+    """
+    Function to count number of differing positions across all agents in a network.
+
+    Parameters:
+    - arr (numpy.ndarray): array of pairwise hamming distances (integer values)
+
+    Returns: 
+    - ones_count (int): number of differing positions in the entire network
+    """
+
+    # convert the array to binary representation
+    binary_arr = np.unpackbits(arr.view(np.uint8),axis=1)
+
+    # count the number of ones in each binary representation
+    ones_count = binary_arr.sum()
+    return ones_count
+
+def simulate(G: nx.classes.graph.Graph, alpha: float = 1.0, beta: float = 0.0) -> int | list:
     """
     Function to run a single simulation.
 
     Parameters:
-    - G: generated networkx graph
+    - G (networkx.classes.graph.Graph): generated networkx graph
     - alpha (float): probability of sender bias (sending match or mismatch bits)
     - beta (float): probability of receiver bias (flipping message or not)
 
@@ -207,61 +229,39 @@ def simulate(G, alpha: float = 1.0, beta: float = 0.0) -> int | list:
     """
 
     N = len(G.nodes())
-    nPairs = (N*N/2-(N/2))
+    # nPairs = (N*N/2-(N/2))
     meanStringDifference = []
-    stringDifference = np.zeros((N,N))
     M = 0
+    
     attributes = nx.get_node_attributes(G, "state")
+    attributes = np.array(list(attributes.values()))
 
-    # for each node pair (no redundant calculations)
-    for index1, node1 in enumerate(G.nodes()):
-        for index2, node2 in enumerate(G.nodes()):
-            if node1 >= node2:
-                continue
-            
-            # compute hamming distance for initial configuration
-            hammingDistance = hamming_distance(attributes[node1],attributes[node2]) / 3 # regular
-            # hammingDistance = sum(hamming_distance_vector(attributes[node1],attributes[node2])) / 3 # vectorized
-
-            # fill in normalized hamming distance array
-            stringDifference[index1,index2] = hammingDistance
-
-    meanStringDifference.append(stringDifference.sum()/nPairs)
+    # compute hamming distance (vectorized)
+    hammingDistance = hamming_distance_vector(attributes)
+    meanHammDist = count_ones_vectorized(hammingDistance)/3/(N*N)
+    # print(meanHammDist)
+    meanStringDifference.append(meanHammDist)
 
     # converge when all nodes agree on state
-    while (np.unique(list(attributes.values())).size > 1):
-
+    while ((attributes==attributes[0]).all()==False):
         source = random.choice(list(G.nodes))
         destination = random.choice(list(G.neighbors(source)))
 
-        G,attributes = message_update(G=G,source=source,destination=destination,attributes=attributes,alpha=alpha,beta=beta)
+        attributes[destination] = message_update(source=attributes[source],destination=attributes[destination],alpha=alpha,beta=beta)
 
         M += 1
-        """ Uncomment when using message() and remove attributes in line 237, not for message_update()"""
-        # attributes = nx.get_node_attributes(G, "state") 
 
         if M % 2000 == 0:
             print(M, meanStringDifference[-1])
 
-        # re-calculate normalized hamming distance for all pair combinations for node update
-        for node in G.nodes(): 
-            if destination == node:
-                continue
-
-            hammingDistance = hamming_distance(attributes[destination],attributes[node]) / 3 # regular
-            # hammingDistance = sum(hamming_distance_vector(attributes[destination],attributes[node])) / 3 # vectorized
-
-            # fill in normalized hamming distance array
-            if node < destination:
-                stringDifference[node,destination] = hammingDistance
-            elif node > destination:
-                stringDifference[destination,node] = hammingDistance
-
-        meanStringDifference.append(stringDifference.sum()/nPairs)
+        # compute hamming distance (vectorized)
+        hammingDistance = hamming_distance_vector(attributes)
+        meanHammDist = count_ones_vectorized(hammingDistance)/3/(N*N)
+        meanStringDifference.append(meanHammDist)
     
     return M, meanStringDifference
 
-def simulate_parallel(G, proc: int, return_dict: dict, alpha: float = 1.0, beta: float = 0.0) -> int | list:
+def simulate_parallel(G: nx.classes.graph.Graph, proc: int, return_dict: dict, alpha: float = 1.0, beta: float = 0.0) -> dict:
     """
     Function to run a single simulation in parallel.
 
@@ -331,5 +331,3 @@ def simulate_parallel(G, proc: int, return_dict: dict, alpha: float = 1.0, beta:
         meanStringDifference.append(stringDifference.sum()/nPairs)
     
     return_dict[proc] = [M, meanStringDifference]
-
-    # return_dict[proc] = M
