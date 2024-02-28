@@ -18,6 +18,7 @@ beta = 0.0
 # # test files
 # filename = 'graphs/test100-tau1=3.0-tau2=1.5-mu=0.1-avg_deg=5-min_comm=5-seed=0.pickle'
 # filename = 'graphs/test10-tau1=3.0-tau2=1.5-mu=0.3-avg_deg=2-min_comm=2-seed=0.pickle'
+# filename = 'graphs/official-generation/tau1=2.5-tau2=1.1-mu=0.45-avg_deg=25-min_comm=10-seed=99.pickle'
 filename = 'graphs/first-generation/tau1=3.0-tau2=1.5-mu=0.25-avg_deg=10-min_comm=10-seed=12.pickle'
 
 
@@ -43,4 +44,4 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Convergence on LFR")
 # plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/test-speedup-convergence.png", bbox_inches='tight')
+plt.savefig(f"images/test-vectorize-small100-convergence.png", bbox_inches='tight')
