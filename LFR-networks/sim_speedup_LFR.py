@@ -7,7 +7,7 @@ Written by Jade Dubbeld
 
 import networkx as nx, random, numpy as np, matplotlib.pyplot as plt, pickle, time
 
-from LFR_network import init, hamming_distance, simulate
+from test import init, hamming_distance, simulate
 
 alpha = 1.0
 beta = 0.0
@@ -22,8 +22,10 @@ beta = 0.0
 filename = 'graphs/first-generation/tau1=3.0-tau2=1.5-mu=0.25-avg_deg=10-min_comm=10-seed=12.pickle'
 
 
-G_init = pickle.load(open(filename, 'rb'))
-G = init(G_init)
+G = pickle.load(open(filename, 'rb'))
+N = len(list(G))
+k = 3
+G = init(G) #, N, k)
 
 print(filename)
 
@@ -44,4 +46,4 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.title(f"Convergence on LFR")
 # plt.legend(bbox_to_anchor=(1,1))
-plt.savefig(f"images/test-vectorize-small100-convergence.png", bbox_inches='tight')
+plt.savefig(f"images/test1000-vectorize-convergence.png", bbox_inches='tight')
