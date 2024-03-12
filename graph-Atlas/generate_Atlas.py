@@ -6,7 +6,7 @@ Written by Jade Dubbeld
 12/03/2024
 """
 
-import networkx as nx, pandas as pd
+import networkx as nx, pandas as pd, pickle
 
 ALL_G = nx.graph_atlas_g()
 
@@ -32,10 +32,11 @@ clustering = list()
 globalEff = list()
 localEff = list()
 
-for i, G in enumerate(ALL_G):
-
+for i, G in enumerate(ALL_G): 
     if i == 0:
         continue
+
+    pickle.dump(G, open(f'graphs/G{i}.pickle', 'wb')) 
 
     index.append(i)
     nodes.append(G.number_of_nodes())
