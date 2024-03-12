@@ -29,7 +29,7 @@ for i, filename in enumerate(listFileNames[:1]):
 
     G_init = pickle.load(open(filename, 'rb'))
 
-    G = init(G_init)
+    G = init(G_init,1000,3)
 
     # for iter in range(n_iters):
         # print(f"iter={iter}")
