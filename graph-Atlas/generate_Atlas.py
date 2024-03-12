@@ -33,7 +33,7 @@ globalEff = list()
 localEff = list()
 
 for i, G in enumerate(ALL_G): 
-    if i == 0:
+    if i == 0 or not nx.is_connected(G):
         continue
 
     pickle.dump(G, open(f'graphs/G{i}.pickle', 'wb')) 
