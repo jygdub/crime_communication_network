@@ -7,6 +7,8 @@ barabasi-albert/.Rhistory
 LFR-networks/images
 LFR-networks/graphs
 LFR-networks/data
+graph-Atlas/images
+graph-Atlas/data-GraphAtlas.tsv
 __pycache__
 *.pyc
 *.prof
