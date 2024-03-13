@@ -1,4 +1,5 @@
 import networkx as nx, random, numpy as np, time
+from collections import Counter
 
 def init(G):
     """
@@ -11,8 +12,8 @@ def init(G):
     # initialize all nodes with 3-bit string state
     for i, node in enumerate(G.nodes):
         binary_string = f'{random.getrandbits(3):=03b}'     # generate random 3-bit string
-        bits = bytes(binary_string, 'utf-8')                # convert to bytes
-        G.nodes[node]['state'] = bits
+        # bits = bytes(binary_string, 'utf-8')                # convert to bytes
+        G.nodes[node]['state'] = binary_string
     return G
 
 def message_update(G, source: int, destination: int, attributes: dict, alpha: float = 1.0, beta: float = 0.0):
@@ -64,10 +65,10 @@ def message_update(G, source: int, destination: int, attributes: dict, alpha: fl
 
     # copy message given probability beta, otherwise bitflip
     if P_Miss <= beta:
-        if message == b'0':
-            message = b'1'
-        elif message == b'1':
-            message = b'0'
+        if message == '0':
+            message = '1'
+        elif message == '1':
+            message = '0'
 
     # get current state of selected downstream neighbor
     current_state = attributes[destination]
@@ -95,7 +96,21 @@ def hamming_distance(string1: str, string2: str) -> int:
             distance += 1
     return distance
 
-def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
+
+def count_states(attributes: dict, states_trajectory: dict) -> dict:
+    listAttributes = list(attributes.values())
+    occurrences = Counter(listAttributes)
+
+    for state in states_trajectory.keys():
+
+        if occurrences[state]:
+            states_trajectory[state].append(occurrences[state])
+        else:
+            states_trajectory[state].append(0)
+    
+    return states_trajectory
+
+def simulate(G, alpha: float =1.0, beta: float = 0.0) -> int | list:
     """
     Function to run a simulation for n_iters on a lattice.
     Parameters:
@@ -106,12 +121,24 @@ def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
     - M (int): total messages sent in simulation
     - meanStringDifference (list): list of all string difference scores in simulation
     """
+
     N = len(G.nodes())
     nPairs = (((N*N)-N)/2)
     meanStringDifference = []
     stringDifference = np.zeros((N,N))
     M = 0
+    states_trajectory = {'000':[],
+                         '001':[],
+                         '010':[],
+                         '011':[],
+                         '100':[],
+                         '101':[],
+                         '110':[],
+                         '111':[]}
+    
     attributes = nx.get_node_attributes(G, "state")
+    states_trajectory = count_states(attributes,states_trajectory)
+
     # for each node pair (no redundant calculations)
     for index1, node1 in enumerate(G.nodes()):
         for index2, node2 in enumerate(G.nodes()):
@@ -132,7 +159,7 @@ def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
 
         # G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
         G,attributes = message_update(G=G,source=source,destination=destination,attributes=attributes,alpha=alpha,beta=beta)
-
+        states_trajectory = count_states(attributes,states_trajectory)
         M += 1
 
         # re-calculate normalized hamming distance for all pair combinations for node update
@@ -150,4 +177,4 @@ def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
 
         meanStringDifference.append(stringDifference.sum()/nPairs)
 
-    return M, meanStringDifference
+    return M, meanStringDifference, states_trajectory
