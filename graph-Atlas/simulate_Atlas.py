@@ -7,6 +7,7 @@ Written by Jade Dubbeld
 
 from dynamics_nonvectorized_Atlas import simulate, init
 import pickle, networkx as nx, matplotlib.pyplot as plt, numpy as np, pandas as pd, glob
+from tqdm import tqdm
 
 def visualize(G):
     """
@@ -46,8 +47,7 @@ df = pd.read_csv('data-GraphAtlas.tsv',sep='\t')
 
 
 # for j,file in enumerate(listFileNames):
-for j in range(len(df)):
-    print(j)
+for j in tqdm(range(len(df))):
     # name = file[file.index('graphs/') + len('graphs/') + 0: file.index('.pickle')]
     name = 'G' + str(df['index'].iloc[j])
     file = f'graphs/{name}.pickle'
