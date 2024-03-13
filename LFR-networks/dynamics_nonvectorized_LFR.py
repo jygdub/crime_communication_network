@@ -15,55 +15,64 @@ def init(G):
         G.nodes[node]['state'] = bits
     return G
 
-def message(G, source: int, destination: int, alpha: float = 1.0, beta: float = 0.0):
-    """
-    Function to send some message from source to destination.
-    Correctness of message depends on probability alpha (1.0 is always correct - 0.0 is never correct).
-    Receiver bias depends on probability beta (0.0 is never mistaken - 1.0 is always mistaken).
+# def message(G, source: int, destination: int, alpha: float = 1.0, beta: float = 0.0):
+#     """
+#     Function to send some message from source to destination.
+#     Correctness of message depends on probability alpha (1.0 is always correct - 0.0 is never correct).
+#     Receiver bias depends on probability beta (0.0 is never mistaken - 1.0 is always mistaken).
     
-    Parameters:
-    - G: current state of networkx graph
-    - source (int): selected sender node in network
-    - destination (int): selected receiver node in network
-    - alpha (float): probability of sender bias (sending match or mismatch bits)
-    - beta (float): probability of receiver bias (flipping message or not)
+#     Parameters:
+#     - G: current state of networkx graph
+#     - source (int): selected sender node in network
+#     - destination (int): selected receiver node in network
+#     - alpha (float): probability of sender bias (sending match or mismatch bits)
+#     - beta (float): probability of receiver bias (flipping message or not)
     
-    Returns:
-    - G: new state of networkx graph
-    """
-    match = []
-    # find correct bits in source node's state compared to destination node's state
-    for position, bit in enumerate(G.nodes[source]['state']):
-        if bit == G.nodes[destination]['state'][position]:
-            match.append(position)
-    mismatch = [i for i in [0,1,2] if i not in match]
-    # generate random float representing matching/sender bias
-    P_Matching = random.random()
-    # random pick if no bits in common
-    # pick from correct list with probability alpha (incorrect with probability 1 - alpha)
-    if P_Matching > alpha and match != []:
-        index = random.choice(match)
-    elif P_Matching <= alpha and mismatch != []:
-        index = random.choice(mismatch)
-    else:
-        index = random.choice([0,1,2])
-    # generate message
-    message = G.nodes[source]['state'][index:index+1]
-    # print(f"index = {index}, message = {message}")
-    # generate random float representing miscommunication/receiver bias
-    P_Miss = random.random()
-    # copy message given probability beta, otherwise bitflip
-    if P_Miss <= beta:
-        if message == b'0':
-            message = b'1'
-        elif message == b'1':
-            message = b'0'
-    # get current state of selected downstream neighbor
-    current_state = G.nodes[destination]['state']
-    # copy received bit at given position (redundant if bit is already agreed)
-    new_state = current_state[:index] + message + current_state[index + 1:]
-    G.nodes[destination]['state'] = new_state
-    return G
+#     Returns:
+#     - G: new state of networkx graph
+#     """
+    
+#     match = []
+    
+#     # find correct bits in source node's state compared to destination node's state
+#     for position, bit in enumerate(G.nodes[source]['state']):
+#         if bit == G.nodes[destination]['state'][position]:
+#             match.append(position)
+#     mismatch = [i for i in [0,1,2] if i not in match]
+    
+#     # generate random float representing matching/sender bias
+#     P_Matching = random.random()
+    
+#     # random pick if no bits in common
+#     # pick from correct list with probability alpha (incorrect with probability 1 - alpha)
+#     if P_Matching > alpha and match != []:
+#         index = random.choice(match)
+#     elif P_Matching <= alpha and mismatch != []:
+#         index = random.choice(mismatch)
+#     else:
+#         index = random.choice([0,1,2])
+    
+#     # generate message
+#     message = G.nodes[source]['state'][index:index+1]
+
+#     # generate random float representing miscommunication/receiver bias
+#     P_Miss = random.random()
+    
+#     # copy message given probability beta, otherwise bitflip
+#     if P_Miss <= beta:
+#         if message == b'0':
+#             message = b'1'
+#         elif message == b'1':
+#             message = b'0'
+    
+#     # get current state of selected downstream neighbor
+#     current_state = G.nodes[destination]['state']
+    
+#     # copy received bit at given position (redundant if bit is already agreed)
+#     new_state = current_state[:index] + message + current_state[index + 1:]
+#     G.nodes[destination]['state'] = new_state
+    
+#     return G
 
 
 def message_update(G, source: int, destination: int, attributes: dict, alpha: float = 1.0, beta: float = 0.0):
@@ -146,17 +155,17 @@ def hamming_distance(string1: str, string2: str) -> int:
             distance += 1
     return distance
 
-def hamming_distance_vector(a: bytes, b: bytes) -> int:
-    """
-    Function to compute string difference using bitwise XOR (analogous to Hamming distance).
-    Parameters:
-    - a (bytes): First bitstring in comparison
-    - b (bytes): Second bitstring in comparison
-    Returns: list of bitwise differences
-    """
-    a = np.frombuffer(a, dtype = np.uint8)
-    b = np.frombuffer(b, dtype = np.uint8)
-    return np.bitwise_xor(a, b)
+# def hamming_distance_vector(a: bytes, b: bytes) -> int:
+#     """
+#     Function to compute string difference using bitwise XOR (analogous to Hamming distance).
+#     Parameters:
+#     - a (bytes): First bitstring in comparison
+#     - b (bytes): Second bitstring in comparison
+#     Returns: list of bitwise differences
+#     """
+#     a = np.frombuffer(a, dtype = np.uint8)
+#     b = np.frombuffer(b, dtype = np.uint8)
+#     return np.bitwise_xor(a, b)
 
 def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
     """
@@ -182,12 +191,11 @@ def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
                 continue
 
             # compute hamming distance for initial configuration
-            # hammingDistance = np.mean(hamming_distance_vector(attributes[node1],attributes[node2]))
             hammingDistance = hamming_distance(attributes[node1],attributes[node2]) / 3 # regular
-            # hammingDistance = sum(hamming_distance_vector(attributes[node1],attributes[node2])) / 3 # vectorized
 
             # fill in normalized hamming distance array
             stringDifference[index1,index2] = hammingDistance
+
     meanStringDifference.append(stringDifference.sum()/nPairs)
 
     print(M, time.time(), meanStringDifference[-1])
@@ -197,13 +205,9 @@ def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
         source = random.choice(list(G.nodes))
         destination = random.choice(list(G.neighbors(source)))
 
-        # G = message(G=G,source=source,destination=destination,alpha=alpha,beta=beta)
         G,attributes = message_update(G=G,source=source,destination=destination,attributes=attributes,alpha=alpha,beta=beta)
 
         M += 1
-
-        """ Uncomment when using message() and remove attributes in line 237, not for message_update()"""
-        # attributes = nx.get_node_attributes(G, "state") 
 
         if M % 1000 == 0:
             print(M, time.time(), meanStringDifference[-1])
@@ -213,10 +217,7 @@ def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
             if destination == node:
                 continue
 
-            # hammingDistance = hamming_distance(attributes[destination],attributes[node]) / 3
-            # hammingDistance = np.mean(hamming_distance_vector(attributes[node1],attributes[node2]))
             hammingDistance = hamming_distance(attributes[destination],attributes[node]) / 3 # regular
-            # hammingDistance = sum(hamming_distance_vector(attributes[destination],attributes[node])) / 3 # vectorized
 
             # fill in normalized hamming distance array
             if node < destination:
@@ -227,3 +228,12 @@ def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
         meanStringDifference.append(stringDifference.sum()/nPairs)
 
     return M, meanStringDifference
+
+if __name__ == "__main__":
+    import pickle
+    filename = 'graphs/test100-tau1=3.0-tau2=1.5-mu=0.1-avg_deg=5-min_comm=5-seed=0.pickle'
+    G = pickle.load(open(filename, 'rb'))
+    G = init(G)
+
+    M, meanStringDifference = simulate(G, alpha=1.0, beta=0.0)
+    print(M)
