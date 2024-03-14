@@ -172,7 +172,9 @@ def simulate(G: nx.classes.graph.Graph, alpha: float =1.0, beta: float =0.0) -> 
 
 if __name__ == "__main__":
     import pickle
-    filename = 'graphs/test100-tau1=3.0-tau2=1.5-mu=0.1-avg_deg=5-min_comm=5-seed=0.pickle'
+    # filename = 'graphs/test100-tau1=3.0-tau2=1.5-mu=0.1-avg_deg=5-min_comm=5-seed=0.pickle'
+    filename = 'graphs/official-generation/tau1=2.5-tau2=1.1-mu=0.45-avg_deg=25-min_comm=10-seed=99.pickle'
+    
     G = pickle.load(open(filename, 'rb'))
     G = init(G)
 
