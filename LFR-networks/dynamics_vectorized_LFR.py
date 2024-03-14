@@ -6,10 +6,13 @@ Written by Jade Dubbeld (with contribution of Casper van Elteren)
 13/03/2024
 """
 
-import numpy as np, pandas as pd, matplotlib.pyplot as plt, networkx as nx, timeit, pickle
-from tqdm import tqdm
+import numpy as np, pandas as pd, networkx as nx, pickle, time
+
+from multiprocessing.pool import Pool
+from multiprocessing import cpu_count, Manager, Process
 from itertools import product
 from typing import Tuple
+from functools import partial
 
 
 def init(n: int, nbits: int) -> np.ndarray:
@@ -97,13 +100,13 @@ def hamming_vector(states: np.ndarray, agents: slice) -> np.ndarray:
     return (states[agents,np.newaxis] != states[np.newaxis,:]).mean(-1)
 
 
-def simulate(G: nx.classes.graph.Graph, states: np.ndarray, nbits: int, alpha: float = 1.0, beta: float = 0.0) -> Tuple[int, list]:
+def simulate(G: nx.classes.graph.Graph, states: np.ndarray, alpha: float = 1.0, beta: float = 0.0) -> int | list:
     """
-    Function to run a simulation for n_iters on a lattice.
+    Function to run simulation of communication dynamics on network.
+
     Parameters:
     - G (nx.classes.graph.Graph): generated networkx graph
     - states (np.ndarray): states of all nodes in network
-    - nbits (int): length of bit string
     - alpha (float): probability of sender bias (sending match or mismatch bits)
     - beta (float): probability of receiver bias (flipping message or not)
 
@@ -140,12 +143,108 @@ def simulate(G: nx.classes.graph.Graph, states: np.ndarray, nbits: int, alpha: f
 
     return M, meanHammingDistance
 
+def parallel_simulation(G: nx.classes.graph.Graph, states: np.ndarray, proc: int, return_dict: dict, alpha: float = 1.0, beta: float = 0.0) -> int | list:
+    """
+    Function to run a simulation of communication dynamics on network.
+    - Parallel version
+
+    Parameters:
+    - G (nx.classes.graph.Graph): generated networkx graph
+    - states (np.ndarray): states of all nodes in network
+    - proc (int): process ID
+    - return_dict (dict): simulation results
+    - alpha (float): probability of sender bias (sending match or mismatch bits)
+    - beta (float): probability of receiver bias (flipping message or not)
+
+    Returns:
+    - M (int): total messages sent in simulation
+    - meanStringDifference (list): list of all string difference scores in simulation
+    """
+
+    print(f"Starting Process {proc}!")
+
+    meanHammingDistance = []
+    M = 0
+
+    hammingDistance = hamming_vector(states,range(len(states)))
+    meanHammingDistance.append(hammingDistance.mean())
+
+    print(M, meanHammingDistance[-1])
+
+    nodes = list(G.nodes())
+
+    # converge when all nodes agree on state
+    while (meanHammingDistance[-1] != 0.0):
+        source = np.random.choice(nodes)
+        destination = np.random.choice(list(G.neighbors(source))) # TODO: pre-define neighbors
+
+        states = message_update(states, source, destination, alpha=alpha, beta=beta)
+
+        M += 1
+
+        if M % 1000 == 0:
+            print(f"messages={M}; dissimilarity={round(meanHammingDistance[-1],5)}; proc={proc}")
+
+        # re-calculate normalized hamming distance for all pair combinations for node update
+        hammingDistance = hamming_vector(states, destination)
+        meanHammingDistance.append(hammingDistance.mean())
+
+    return_dict[proc] = [M, meanHammingDistance]
+    print(f"Process {proc} complete!")
+
+def f(d, l):
+    d[1] = '1'
+    d['2'] = 2
+    d[0.25] = None
+    l.reverse()
+
 if __name__ == "__main__":
+    
+    # filename = 'graphs/test100-tau1=3.0-tau2=1.5-mu=0.1-avg_deg=5-min_comm=5-seed=0.pickle'
     filename = 'graphs/official-generation/tau1=2.5-tau2=1.1-mu=0.45-avg_deg=25-min_comm=10-seed=99.pickle'
     G = pickle.load(open(filename, 'rb'))
     n = len(list(G))
     nbits = 3
     states = init(n, nbits)
 
-    M, meanStringDifference = simulate(G, states, nbits, alpha = 1.0, beta = 0.0)
-    print(M)
+    # M, meanStringDifference = simulate(G, states, alpha = 1.0, beta = 0.0)
+    # print(M)
+
+    print(filename)
+
+    manager = Manager()
+    return_dict = manager.dict()
+    jobs = []
+
+    start_time = []
+    end_time = []
+    start = time.time()
+
+    for i in range(cpu_count()):
+        p = Process(target=parallel_simulation, args = (G, states, i, return_dict))
+        jobs.append(p)
+        p.start()
+
+    for proc in jobs:
+        proc.join()
+
+    end = time.time()
+
+    print(f'Execution time = {end-start} seconds')
+    
+    # with Pool(processes=cpu_count()) as p:
+
+    #     S = partial(simulate, G=G, alpha=alpha, beta=beta)
+
+    #     for result in p.imap(S,states=d):
+    #         print(f'Got result: {result}', flush=True)
+
+    # with Manager() as manager:
+    #     return_dict = manager.dict()
+
+    #     p = Process(target=parallel_simulation, args = (G, states, return_dict, alpha, beta))
+    #     p.start()
+    #     p.join()
+
+    #     print(return_dict[0])
+        
