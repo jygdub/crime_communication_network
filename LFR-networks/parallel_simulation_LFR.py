@@ -1,5 +1,6 @@
 """
-Script (speedup) to simulate multiple Deffuant-like dynamics on LFR benchmark graphs in parallel.
+Script to simulate multiple Deffuant-like dynamics on LFR benchmark graphs in parallel.
+- Using vectorized hamming distance computations
 
 Written by Jade Dubbeld
 22/02/2024
@@ -9,7 +10,7 @@ Written by Jade Dubbeld
 import networkx as nx, random, numpy as np, matplotlib.pyplot as plt, pickle, time
 from multiprocessing import Process, Manager
 
-from LFR_network import init, simulate_parallel
+from dynamics_vectorized_LFR import init, simulate_parallel
 
 def tolerant_mean(arrs):
     """
