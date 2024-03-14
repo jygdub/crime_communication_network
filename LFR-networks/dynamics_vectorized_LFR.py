@@ -12,12 +12,21 @@ from itertools import product
 from typing import Tuple
 
 
-def init(n: int, nbits: int) -> Tuple[np.ndarray, np.ndarray]:
-    bits = np.random.randint(0, 2, size=(n, nbits))
-    # string_bits = np.array(["".join(str(j) for j in i) for i in bits])
-    return bits #, string_bits
+def init(n: int, nbits: int) -> np.ndarray:
+    """
+    Function to initialize agents in a network with a random bit string.
 
-def message_update(states: np.ndarray, source: int, destination: int, alpha: float = 1.0, beta: float = 0.0):
+    Parameters:
+    - n (int): number of agents in network
+    - nbits (int): length of bit string
+
+    Returns:
+    - _ (np.ndarray): array containing states of all agents
+    """
+
+    return np.random.randint(0, 2, size=(n, nbits))
+
+def message_update(states: np.ndarray, source: int, destination: int, alpha: float = 1.0, beta: float = 0.0) -> np.ndarray:
     """
     Function to send some message from source to destination.
     Correctness of message depends on probability alpha (1.0 is always correct - 0.0 is never correct).
@@ -31,8 +40,7 @@ def message_update(states: np.ndarray, source: int, destination: int, alpha: flo
     - beta (float): probability of receiver bias (flipping message or not)
 
     Returns:
-    - bits (np.ndarray): states of all nodes in network
-
+    - states (np.ndarray): updated states of all nodes in network
     """
 
     match = []
@@ -74,8 +82,19 @@ def message_update(states: np.ndarray, source: int, destination: int, alpha: flo
 
     return states
 
-def hamming_vector(states: np.ndarray) -> np.ndarray:
-    return (states[:,np.newaxis] != states[np.newaxis,:]).sum(-1)
+def hamming_vector(states: np.ndarray, agents: slice) -> np.ndarray:
+    """
+    Function to compute Hamming distance in vectorized fashion.
+
+    Parameters:
+    - states (np.ndarray): states of all nodes in network
+    - agents (slice): slice of agents to compare in Hamming distance calculation
+
+    Returns:
+    - _ (np.ndarray): Average pairwise Hamming distances
+    """
+
+    return (states[agents,np.newaxis] != states[np.newaxis,:]).mean(-1)
 
 
 def simulate(G: nx.classes.graph.Graph, states: np.ndarray, nbits: int, alpha: float = 1.0, beta: float = 0.0) -> Tuple[int, list]:
@@ -96,10 +115,8 @@ def simulate(G: nx.classes.graph.Graph, states: np.ndarray, nbits: int, alpha: f
     meanHammingDistance = []
     M = 0
 
-    hammingDistance = hamming_vector(states)
-    print(hammingDistance.shape)
-    print(np.mean(hammingDistance)/nbits)
-    meanHammingDistance.append(np.mean(hammingDistance/nbits))
+    hammingDistance = hamming_vector(states,range(len(states)))
+    meanHammingDistance.append(hammingDistance.mean())
 
     print(M, meanHammingDistance[-1])
 
@@ -108,23 +125,23 @@ def simulate(G: nx.classes.graph.Graph, states: np.ndarray, nbits: int, alpha: f
     # converge when all nodes agree on state
     while (meanHammingDistance[-1] != 0.0):
         source = np.random.choice(nodes)
-        destination = np.random.choice(list(G.neighbors(source)))
+        destination = np.random.choice(list(G.neighbors(source))) # TODO: pre-define neighbors
 
         states = message_update(states, source, destination, alpha=alpha, beta=beta)
 
         M += 1
 
-        if M % 100 == 0:
+        if M % 1000 == 0:
             print(M, meanHammingDistance[-1])
 
         # re-calculate normalized hamming distance for all pair combinations for node update
-        hammingDistance = hamming_vector(states)
-        meanHammingDistance.append(np.mean(hammingDistance/nbits))
+        hammingDistance = hamming_vector(states, destination)
+        meanHammingDistance.append(hammingDistance.mean())
 
     return M, meanHammingDistance
 
 if __name__ == "__main__":
-    filename = 'graphs/test100-tau1=3.0-tau2=1.5-mu=0.1-avg_deg=5-min_comm=5-seed=0.pickle'
+    filename = 'graphs/official-generation/tau1=2.5-tau2=1.1-mu=0.45-avg_deg=25-min_comm=10-seed=99.pickle'
     G = pickle.load(open(filename, 'rb'))
     n = len(list(G))
     nbits = 3

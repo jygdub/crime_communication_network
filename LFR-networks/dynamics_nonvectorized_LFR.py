@@ -1,12 +1,20 @@
+"""
+Script containing all required functions to simulate Deffuant-like dynamics on networks.
+- Non-vectorized hamming distance computation
+
+Written by Jade Dubbeld
+22/02/2024
+"""
+
 import networkx as nx, random, numpy as np, time
 
-def init(G):
+def init(G: nx.classes.graph.Graph) -> nx.classes.graph.Graph:
     """
     Function to initialize a network with initial 3-bit string states.
     Parameters:
-    - G: Randomly generated network.
+    - G (nx.classes.graph.Graph): Randomly generated network.
     Returns:
-    - G: Randomly generated network with initial states.
+    - G (nx.classes.graph.Graph): Randomly generated network with initial states.
     """
     # initialize all nodes with 3-bit string state
     for i, node in enumerate(G.nodes):
@@ -15,74 +23,14 @@ def init(G):
         G.nodes[node]['state'] = bits
     return G
 
-# def message(G, source: int, destination: int, alpha: float = 1.0, beta: float = 0.0):
-#     """
-#     Function to send some message from source to destination.
-#     Correctness of message depends on probability alpha (1.0 is always correct - 0.0 is never correct).
-#     Receiver bias depends on probability beta (0.0 is never mistaken - 1.0 is always mistaken).
-    
-#     Parameters:
-#     - G: current state of networkx graph
-#     - source (int): selected sender node in network
-#     - destination (int): selected receiver node in network
-#     - alpha (float): probability of sender bias (sending match or mismatch bits)
-#     - beta (float): probability of receiver bias (flipping message or not)
-    
-#     Returns:
-#     - G: new state of networkx graph
-#     """
-    
-#     match = []
-    
-#     # find correct bits in source node's state compared to destination node's state
-#     for position, bit in enumerate(G.nodes[source]['state']):
-#         if bit == G.nodes[destination]['state'][position]:
-#             match.append(position)
-#     mismatch = [i for i in [0,1,2] if i not in match]
-    
-#     # generate random float representing matching/sender bias
-#     P_Matching = random.random()
-    
-#     # random pick if no bits in common
-#     # pick from correct list with probability alpha (incorrect with probability 1 - alpha)
-#     if P_Matching > alpha and match != []:
-#         index = random.choice(match)
-#     elif P_Matching <= alpha and mismatch != []:
-#         index = random.choice(mismatch)
-#     else:
-#         index = random.choice([0,1,2])
-    
-#     # generate message
-#     message = G.nodes[source]['state'][index:index+1]
-
-#     # generate random float representing miscommunication/receiver bias
-#     P_Miss = random.random()
-    
-#     # copy message given probability beta, otherwise bitflip
-#     if P_Miss <= beta:
-#         if message == b'0':
-#             message = b'1'
-#         elif message == b'1':
-#             message = b'0'
-    
-#     # get current state of selected downstream neighbor
-#     current_state = G.nodes[destination]['state']
-    
-#     # copy received bit at given position (redundant if bit is already agreed)
-#     new_state = current_state[:index] + message + current_state[index + 1:]
-#     G.nodes[destination]['state'] = new_state
-    
-#     return G
-
-
-def message_update(G, source: int, destination: int, attributes: dict, alpha: float = 1.0, beta: float = 0.0):
+def message_update(G: nx.classes.graph.Graph, source: int, destination: int, attributes: dict, alpha: float = 1.0, beta: float = 0.0) -> nx.classes.graph.Graph | dict:
     """
     Function to send some message from source to destination.
     Correctness of message depends on probability alpha (1.0 is always correct - 0.0 is never correct).
     Receiver bias depends on probability beta (0.0 is never mistaken - 1.0 is always mistaken).
 
     Parameters:
-    - G: current state of networkx graph
+    - G (nx.classes.graph.Graph): current state of networkx graph
     - source (int): selected sender node in network
     - destination (int): selected receiver node in network
     - attributes (dict): states of all nodes in network
@@ -155,35 +103,27 @@ def hamming_distance(string1: str, string2: str) -> int:
             distance += 1
     return distance
 
-# def hamming_distance_vector(a: bytes, b: bytes) -> int:
-#     """
-#     Function to compute string difference using bitwise XOR (analogous to Hamming distance).
-#     Parameters:
-#     - a (bytes): First bitstring in comparison
-#     - b (bytes): Second bitstring in comparison
-#     Returns: list of bitwise differences
-#     """
-#     a = np.frombuffer(a, dtype = np.uint8)
-#     b = np.frombuffer(b, dtype = np.uint8)
-#     return np.bitwise_xor(a, b)
 
-def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
+def simulate(G: nx.classes.graph.Graph, alpha: float =1.0, beta: float =0.0) -> int | list:
     """
     Function to run a simulation for n_iters on a lattice.
     Parameters:
-    - G: generated networkx graph
+    - G (nx.classes.graph.Graph): generated networkx graph
     - alpha (float): probability of sender bias (sending match or mismatch bits)
     - beta (float): probability of receiver bias (flipping message or not)
+    
     Returns:
     - M (int): total messages sent in simulation
     - meanStringDifference (list): list of all string difference scores in simulation
     """
+
     N = len(G.nodes())
     nPairs = (N*N/2-(N/2))
     meanStringDifference = []
     stringDifference = np.zeros((N,N))
     M = 0
     attributes = nx.get_node_attributes(G, "state")
+    
     # for each node pair (no redundant calculations)
     for index1, node1 in enumerate(G.nodes()):
         for index2, node2 in enumerate(G.nodes()):
@@ -228,6 +168,7 @@ def simulate(G, alpha: float =1.0, beta: float =0.0) -> int | list:
         meanStringDifference.append(stringDifference.sum()/nPairs)
 
     return M, meanStringDifference
+
 
 if __name__ == "__main__":
     import pickle
