@@ -5,11 +5,10 @@ Written by Jade Dubbeld
 14/02/2024
 """
 
-import networkx as nx, random, numpy as np, matplotlib.pyplot as plt, pickle, glob, re, timeit
-from tqdm import tqdm
+import numpy as np, matplotlib.pyplot as plt, pickle, glob, timeit
 from datetime import datetime
 
-from LFR_network import init, message, hamming_distance, simulate
+from old_LFR_network import init, message, hamming_distance, simulate
 
 exp_degree = 3.0
 exp_community = 1.5
