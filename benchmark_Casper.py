@@ -12,7 +12,10 @@ def setup(n: int, nbits: int) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def hamming_vector(states: np.ndarray) -> np.ndarray:
-    return (states[:, None] != states[None]).sum(-1)
+    return (states[:, None] != states[None]).mean(-1)
+
+def vector_one2all(states: np.ndarray) -> np.ndarray:
+    return (states[0, None] != states[None]).mean(-1)
 
 
 def hamming_distance(string1: str, string2: str) -> int:
@@ -44,21 +47,27 @@ def py_hamming_distance(bits: np.ndarray) -> np.ndarray:
             if idx < jdx:
                 output[idx, jdx] = hamming_distance(a, b)
 
-    # jdx = 2
-    # a = bits[jdx]
+    return output
 
-    # for idx, b in enumerate(bits):
-    #     if idx == jdx:
-    #         continue
 
-    #     hammingDistance = hamming_distance(a, b)
+def py_hamm_one2all(bits: np.ndarray) -> np.ndarray:
+    output = np.zeros((bits.size, bits.size))
+    jdx = 2
+    a = bits[jdx]
 
-    #     if idx < jdx:
-    #         output[idx,jdx] = hammingDistance
-    #     elif idx > jdx:
-    #         output[jdx,idx] = hammingDistance
+    for idx, b in enumerate(bits):
+        if idx == jdx:
+            continue
+
+        hammingDistance = hamming_distance(a, b)
+
+        if idx < jdx:
+            output[idx,jdx] = hammingDistance
+        elif idx > jdx:
+            output[jdx,idx] = hammingDistance
 
     return output
+
 
 
 if __name__ == "__main__":
@@ -71,14 +80,22 @@ if __name__ == "__main__":
         vector_time = timeit.repeat(
             "hamming_vector(bits)", globals=globals(), **run_settings
         )
-        python_time = timeit.repeat(
-            "py_hamming_distance(string_bits)", globals=globals(), **run_settings
+        # python_time = timeit.repeat(
+        #     "py_hamming_distance(string_bits)", globals=globals(), **run_settings
+        # )
+        one2all_time = timeit.repeat(
+            "py_hamm_one2all(bits)", globals=globals(), **run_settings
+        )
+        vOne2All = timeit.repeat(
+            "vector_one2all(bits)", globals=globals(), **run_settings
         )
         row = dict(
             size=size,
             bits=nbit,
             vector=vector_time,
-            py=python_time,
+            # py=python_time,
+            one=one2all_time,
+            vOne=vOne2All,
         )
         df.append(row)
 
@@ -88,16 +105,18 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots()
     for (size, bit), dfi in df.groupby("size bits".split()):
-        x = size * np.ones(len(dfi.py.iloc[0]))
-        ax.scatter(x, dfi.py.iloc[0], color="steelblue")
+        x = size * np.ones(len(dfi.vector.iloc[0]))
+        # ax.scatter(x, dfi.py.iloc[0], color="steelblue")
         ax.scatter(x, dfi.vector.iloc[0], color="purple")
+        ax.scatter(x, dfi.one.iloc[0], color="red")
+        ax.scatter(x, dfi.vOne.iloc[0], color="green")
     handles = [
         plt.Line2D([], [], color=c, label=l)
-        for c, l in zip("steelblue purple".split(), "python vector".split())
+        # for c, l in zip("steelblue purple red green".split(), "python vector py_one2all vec_one2all".split())
+        for c, l in zip("purple red green".split(), "vector py_one2all vec_one2all".split())
     ]
     ax.legend(handles=handles)
     ax.set_xlabel("Number of agents (n)")
     ax.set_ylabel("Run time")
-    ax.set_title("Python recompute all (n*n computations)")
 
     plt.show(block=1)
