@@ -1,5 +1,5 @@
 """
-Script (speedup) to simulate Deffuant-like dynamics on LFR benchmark graphs.
+Old script (speedup) to simulate Deffuant-like dynamics on LFR benchmark graphs.
 
 Written by Jade Dubbeld
 17/02/2024
