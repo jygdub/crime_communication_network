@@ -8,14 +8,14 @@
 #SBATCH --cpus-per-task=192
 set -x
 cp -r $HOME/Neutral_theory/scratch-shared/
-cp $HOME/netural_theory/master_iter.py/scratch-shared/Netural_theory
+cp $HOME/netural_theory/master_iter.py/scratch-shared/Neutral_theory
 cp $HOME/Neutral_theory/one-run.py/scratch-shared/Neutral_theory
 
 cd /scratch-shared/Neutral_theory
-module load 2022
-module load Python/3.10.4-GCCorde-11.3.0
+module load 2022 # python
+module load Python/3.10.4-GCCorde-11.3.0 # python version
 
 pip install --user networkx # load required packages not available on Snellius
 
-python3 master_iter.py
-cp res* $HOME/Neutral_theory/results/
+python3 master_iter.py # run script
+cp res* $HOME/Neutral_theory/results/ # copy result files in pre-existing 
