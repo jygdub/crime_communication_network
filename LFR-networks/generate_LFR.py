@@ -8,6 +8,7 @@ Written by Jade Dubbeld
 
 from networkx.generators.community import LFR_benchmark_graph
 from tqdm import tqdm
+from itertools import product
 import networkx as nx, matplotlib.pyplot as plt, numpy as np, pickle, random
 
 def rewire_selfloops(G):
@@ -121,9 +122,11 @@ min_community = 10
 max_community = int(0.1*n)
 max_iters = 1000
 
-P_intercommunity = 0.05
-# for P_intercommunity in [0.05,0.25,0.45]:
-for avg_degree in [25]:
+MU = [0.05,0.25,0.45]
+K = [5,15,25]
+
+for P_intercommunity, avg_degree in tqdm(product(MU, K)):
+
     print(f'\n(µ,<k>) = {P_intercommunity,avg_degree}')
     
     seed = 445
