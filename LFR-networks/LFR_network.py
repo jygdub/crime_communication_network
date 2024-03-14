@@ -1,11 +1,18 @@
 """
-Script containing all required functions to simulate Deffuant-like dynamics on networks.
+Old version script containing all required functions to simulate Deffuant-like dynamics on networks.
 
 Written by Jade Dubbeld
 17/02/2024
 """
 
 import networkx as nx, random, numpy as np, pickle, time
+
+### test files
+# filename = 'graphs/test100-tau1=3.0-tau2=1.5-mu=0.1-avg_deg=5-min_comm=5-seed=0.pickle'
+# filename = 'graphs/test10-tau1=3.0-tau2=1.5-mu=0.3-avg_deg=2-min_comm=2-seed=0.pickle'
+# filename = 'graphs/official-generation/tau1=2.5-tau2=1.1-mu=0.45-avg_deg=25-min_comm=10-seed=99.pickle'
+# filename = 'graphs/first-generation/tau1=3.0-tau2=1.5-mu=0.25-avg_deg=10-min_comm=10-seed=12.pickle'
+
 
 def init(G: nx.classes.graph.Graph, N: int, k: int) -> nx.classes.graph.Graph:
     """
