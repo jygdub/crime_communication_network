@@ -1,3 +1,11 @@
+"""
+Script containing relevant functions that form communication dynamics on networkx's Graph Atlas networks.
+- Nonvectorized
+
+Written by Jade Dubbeld
+12/03/2024
+"""
+
 import networkx as nx, random, numpy as np, time
 from collections import Counter
 
