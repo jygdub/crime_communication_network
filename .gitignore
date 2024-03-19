@@ -11,6 +11,7 @@ graph-Atlas/images
 graph-Atlas/graphs
 graph-Atlas/results
 graph-Atlas/data-GraphAtlas.tsv
+graph-Atlas/relationData-complete-Atlas.tsv
 __pycache__
 *.pyc
 *.prof
