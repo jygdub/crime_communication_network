@@ -11,20 +11,20 @@ from multiprocessing.pool import Pool
 from multiprocessing import cpu_count
 import numpy as np, pandas as pd
 
-def relating_efficiency_convergence(metrics, efficiency, column):
 
-    # if efficiency == 'global':
-    #     column = 'globalEff'
-    # elif efficiency == 'local':
-    #     column = 'localEff'
+if __name__ == "__main__":
 
+    efficiency = 'global'
     fig,ax = plt.subplots()
 
-    for idx in tqdm(reversed(range(len(metrics)))):
+    if efficiency == 'global':
+        column = 'globalEff'
+    elif efficiency == 'local':
+        column = 'localEff'
 
-        # retrieve number of nodes in graph
-        n = metrics['nodes'].iloc[idx]
+    data = pd.read_csv('relationData-complete-Atlas.tsv', sep='\t')
 
+    for n in reversed(data['nodes'].unique()):
         # pre-determine colormap
         if  n == 2:
             color = "tab:blue"
@@ -39,40 +39,33 @@ def relating_efficiency_convergence(metrics, efficiency, column):
         elif n == 7:
             color = "tab:pink"
 
-        # generate filename
-        name = 'G' + str(metrics['index'].iloc[idx])
-        convergence = pd.read_csv(f'results/convergence-{name}.tsv', usecols=['nMessages'], sep='\t')
+        indices = np.where(data['nodes'] == n)[0]
+        ax.scatter(data[column].iloc[indices],data['nMessages'].iloc[indices],color=color,alpha=0.3)
 
-        # plot in figure
-        ax.scatter(np.repeat(metrics[column][idx],100),convergence['nMessages'],color=color,alpha=0.5)
-        handles = [
-            plt.scatter([], [], color=c, label=l)
-            for c, l in zip("tab:blue tab:orange tab:green tab:red tab:purple tab:pink".split(), "n=2 n=3 n=4 n=5 n=6 n=7".split())
-        ]
-
-        ax.legend(handles=handles)
-        ax.set_xlabel(f"{efficiency.capitalize()} efficiency (metric)")
-        ax.set_ylabel("Convergence rate (number of messages)")
-        ax.set_title("Relation between structural and operational efficiency")
-
-        plt.savefig(f"images/relations/relation-{efficiency}-convergence-scatter.png",bbox_inches='tight')
-        plt.close(fig)
+        if n != 2:
+            p = np.poly1d(np.polyfit(data[column].iloc[indices],data['nMessages'].iloc[indices],3))
+            t = np.linspace(min(data[column]), max(data[column]), 250)
+            print(p)
+            ax.plot(t,p(t),color)
 
 
-if __name__ == "__main__":
+    handles = [
+        plt.scatter([], [], color=c, label=l)
+        for c, l in zip("tab:blue tab:orange tab:green tab:red tab:purple tab:pink".split(), "n=2 n=3 n=4 n=5 n=6 n=7".split())
+    ]
 
-    # for efficiency in ['global', 'local']:
-    efficiency = 'local'
+    ax.legend(handles=handles)
+    ax.set_xlabel(f"{efficiency.capitalize()} efficiency (metric)")
+    ax.set_ylabel("Convergence rate (number of messages)")
+    ax.set_title(f"Relation between structural and operational efficiency ({efficiency})")
+    plt.show()
 
-    if efficiency == 'global':
-        column = 'globalEff'
-    elif efficiency == 'local':
-        column = 'localEff'
+    fig.savefig(f"images/relations/relation-{efficiency}-convergence-polynomial.png",bbox_inches='tight')
+    plt.close(fig)
 
-    metrics = pd.read_csv('data-GraphAtlas.tsv', usecols=['index', 'nodes', column], sep='\t')
-    # print(metrics)
 
-    relating_efficiency_convergence(metrics=metrics, efficiency=efficiency, column=column)
+
+
 
     # with Pool(processes=cpu_count()) as pool:
     #     for i in pool.imap_unordered(relating_efficiency_convergence, range(10)):
