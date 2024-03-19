@@ -1,6 +1,7 @@
 """
 Script to run communication dynamics on networkx's Graph Atlas networks.
 - Saving intermediate results
+- Using nonvectorized implementation
 
 Written by Jade Dubbeld
 12/03/2024
