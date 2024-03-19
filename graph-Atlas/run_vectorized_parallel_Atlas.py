@@ -34,13 +34,11 @@ if __name__ == "__main__":
     graphs = []
 
     for j in range(len(df)-900):
-        # generate filename
+
+        # generate graph ID
         name = 'G' + str(df['index'].iloc[j])
-        # file = f'graphs/{name}.pickle'
 
         graphs.append(name)
-
-    print(graphs)
 
     with mp.Pool(processes=mp.cpu_count()-1) as p: # NOTE: remove -1 from cpu_count for simulation on Snellius
         for result in p.imap_unordered(run, product(graphs,np.arange(10))):
