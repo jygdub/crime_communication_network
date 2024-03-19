@@ -11,20 +11,6 @@ from dynamics_nonvectorized_Atlas import simulate, init
 import pickle, networkx as nx, matplotlib.pyplot as plt, numpy as np, pandas as pd, glob
 from tqdm import tqdm
 
-def visualize(G):
-    """
-    Function to visualize a given graph/network G.
-    Each node is labeled with its current state.
-
-    Parameters:
-    - G: networkx graph to display
-    """
-
-    pos = nx.nx_agraph.graphviz_layout(G, prog="dot")
-
-    nx.draw(G, pos, labels=nx.get_node_attributes(G,'state'))
-    plt.show()
-
 listFileNames = sorted(glob.glob(f'graphs/*.pickle'))
 df = pd.read_csv('data-GraphAtlas.tsv',sep='\t')
 
