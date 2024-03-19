@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     print(graphs)
 
-    with mp.Pool(processes=mp.cpu_count()-1) as p:
+    with mp.Pool(processes=mp.cpu_count()-1) as p: # NOTE: remove -1 from cpu_count for simulation on Snellius
         for result in p.imap_unordered(run, product(graphs,np.arange(10))):
             M, meanHammingDistance, states_trajectory, graph, i = result
 
