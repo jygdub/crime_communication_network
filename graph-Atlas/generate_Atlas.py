@@ -26,7 +26,7 @@ nodes = list()
 edges = list()
 degree = list()
 betweenness = list()
-# CFbetweenness = list()
+CFbetweenness = list()
 closeness = list()
 clustering = list()
 globalEff = list()
@@ -38,7 +38,7 @@ for i, G in enumerate(ALL_G):
     if i == 0 or not nx.is_connected(G) or nNodes <= 1:
         continue
 
-    pickle.dump(G, open(f'graphs/G{i}.pickle', 'wb')) 
+    # pickle.dump(G, open(f'graphs/G{i}.pickle', 'wb')) 
 
     index.append(i)
     nodes.append(G.number_of_nodes())
@@ -50,8 +50,8 @@ for i, G in enumerate(ALL_G):
     dictBetweenness = nx.betweenness_centrality(G)
     betweenness.append(sum(dictBetweenness.values()) / len(dictBetweenness))
 
-    # dictCFBetweenness = nx.current_flow_betweenness_centrality(G)
-    # CFbetweenness.append(sum(dictCFBetweenness.values()) / len(dictCFBetweenness))
+    dictCFBetweenness = nx.current_flow_betweenness_centrality(G)
+    CFbetweenness.append(sum(dictCFBetweenness.values()) / len(dictCFBetweenness))
 
     dictCloseness = nx.closeness_centrality(G)
     closeness.append(sum(dictCloseness.values()) / len(dictCloseness))   
@@ -67,7 +67,7 @@ df['nodes'] = nodes
 df['edges'] = edges
 df['degree'] = degree
 df['betweenness'] = betweenness
-# df['CFbetweenness'] = CFbetweenness
+df['CFbetweenness'] = CFbetweenness
 df['closeness'] = closeness
 df['clustering'] = clustering
 df['globalEff'] = globalEff
