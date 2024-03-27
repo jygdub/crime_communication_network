@@ -10,6 +10,7 @@ LFR-networks/data
 graph-Atlas/images
 graph-Atlas/graphs
 graph-Atlas/results
+graph-Atlas/data
 graph-Atlas/data-GraphAtlas.tsv
 graph-Atlas/relationData-complete-Atlas.tsv
 __pycache__
