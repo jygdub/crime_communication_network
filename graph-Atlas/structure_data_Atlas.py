@@ -10,7 +10,7 @@ from tqdm import tqdm
 import numpy as np, pandas as pd
 
 
-metrics = pd.read_csv('data-GraphAtlas.tsv', sep='\t')
+metrics = pd.read_csv('data/data-GraphAtlas.tsv', sep='\t')
 print(metrics)
 
 complete = pd.DataFrame(data=None, index=np.arange(len(metrics)*100), 
@@ -18,28 +18,35 @@ complete = pd.DataFrame(data=None, index=np.arange(len(metrics)*100),
                                  'nodes',
                                  'degree',
                                  'betweenness',
-                                #  'CFbetweennesss',
+                                 'CFbetweenness',
                                  'closeness',
                                  'clustering',
                                  'globalEff',
                                  'localEff',
                                  'nMessages'])
 
-for idx in tqdm(range(len(metrics))):
+#######################################################
+# NOTE: Set simulation settings to save appropriately #
+settings = 'alpha0_50-beta0_00'                       #
+#######################################################
 
-    # n100 = int(np.floor(idx / 100))
+for idx in tqdm(range(len(metrics))):
 
     n100 = idx*100
 
-    # generate filename
+    # generate filename and load corresponding convergence data
     name = 'G' + str(metrics['index'].iloc[idx])
-    convergence = pd.read_csv(f'results/convergence-{name}.tsv', usecols=['nMessages'], sep='\t')
+    convergence = pd.read_csv(f'results/{settings}/convergence-{name}.tsv', usecols=['nMessages'], sep='\t')
 
+    # insert convergence data into DataFrame with average number of messages 
     complete['index'].iloc[n100:n100+100] = metrics['index'].iloc[idx]
     complete['nodes'].iloc[n100:n100+100] = metrics['nodes'].iloc[idx]
     complete['degree'].iloc[n100:n100+100] = metrics['degree'].iloc[idx]
     complete['betweenness'].iloc[n100:n100+100] = metrics['betweenness'].iloc[idx]
-    # complete['CFbetweenness'].iloc[n100:n100+100] = metrics['CFbetweenness'].iloc[idx]
+    if name == 'G3':
+        complete['CFbetweenness'].iloc[n100:n100+100] = 0
+    else:
+        complete['CFbetweenness'].iloc[n100:n100+100] = metrics['CFbetweenness'].iloc[idx]
     complete['closeness'].iloc[n100:n100+100] = metrics['closeness'].iloc[idx]
     complete['clustering'].iloc[n100:n100+100] = metrics['clustering'].iloc[idx]
     complete['globalEff'].iloc[n100:n100+100] = metrics['globalEff'].iloc[idx]
@@ -47,4 +54,4 @@ for idx in tqdm(range(len(metrics))):
     complete['nMessages'].iloc[n100:n100+100] = convergence['nMessages']
 
 print(complete)
-complete.to_csv('relationData-complete-Atlas.tsv',sep='\t',index=False)
+complete.to_csv(f'data/relationData-{settings}-Atlas.tsv',sep='\t',index=False)
