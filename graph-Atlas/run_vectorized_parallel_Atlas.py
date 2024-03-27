@@ -9,10 +9,8 @@ Written by Jade Dubbeld
 
 from dynamics_vectorized_Atlas import simulate
 
-from matplotlib import pyplot as plt
-from tqdm import tqdm
 from itertools import product
-import multiprocessing as mp, numpy as np, pandas as pd, glob, pickle
+import multiprocessing as mp, numpy as np, pandas as pd
 
 def run(x):
     # print(mp.current_process())
@@ -29,7 +27,7 @@ def run(x):
 
 if __name__ == "__main__":
 
-    path = "results/alpha1_00-beta0_50"
+    path = "results/test"
 
     df = pd.read_csv('data-GraphAtlas.tsv',sep='\t')
 
@@ -43,7 +41,7 @@ if __name__ == "__main__":
         graphs.append(name)
 
     with mp.Pool(processes=mp.cpu_count()) as p: # NOTE: remove -1 from cpu_count for simulation on Snellius
-        for result in tqdm(p.imap_unordered(run, product(graphs,np.arange(100)))):
+        for result in p.imap_unordered(run, product(graphs,np.arange(10))):
             M, meanHammingDistance, states_trajectory, graph, i = result
 
             df_states = pd.DataFrame(states_trajectory)
