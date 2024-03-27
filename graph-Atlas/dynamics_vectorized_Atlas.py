@@ -6,12 +6,8 @@ Written by Jade Dubbeld (with contribution of Casper van Elteren)
 13/03/2024
 """
 
-import numpy as np, pandas as pd, networkx as nx, pickle, time
+import numpy as np, pickle
 
-from multiprocessing.pool import Pool
-from multiprocessing import cpu_count, Manager, Process
-from itertools import product
-from collections import Counter
 
 def init(n: int, nbits: int) -> np.ndarray:
     """
@@ -172,7 +168,7 @@ def simulate(graph: str, alpha: float = 1.0, beta: float = 0.0) -> int | list:
     hammingDistance = hamming_vector(states,range(len(states)))
     meanHammingDistance.append(hammingDistance.mean())
 
-    print(M, meanHammingDistance[-1])
+    # print(M, meanHammingDistance[-1])
 
     nodes = list(G.nodes())
 
@@ -186,8 +182,8 @@ def simulate(graph: str, alpha: float = 1.0, beta: float = 0.0) -> int | list:
 
         M += 1
 
-        if M % 1000 == 0:
-            print(M, meanHammingDistance[-1])
+        # if M % 1000 == 0:
+        #     print(M, meanHammingDistance[-1])
 
         # re-calculate normalized hamming distance for all pair combinations for node update
         hammingDistance = hamming_vector(states, destination)
