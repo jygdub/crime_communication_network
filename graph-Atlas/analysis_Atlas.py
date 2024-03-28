@@ -165,16 +165,82 @@ if __name__ == "__main__":
     #     plt.close(fig)
     """Scatterplot mean of datapoints per graph"""
 
-    """Comparing model parameter settings """
+    """Comparing model parameter settings using polynomial fit through data"""
 
-    # NOTE: Set according to desired output figure #
-    draw_polynomial = True
-    # metric = 'global'
-    # n = 3
-    changing = 'alpha'
-    ################################################
+    # # NOTE: Set according to desired output figure #
+    # changing = 'alpha'
+    # ################################################
 
+    # for metric,n in product(['degree','betweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
+    #     efficiency = False
+    #     coefficient = False
+
+    #     if metric == 'global':
+    #         column = 'globalEff'
+    #         efficiency = True
+    #     elif metric == 'local':
+    #         column = 'localEff'
+    #         efficiency = True
+    #     elif metric == 'clustering':
+    #         column = 'clustering'
+    #         coefficient = True
+    #     else:
+    #         column = metric
+
+    #     fig,ax = plt.subplots()
+
+    #     if changing == 'beta':
+    #         values = ['00','25','50']
+    #     elif changing == 'alpha':
+    #         values = ['1_00','0_75','0_50']
+
+    #     for x in values:
+
+    #         if changing == 'beta':
+    #             data = pd.read_csv(f'data/meanRelationData-alpha1_00-beta0_{x}-Atlas.tsv', sep='\t')
+    #         elif changing == 'alpha':
+    #             data = pd.read_csv(f'data/meanRelationData-alpha{x}-beta0_00-Atlas.tsv', sep='\t')
+
+    #         # fit polynomial if desired
+    #         p = np.poly1d(np.polyfit(data[column][data['nodes']==n],data['nMessages'][data['nodes']==n],3))
+    #         t = np.linspace(min(data[column]), max(data[column]), 250)
+
+    #         if changing == 'beta':
+    #             ax.plot(t,p(t),label=fr"$\beta$={x.replace('_','.')}")
+    #         elif changing == 'alpha':
+    #             ax.plot(t,p(t),label=fr"$\alpha$={x.replace('_','.')}")
+
+    #     ax.legend(bbox_to_anchor=(1,1))
+
+    #     if efficiency:
+    #         ax.set_xlabel(f"{metric.capitalize()} efficiency")
+    #         ax.set_title(f"Relation between structural and operational efficiency ({metric})")
+    #     elif coefficient:
+    #         ax.set_xlabel(f"{metric.capitalize()} coefficient")
+    #         ax.set_title(f"Relation between {metric} coefficient and consensus formation")
+    #     else:
+    #         ax.set_xlabel(f"{metric.capitalize()} centrality")
+    #         ax.set_title(f"Relation between {metric} centrality and consensus formation")
+    #     ax.set_ylabel("Convergence rate (number of messages)")
+
+    #     # plt.show()
+
+    #     if changing == 'beta':
+    #         ax.set_title(fr'$\alpha$=1.00 & n={n}')
+
+    #         fig.savefig(f"images/relations/varyingBeta-alpha1_00-{metric}-n={n}-convergence-mean-polynomial.png",bbox_inches='tight')
+       
+    #     elif changing == 'alpha':
+    #         ax.set_title(fr'$\beta$=0.00 & n={n}')
+
+    #         fig.savefig(f"images/relations/varyingAlpha-beta0_00-{metric}-n={n}-convergence-mean-polynomial.png",bbox_inches='tight')
+        
+    #     plt.close(fig)
+    """Comparing model parameter settings using polynomial fit through data"""
+
+    """Combined comparison for all model parameter settings"""
     for metric,n in product(['degree','betweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
+
         efficiency = False
         coefficient = False
 
@@ -192,79 +258,60 @@ if __name__ == "__main__":
 
         fig,ax = plt.subplots()
 
-        if changing == 'beta':
-            values = ['00','25','50']
-        elif changing == 'alpha':
-            values = ['1_00','0_75','0_50']
+        for alpha, beta in product(['1_00','0_75','0_50'],['0_00','0_25','0_50']):
+            if alpha == '0_75' and (beta == '0_25' or beta == '0_50'):
+                continue
+            elif alpha == '0_50' and (beta == '0_25' or beta == '0_50'):
+                continue
 
-        for x in values:
-            # # pre-determine colormap
-            # if  x == '00':
-            #     color = "tab:blue"
-            # elif x == '25':
-            #     color = "tab:orange"
-            # elif x == '50':
-            #     color = "tab:green"
+            print(alpha,beta)
 
-            if changing == 'beta':
-                data = pd.read_csv(f'data/meanRelationData-alpha1_00-beta0_{x}-Atlas.tsv', sep='\t')
-            elif changing == 'alpha':
-                data = pd.read_csv(f'data/meanRelationData-alpha{x}-beta0_00-Atlas.tsv', sep='\t')
+            data = pd.read_csv(f'data/meanRelationData-alpha{alpha}-beta{beta}-Atlas.tsv', sep='\t')
 
             # fit polynomial if desired
             p = np.poly1d(np.polyfit(data[column][data['nodes']==n],data['nMessages'][data['nodes']==n],3))
             t = np.linspace(min(data[column]), max(data[column]), 250)
 
-            if changing == 'beta':
-                ax.plot(t,p(t),label=fr"$\beta$={x.replace('_','.')}")
-                # ax.scatter(data[column][data['nodes']==n],data['nMessages'][data['nodes']==n],alpha=0.2, label=fr'$\beta$=0.{x}')
-            elif changing == 'alpha':
-                ax.plot(t,p(t),label=fr"$\alpha$={x.replace('_','.')}")
-                # ax.scatter(data[column][data['nodes']==n],data['nMessages'][data['nodes']==n], alpha=0.2, label=fr'$\alpha$={x.replace('_','.')}')
-
-        # handles = [
-        #     plt.scatter([], [], color=c, label=l)
-        #     for c, l in zip("tab:blue tab:orange tab:green".split(), fr"$\beta$=0.00 $\beta$=0.25 $\beta$=0.50".split())
-        # ]
+            ax.plot(t,p(t),label=fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')}")
 
         ax.legend(bbox_to_anchor=(1,1))
 
         if efficiency:
             ax.set_xlabel(f"{metric.capitalize()} efficiency")
-            ax.set_title(f"Relation between structural and operational efficiency ({metric})")
         elif coefficient:
             ax.set_xlabel(f"{metric.capitalize()} coefficient")
-            ax.set_title(f"Relation between {metric} coefficient and consensus formation")
         else:
             ax.set_xlabel(f"{metric.capitalize()} centrality")
-            ax.set_title(f"Relation between {metric} centrality and consensus formation")
+
         ax.set_ylabel("Convergence rate (number of messages)")
+        ax.set_title(f"Varying alpha and beta parameters (n={n})")
 
-        # plt.show()
-
-        if changing == 'beta':
-            ax.set_title(fr'$\alpha$=1.00 & n={n}')
-
-            if draw_polynomial:
-                fig.savefig(f"images/relations/varyingBeta-alpha1_00-{metric}-n={n}-convergence-polynomial.png",bbox_inches='tight')
-            else:
-                fig.savefig(f"images/relations/varyingBeta-alpha1_00-{metric}-n={n}-convergence-mean.png",bbox_inches='tight')
-        
-        elif changing == 'alpha':
-            ax.set_title(fr'$\beta$=0.00 & n={n}')
-
-            if draw_polynomial:
-                fig.savefig(f"images/relations/varyingAlpha-beta0_00-{metric}-n={n}-convergence-polynomial.png",bbox_inches='tight')
-            else:
-                fig.savefig(f"images/relations/varyingAlpha-beat0_00-{metric}-n={n}-convergence-mean.png",bbox_inches='tight')
-        
+        fig.savefig(f"images/relations/combined-parameters-{metric}-n={n}-convergence-mean-polynomial.png",bbox_inches='tight')
+    
         plt.close(fig)
+    """Combined comparison for all model parameter settings"""
 
-
-    """Comparing model parameter settings """
 
     """Violinplot"""
-    # data = pd.read_csv('relationData-complete-Atlas.tsv', sep='\t')
-    # sns.violinplot(data=data,x=data['globalEff'],y=data['nMessages'])
+    n = 7
+    metric = 'globalEff'
+    data = pd.read_csv(f'data/meanRelationData-alpha1_00-beta0_00-Atlas.tsv', sep='\t')
+
+    subset = data[data['nodes']==n]
+
+    sns.violinplot(data=subset,x=subset[metric],y=subset['nMessages'])
+    plt.show()
+
+    
+    # subset = data[['globalEff','nMessages']][data['nodes']==7][data['globalEff']<0.7][data['globalEff']>0.6]
+
+    # lower_bound = 0.5
+    # upper_bound = 0.6
+
+    # while upper_bound < 0.7:
+    #     subset = data[['globalEff','nMessages']][data['nodes']==n][data['globalEff']<upper_bound][data['globalEff']>lower_bound]
+    #     sns.violinplot(data=subset,x=subset['globalEff'],y=subset['nMessages'])
+    #     lower_bound += 0.1
+    #     upper_bound += 0.1
     # plt.show()
     """Violinplot"""
