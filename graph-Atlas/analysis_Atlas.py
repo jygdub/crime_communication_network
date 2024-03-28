@@ -15,95 +15,14 @@ if __name__ == "__main__":
 
     """Scatterplot all datapoints """
 
-    # draw_polynomial = True
-    # metric = 'CFbetweenness'
-    # settings = 'alpha1_00-beta0_00'
+    # draw_polynomial = False
+    # alpha = '1_00'
+    # beta = '0_00'
+    # settings = f'alpha{alpha}-beta{beta}'
 
-    # efficiency = False
-    # coefficient = False
-
-    # if metric == 'global':
-    #     column = 'globalEff'
-    #     efficiency = True
-    # elif metric == 'local':
-    #     column = 'localEff'
-    #     efficiency = True
-    # elif metric == 'clustering':
-    #     column = 'clustering'
-    #     coefficient = True
-    # else:
-    #     column = metric
-
-    # fig,ax = plt.subplots()
-
-    # data = pd.read_csv(f'data/meanRelationData-{settings}-Atlas.tsv', sep='\t')
-
-    # for n in reversed(data['nodes'].unique()):
-    #     # pre-determine colormap
-    #     if  n == 2:
-    #         color = "tab:blue"
-    #     elif n == 3:
-    #         color = "tab:orange"
-    #     elif n == 4:
-    #         color = "tab:green"
-    #     elif n == 5:
-    #         color = "tab:red"
-    #     elif n == 6:
-    #         color = "tab:purple"
-    #     elif n == 7:
-    #         color = "tab:pink"
-
-    #     indices = np.where(data['nodes'] == n)[0]
-    #     ax.scatter(data[column].iloc[indices],data['nMessages'].iloc[indices],color=color,alpha=0.3)
-
-    #     if n != 2 and draw_polynomial:
-    #         p = np.poly1d(np.polyfit(data[column].iloc[indices],data['nMessages'].iloc[indices],3))
-    #         t = np.linspace(min(data[column]), max(data[column]), 250)
-    #         print(p)
-    #         ax.plot(t,p(t),color)
-
-    # handles = [
-    #     plt.scatter([], [], color=c, label=l)
-    #     for c, l in zip("tab:blue tab:orange tab:green tab:red tab:purple tab:pink".split(), "n=2 n=3 n=4 n=5 n=6 n=7".split())
-    # ]
-
-
-    # ax.legend(handles=handles)
-    # if efficiency:
-    #     ax.set_xlabel(f"{metric.capitalize()} efficiency")
-    #     ax.set_title(f"Relation between structural and operational efficiency ({metric})")
-    # elif coefficient:
-    #     ax.set_xlabel(f"{metric.capitalize()} coefficient")
-    #     ax.set_title(f"Relation between {metric} coefficient and consensus formation")
-    # else:
-    #     ax.set_xlabel(f"{metric.capitalize()} centrality")
-    #     ax.set_title(f"Relation between {metric} centrality and consensus formation")
-    # ax.set_ylabel("Convergence rate (number of messages)")
-    
-    # # plt.show()
-
-    # if draw_polynomial:
-    #     fig.savefig(f"images/relations/{settings}/all-datapoints/relation-{metric}-convergence-polynomial.png",bbox_inches='tight')
-    # else:
-    #     fig.savefig(f"images/relations/{settings}/all-datapoints/relation-{metric}-convergence-scatter.png",bbox_inches='tight')
-
-    # plt.close(fig)
-    """Scatterplot all datapoints"""
-
-
-    """Scatterplot mean of datapoints per graph"""
-    # #######################################################
-    # # NOTE: Set simulation settings to save appropriately #
-    # draw_polynomial = True                                
-    # metric = 'betweenness'                                      
-    # settings = 'alpha0_50-beta0_00'                       
-    # images_path = f'images/relations/{settings}'          
-    # #######################################################
-
-    # for metric in ['degree','betweenness','CFbetweenness','closeness','clustering','global','local']:
+    # for metric in tqdm(['degree','betweenness','CFbetweenness','closeness','clustering','global','local']):
     #     efficiency = False
     #     coefficient = False
-    #     fig,ax = plt.subplots()
 
     #     if metric == 'global':
     #         column = 'globalEff'
@@ -117,9 +36,102 @@ if __name__ == "__main__":
     #     else:
     #         column = metric
 
+    #     fig,ax = plt.subplots()
+
+    #     data = pd.read_csv(f'data/meanRelationData-{settings}-Atlas.tsv', sep='\t')
+
+    #     for n in reversed(data['nodes'].unique()):
+    #         # pre-determine colormap
+    #         if  n == 2:
+    #             color = "tab:blue"
+    #         elif n == 3:
+    #             color = "tab:orange"
+    #         elif n == 4:
+    #             color = "tab:green"
+    #         elif n == 5:
+    #             color = "tab:red"
+    #         elif n == 6:
+    #             color = "tab:purple"
+    #         elif n == 7:
+    #             color = "tab:pink"
+
+    #         indices = np.where(data['nodes'] == n)[0]
+    #         ax.scatter(data[column].iloc[indices],data['nMessages'].iloc[indices],color=color,alpha=0.3)
+
+    #         if n != 2 and draw_polynomial:
+    #             p = np.poly1d(np.polyfit(data[column].iloc[indices],data['nMessages'].iloc[indices],3))
+    #             t = np.linspace(min(data[column]), max(data[column]), 250)
+    #             ax.plot(t,p(t),color)
+
+    #     handles = [
+    #         plt.scatter([], [], color=c, label=l)
+    #         for c, l in zip("tab:blue tab:orange tab:green tab:red tab:purple tab:pink".split(), "n=2 n=3 n=4 n=5 n=6 n=7".split())
+    #     ]
+
+
+    #     ax.legend(handles=handles)
+
+    #     if efficiency:
+    #         ax.set_xlabel(f"{metric.capitalize()} efficiency")
+    #     elif coefficient:
+    #         ax.set_xlabel(f"{metric.capitalize()} coefficient")
+    #     else:
+    #         ax.set_xlabel(f"{metric.capitalize()} centrality")
+
+    #     ax.set_ylabel("Convergence rate (number of messages)")
+    #     ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')}')
+    #     # plt.show()
+
+    #     if draw_polynomial:
+    #         fig.savefig(f"images/relations/{settings}/all-datapoints/relation-{metric}-convergence-polynomial.png",bbox_inches='tight')
+    #     else:
+    #         fig.savefig(f"images/relations/{settings}/all-datapoints/relation-{metric}-convergence-scatter.png",bbox_inches='tight')
+
+    #     plt.close(fig)
+
+    """Scatterplot all datapoints"""
+
+
+    """Scatterplot mean of datapoints per graph"""
+
+    # #######################################################
+    # # NOTE: Set simulation settings to save appropriately #
+    # draw_polynomial = True   
+    # alpha = '1_00'
+    # beta = '0_50'                                                                     
+    # #######################################################
+
+    # settings = f'alpha{alpha}-beta{beta}'                       
+    # images_path = f'images/relations/{settings}'  
+
+    # # plots for all 7 metrics
+    # for metric in tqdm(['degree','betweenness','CFbetweenness','closeness','clustering','global','local']):
+        
+    #     # set initial booleans
+    #     efficiency = False
+    #     coefficient = False
+
+    #     # open figure
+    #     fig,ax = plt.subplots()
+
+    #     # conditional column assignment and boolean flip
+    #     if metric == 'global':
+    #         column = 'globalEff'
+    #         efficiency = True
+    #     elif metric == 'local':
+    #         column = 'localEff'
+    #         efficiency = True
+    #     elif metric == 'clustering':
+    #         column = 'clustering'
+    #         coefficient = True
+    #     else:
+    #         column = metric
+
+    #     # read data for corresponding parameter settings
     #     data = pd.read_csv(f'data/meanRelationData-{settings}-Atlas.tsv', sep='\t')
     #     # print(data)
         
+    #     # scatterplot all mean convergences per graph size (from n=7 to n=2)
     #     for i, index in enumerate(reversed(data['index'].unique())):
     #         n = data['nodes'].iloc[len(data)-i*100-1]
 
@@ -141,6 +153,8 @@ if __name__ == "__main__":
 
     #         ax.scatter(np.mean(data[column].iloc[indices]),np.mean(data['nMessages'].iloc[indices]),color=color, alpha=0.5)
 
+
+    #     # fit 3rd polynomial to data per graph size (from n=7 to n=2)
     #     for n in reversed(data['nodes'].unique()):
             
     #         # pre-determine colormap
@@ -173,14 +187,14 @@ if __name__ == "__main__":
     #     ax.legend(handles=handles)
     #     if efficiency:
     #         ax.set_xlabel(f"{metric.capitalize()} efficiency")
-    #         ax.set_title(f"Relation between structural and operational efficiency ({metric})")
     #     elif coefficient:
     #         ax.set_xlabel(f"{metric.capitalize()} coefficient")
-    #         ax.set_title(f"Relation between {metric} coefficient and consensus formation")
+    #     elif metric == 'CFbetweenness':
+    #         ax.set_xlabel(f"Current flow betweenness centrality")
     #     else:
     #         ax.set_xlabel(f"{metric.capitalize()} centrality")
-    #         ax.set_title(f"Relation between {metric} centrality and consensus formation")
     #     ax.set_ylabel("Convergence rate (number of messages)")
+    #     ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')}')
         
     #     # plt.show()
 
@@ -189,12 +203,14 @@ if __name__ == "__main__":
     #     else:
     #         fig.savefig(f"{images_path}/relation-{metric}-convergence-mean-scatter.png",bbox_inches='tight')
     #     plt.close(fig)
+
     """Scatterplot mean of datapoints per graph"""
+
 
     """Comparing model parameter settings using polynomial fit through data"""
 
     # # NOTE: Set according to desired output figure #
-    # changing = 'beta'
+    # changing = 'alpha'
     # ################################################
 
     # for metric,n in product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
@@ -244,6 +260,9 @@ if __name__ == "__main__":
     #     elif coefficient:
     #         ax.set_xlabel(f"{metric.capitalize()} coefficient")
     #         ax.set_title(f"Relation between {metric} coefficient and consensus formation")
+    #     elif metric == 'CFbetweenness':
+    #         ax.set_xlabel(f"Current flow betweenness centrality")
+    #         ax.set_title(f"Relation between current flow betweenness centrality and consensus formation")
     #     else:
     #         ax.set_xlabel(f"{metric.capitalize()} centrality")
     #         ax.set_title(f"Relation between {metric} centrality and consensus formation")
@@ -262,9 +281,12 @@ if __name__ == "__main__":
     #         fig.savefig(f"images/relations/varyingAlpha-beta0_00-{metric}-n={n}-convergence-mean-polynomial.png",bbox_inches='tight')
         
     #     plt.close(fig)
+
     """Comparing model parameter settings using polynomial fit through data"""
 
+
     """Combined comparison for all model parameter settings"""
+
     # for metric,n in product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
 
     #     efficiency = False
@@ -290,7 +312,7 @@ if __name__ == "__main__":
     #         elif alpha == '0_50' and (beta == '0_25' or beta == '0_50'):
     #             continue
 
-    #         print(alpha,beta)
+    #         # print(alpha,beta)
 
     #         data = pd.read_csv(f'data/meanRelationData-alpha{alpha}-beta{beta}-Atlas.tsv', sep='\t')
 
@@ -306,6 +328,8 @@ if __name__ == "__main__":
     #         ax.set_xlabel(f"{metric.capitalize()} efficiency")
     #     elif coefficient:
     #         ax.set_xlabel(f"{metric.capitalize()} coefficient")
+    #     elif metric == 'CFbetweenness':
+    #         ax.set_xlabel(f"Current flow betweenness centrality")
     #     else:
     #         ax.set_xlabel(f"{metric.capitalize()} centrality")
 
@@ -315,29 +339,68 @@ if __name__ == "__main__":
     #     fig.savefig(f"images/relations/combined-parameters-{metric}-n={n}-convergence-mean-polynomial.png",bbox_inches='tight')
     
     #     plt.close(fig)
+
     """Combined comparison for all model parameter settings"""
 
 
     """Violinplot"""
-    # n = 7
-    # metric = 'globalEff'
-    # data = pd.read_csv(f'data/meanRelationData-alpha1_00-beta0_00-Atlas.tsv', sep='\t')
+    #######################################################
+    # NOTE: Set simulation settings to save appropriately #
+    alpha = '1_00'
+    beta = '0_50'                                                                     
+    #######################################################
 
-    # subset = data[data['nodes']==n]
+    settings = f'alpha{alpha}-beta{beta}'                       
+    images_path = f'images/relations/{settings}/all-datapoints'  
 
-    # sns.violinplot(data=subset,x=subset[metric],y=subset['nMessages'])
-    # plt.show()
+    data = pd.read_csv(f'data/relationData-alpha{alpha}-beta{beta}-Atlas.tsv', sep='\t')
 
-    
-    # subset = data[['globalEff','nMessages']][data['nodes']==7][data['globalEff']<0.7][data['globalEff']>0.6]
+    # for metric,n in product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
+    for metric in ['degree','betweenness','CFbetweenness','closeness','clustering','global','local']:
+        efficiency = False
+        coefficient = False
 
-    # lower_bound = 0.5
-    # upper_bound = 0.6
+        if metric == 'global':
+            column = 'globalEff'
+            efficiency = True
+        elif metric == 'local':
+            column = 'localEff'
+            efficiency = True
+        elif metric == 'clustering':
+            column = 'clustering'
+            coefficient = True
+        else:
+            column = metric
 
-    # while upper_bound < 0.7:
-    #     subset = data[['globalEff','nMessages']][data['nodes']==n][data['globalEff']<upper_bound][data['globalEff']>lower_bound]
-    #     sns.violinplot(data=subset,x=subset['globalEff'],y=subset['nMessages'])
-    #     lower_bound += 0.1
-    #     upper_bound += 0.1
-    # plt.show()
+        nData = data #[data['nodes']==n]
+
+        fig,ax = plt.subplots()
+
+        for TH in np.arange(0.0,1.0,0.1):
+            subset = nData[nData[column]<=TH+0.1][nData[column]>TH]
+
+            if not subset.empty:
+                ax.scatter(subset[column],subset['nMessages'],color='lightgrey',alpha=0.1)
+                ax.violinplot(subset['nMessages'],positions=[TH+0.05],widths=[0.1])
+            
+
+        if efficiency:
+            ax.set_xlabel(f"{metric.capitalize()} efficiency")
+        elif coefficient:
+            ax.set_xlabel(f"{metric.capitalize()} coefficient")
+        elif metric == 'CFbetweenness':
+            ax.set_xlabel(f"Current flow betweenness centrality")
+        else:
+            ax.set_xlabel(f"{metric.capitalize()} centrality")
+
+        ax.set_ylabel("Convergence rate (number of messages)")
+        # ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}')
+        ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} for all n's")
+
+        # plt.show()
+
+        # fig.savefig(f"{images_path}/distribution-n={n}-convergence-per-{metric}-violin.png",bbox_inches='tight')
+        fig.savefig(f"{images_path}/distribution-allN-convergence-per-{metric}-violin.png",bbox_inches='tight')
+        plt.close(fig)
+
     """Violinplot"""
