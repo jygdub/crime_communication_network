@@ -102,10 +102,10 @@ if __name__ == "__main__":
     # #######################################################
 
     # settings = f'alpha{alpha}-beta{beta}'                       
-    # images_path = f'images/relations/{settings}'  
+    # images_path = f'images/relations/{settings}/averaged-convergence'  
 
     # # plots for all 7 metrics
-    # for metric in tqdm(['degree','betweenness','CFbetweenness','closeness','clustering','global','local']):
+    # for metric in ['CFbetweenness']: #tqdm(['degree','betweenness','CFbetweenness','closeness','clustering','global','local']):
         
     #     # set initial booleans
     #     efficiency = False
@@ -344,63 +344,63 @@ if __name__ == "__main__":
 
 
     """Violinplot"""
-    #######################################################
-    # NOTE: Set simulation settings to save appropriately #
-    alpha = '1_00'
-    beta = '0_50'                                                                     
-    #######################################################
+    # #######################################################
+    # # NOTE: Set simulation settings to save appropriately #
+    # alpha = '1_00'
+    # beta = '0_50'                                                                     
+    # #######################################################
 
-    settings = f'alpha{alpha}-beta{beta}'                       
-    images_path = f'images/relations/{settings}/all-datapoints'  
+    # settings = f'alpha{alpha}-beta{beta}'                       
+    # images_path = f'images/relations/{settings}/all-datapoints'  
 
-    data = pd.read_csv(f'data/relationData-alpha{alpha}-beta{beta}-Atlas.tsv', sep='\t')
+    # data = pd.read_csv(f'data/relationData-alpha{alpha}-beta{beta}-Atlas.tsv', sep='\t')
 
-    # for metric,n in product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
-    for metric in ['degree','betweenness','CFbetweenness','closeness','clustering','global','local']:
-        efficiency = False
-        coefficient = False
+    # # for metric,n in product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
+    # for metric in ['degree','betweenness','CFbetweenness','closeness','clustering','global','local']:
+    #     efficiency = False
+    #     coefficient = False
 
-        if metric == 'global':
-            column = 'globalEff'
-            efficiency = True
-        elif metric == 'local':
-            column = 'localEff'
-            efficiency = True
-        elif metric == 'clustering':
-            column = 'clustering'
-            coefficient = True
-        else:
-            column = metric
+    #     if metric == 'global':
+    #         column = 'globalEff'
+    #         efficiency = True
+    #     elif metric == 'local':
+    #         column = 'localEff'
+    #         efficiency = True
+    #     elif metric == 'clustering':
+    #         column = 'clustering'
+    #         coefficient = True
+    #     else:
+    #         column = metric
 
-        nData = data #[data['nodes']==n]
+    #     nData = data #[data['nodes']==n]
 
-        fig,ax = plt.subplots()
+    #     fig,ax = plt.subplots()
 
-        for TH in np.arange(0.0,1.0,0.1):
-            subset = nData[nData[column]<=TH+0.1][nData[column]>TH]
+    #     for TH in np.arange(0.0,1.0,0.1):
+    #         subset = nData[nData[column]<=TH+0.1][nData[column]>TH]
 
-            if not subset.empty:
-                ax.scatter(subset[column],subset['nMessages'],color='lightgrey',alpha=0.1)
-                ax.violinplot(subset['nMessages'],positions=[TH+0.05],widths=[0.1])
+    #         if not subset.empty:
+    #             ax.scatter(subset[column],subset['nMessages'],color='lightgrey',alpha=0.1)
+    #             ax.violinplot(subset['nMessages'],positions=[TH+0.05],widths=[0.1])
             
 
-        if efficiency:
-            ax.set_xlabel(f"{metric.capitalize()} efficiency")
-        elif coefficient:
-            ax.set_xlabel(f"{metric.capitalize()} coefficient")
-        elif metric == 'CFbetweenness':
-            ax.set_xlabel(f"Current flow betweenness centrality")
-        else:
-            ax.set_xlabel(f"{metric.capitalize()} centrality")
+    #     if efficiency:
+    #         ax.set_xlabel(f"{metric.capitalize()} efficiency")
+    #     elif coefficient:
+    #         ax.set_xlabel(f"{metric.capitalize()} coefficient")
+    #     elif metric == 'CFbetweenness':
+    #         ax.set_xlabel(f"Current flow betweenness centrality")
+    #     else:
+    #         ax.set_xlabel(f"{metric.capitalize()} centrality")
 
-        ax.set_ylabel("Convergence rate (number of messages)")
-        # ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}')
-        ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} for all n's")
+    #     ax.set_ylabel("Convergence rate (number of messages)")
+    #     # ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}')
+    #     ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} for all n's")
 
-        # plt.show()
+    #     # plt.show()
 
-        # fig.savefig(f"{images_path}/distribution-n={n}-convergence-per-{metric}-violin.png",bbox_inches='tight')
-        fig.savefig(f"{images_path}/distribution-allN-convergence-per-{metric}-violin.png",bbox_inches='tight')
-        plt.close(fig)
+    #     # fig.savefig(f"{images_path}/distribution-n={n}-convergence-per-{metric}-violin.png",bbox_inches='tight')
+    #     fig.savefig(f"{images_path}/distribution-allN-convergence-per-{metric}-violin.png",bbox_inches='tight')
+    #     plt.close(fig)
 
     """Violinplot"""
