@@ -342,10 +342,14 @@ import numpy as np, pandas as pd, seaborn as sns
 
 
 """Violinplot per parameter configuration per metric (per graph size OR all sizes)"""
+
+# def my_floor(a, precision=0):
+#     return np.true_divide(np.floor(a * 10**precision), 10**precision)
+
 # #######################################################
 # # NOTE: Set simulation settings to save appropriately #
 # alpha = '1_00'
-# beta = '0_50'                                                                     
+# beta = '0_00'                                                                     
 # #######################################################
 
 # settings = f'alpha{alpha}-beta{beta}'                       
@@ -354,8 +358,9 @@ import numpy as np, pandas as pd, seaborn as sns
 # data = pd.read_csv(f'data/relationData-alpha{alpha}-beta{beta}-Atlas.tsv', sep='\t')
 
 # # NOTE: USE CORRECT FOR-LOOP
-# for metric,n in product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
-# # for metric in ['degree','betweenness','CFbetweenness','closeness','clustering','global','local']:
+# # for metric,n in product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
+# for metric in ['degree','betweenness','CFbetweenness','closeness','clustering','global','local']:
+
 #     efficiency = False
 #     coefficient = False
 
@@ -371,27 +376,57 @@ import numpy as np, pandas as pd, seaborn as sns
 #     else:
 #         column = metric
 
-#     nData = data[data['nodes']==n] # NOTE: USE CORRECT DATA (all n's comment squared brackets)
+#     nData = data#[data['nodes']==n] # NOTE: USE CORRECT DATA (all n's comment squared brackets)
 
 #     fig,ax = plt.subplots(figsize=(13,8))
+#     MAX_OCC = []
+#     # MAX_DENSITY = []
 
 #     for TH in np.arange(0.0,1.0,0.1):
-#         subset = nData[nData[column]<=TH+0.1][nData[column]>TH]
+
+#         if TH == 0.9:
+#             subset = nData[nData[column]<=TH+0.1][nData[column]>=TH]
+#         else:
+#             subset = nData[nData[column]<TH+0.1][nData[column]>=TH]
 
 #         if not subset.empty:
+
+#             # # keep track of higest probability density
+#             # PDF = plt.figure()
+#             # density = subset['nMessages'].plot.kde().get_lines()[0].get_xydata()
+#             # MAX_DENSITY.append(np.argmax(density[:,1]))
+#             # plt.close(PDF)
+
 #             ax.scatter(subset[column],subset['nMessages'],color='lightgrey',alpha=0.1)
-#             plots = ax.violinplot(subset['nMessages'],positions=[TH+0.05],widths=[0.1])
+#             plots = ax.violinplot(subset['nMessages'],positions=[TH+0.05],widths=[0.1]) #, showmeans=True, showmedians=True)
 
 #             for vp in plots['bodies']:
 #                 vp.set_facecolor("tab:blue")
 #                 vp.set_edgecolor("black")
             
-#             for partname in ('cbars', 'cmins', 'cmaxes'):
+#             # colors = ["tab:blue","tab:blue","tab:blue","purple","green"]
+#             for i, partname in enumerate(('cbars', 'cmins', 'cmaxes')): #, 'cmeans', 'cmedians')):
 #                 vp = plots[partname]
 #                 vp.set_edgecolor("tab:blue")
 #                 vp.set_linewidth(1)
 
-        
+#             # keep track of most frequent nr. messages
+#             MAX_OCC.append(subset['nMessages'].value_counts().index.tolist()[0])
+
+#     # define x-axis
+#     MIN_TH = my_floor(min(nData[column]),1)
+#     Xaxis = np.linspace(MIN_TH+0.05,MIN_TH+0.05+(len(MAX_OCC)-1.)*0.1,len(MAX_OCC))
+
+#     # fit line through most frequent nr. messages
+#     coef = np.polyfit(Xaxis, MAX_OCC, 1)
+#     poly1d_fn = np.poly1d(coef) 
+
+#     # # plot maximum probability density
+#     # ax.plot(Xaxis, MAX_DENSITY, 'go', label='Maximum probability density')
+
+#     # plot most frequent nr. messages (datapoints + linear fit)
+#     ax.plot(Xaxis, MAX_OCC, 'ro', label='Most frequent nr. messages')
+#     ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), poly1d_fn(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05)), 'k--', label=f'{round(coef[0],2)} x + {round(coef[1],2)}')
 
 #     if efficiency:
 #         ax.set_xlabel(f"{metric.capitalize()} efficiency",fontsize=16)
@@ -405,17 +440,19 @@ import numpy as np, pandas as pd, seaborn as sns
 #     ax.set_ylabel("Convergence rate (number of messages)",fontsize=16)
 
 #     # NOTE: SETTING CORRECT TITLE 
-#     ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}',fontsize=16)
-#     # ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} for all n's",fontsize=16)
-    
+#     # ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}',fontsize=16)
+#     ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} for all n's",fontsize=16)
+
 #     ax.set_yscale("log") # NOTE: SETTING LOG SCALE -> CHANGE FILENAME
-    
+
+#     plt.legend(bbox_to_anchor=(1,1),fontsize=14)
+
 #     plt.tick_params(axis='both', which='major', labelsize=16)
 #     # plt.show()
 
-#     # NOTE: CHANGE FILENAME ACCORDINGLY
-#     fig.savefig(f"{images_path}/LOGdistribution-n={n}-convergence-per-{metric}-violin.png",bbox_inches='tight')
-#     # fig.savefig(f"{images_path}/LOGdistribution-allN-convergence-per-{metric}-violin.png",bbox_inches='tight')
+#     # NOTE: CHANGE FILENAME ACCORDINGLY (add LOG if log-scale; add lineFit if linear line)
+#     # fig.savefig(f"{images_path}/lineFit-LOGdistribution-n={n}-convergence-per-{metric}-violin.png",bbox_inches='tight')
+#     fig.savefig(f"{images_path}/lineFitLOGdistribution-allN-convergence-per-{metric}-violin.png",bbox_inches='tight')
 #     plt.close(fig)
 
 """Violinplot per parameter configuration per metric (per graph size OR all sizes)"""
@@ -460,7 +497,10 @@ import numpy as np, pandas as pd, seaborn as sns
 #             counter = 0
 
 #             for TH in np.arange(0.0,1.0,0.1):
-#                 subset = nData[nData[column]<=TH+0.1][nData[column]>TH]
+#             if TH == 0.9:
+#                 subset = nData[nData[column]<=TH+0.1][nData[column]>=TH]
+#             else:
+#                 subset = nData[nData[column]<TH+0.1][nData[column]>=TH]
 
 #                 if subset.empty:
 #                     continue
@@ -507,12 +547,16 @@ A = True
 # A = False                                               
 #######################################################
 
-images_path = f'images/relations'
+def my_floor(a, precision=0):
+    return np.true_divide(np.floor(a * 10**precision), 10**precision)
+
+images_path = 'images/relations'
 
 # NOTE: USE CORRECT FOR-LOOP
 # for metric,n in product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7]):
 # for metric in ['degree','betweenness','CFbetweenness','closeness','clustering','global','local']:
-metric = 'global'
+metric = 'degree'
+
 efficiency = False
 coefficient = False
 
@@ -530,8 +574,11 @@ else:
 
 
 # NOTE: CHOOSE CORRECT THRESHOLD VALUES ACCORDING TO METRIC
-# thresholds = np.linspace(0.0,0.9,10)
-thresholds = np.linspace(0.5,0.9,5)
+thresholds = np.linspace(0.2,0.9,8)  # degree
+# thresholds = np.linspace(0.0,0.3,4)  # betweenness & CF betweenness
+# thresholds = np.linspace(0.3,0.9,7)  # closeness
+# thresholds = np.linspace(0.5,0.9,5) # global efficiency
+# thresholds = np.linspace(0.0,0.9,10)  # clustering & local efficiency
 
 counter = 0
 temp = 0.
@@ -541,32 +588,33 @@ for TH in thresholds:
 
     fig,ax = plt.subplots(figsize=(13,8))
     counter += 1
+    MAX_OCC = []
     
     # NOTE: CHOOSE CORRECT FOR-LOOP
     # for i, beta in enumerate(betas):
     for i, alpha in enumerate(alphas):
 
         settings = f'alpha{alpha}-beta{beta}'                       
-        images_path = f'images/relations/{settings}/all-datapoints'  
 
         data = pd.read_csv(f'data/relationData-alpha{alpha}-beta{beta}-Atlas.tsv', sep='\t')
-
         nData = data#[data['nodes']==n] # NOTE: USE CORRECT DATA (ALL VS. PER N)
 
-        subset = nData[nData[column]<=TH+0.1][nData[column]>TH]
-        
-        # if subset.empty:
-        #     continue
-
+        if TH == 0.9:
+            subset = nData[nData[column]<=TH+0.1][nData[column]>=TH]
+        else:
+            subset = nData[nData[column]<TH+0.1][nData[column]>=TH]
+    
         ax.violinplot(subset['nMessages'],positions=[np.linspace(0.,4.,5)[i+1]])
 
+        # keep track of most frequent nr. messages
+        MAX_OCC.append(subset['nMessages'].value_counts().index.tolist()[0])
+
+    labels = []
 
     # for varying alphas, else varying betas
     if A:
 
         labels = [fr"$\alpha$=1.00", fr"$\alpha$=0.75", fr"$\alpha$=0.25"]
-        ax.set_xticks(np.arange(1, len(labels) + 1), labels=labels)
-        ax.set_xlim(0., len(labels) + 1.)
 
         if efficiency:
             ax.set_title(fr"$\beta$={beta.replace('_','.')} for all n's | violin {counter} & {metric.capitalize()} efficiency",fontsize=16)
@@ -578,9 +626,7 @@ for TH in thresholds:
             ax.set_title(fr"$\beta$={beta.replace('_','.')} for all n's | violin {counter} & {metric.capitalize()} centrality",fontsize=16)
     else:
 
-        labels = [fr"$\beta$=0.00", fr"$\beta$=0.25", fr"$\beta$=0.50"]
-        ax.set_xticks(np.arange(1, len(labels) + 1), labels=labels)
-        ax.set_xlim(0., len(labels) + 1.)            
+        labels = [fr"$\beta$=0.00", fr"$\beta$=0.25", fr"$\beta$=0.50"]        
 
         if efficiency:
             ax.set_title(fr"$\alpha$={alpha.replace('_','.')} for all n's | violin {counter} & {metric.capitalize()} efficiency",fontsize=16)
@@ -591,15 +637,31 @@ for TH in thresholds:
         else:
             ax.set_title(fr"$\alpha$={alpha.replace('_','.')} for all n's | violin {counter} & {metric.capitalize()} centrality",fontsize=16)
 
+    Xaxis = np.arange(1, len(labels) + 1)
+
+    # fit line through most frequent nr. messages
+    coef = np.polyfit(Xaxis, MAX_OCC, 1)
+    poly1d_fn = np.poly1d(coef) 
+
+    # plot most frequent nr. messages (datapoints + linear fit)
+    ax.plot(Xaxis, MAX_OCC, 'ro', label='Most frequent nr. messages')
+    ax.plot(Xaxis, poly1d_fn(Xaxis), 'k--', label=f'{round(coef[0],2)} x + {round(coef[1],2)}')
+
+    ax.set_xticks(Xaxis, labels=labels)
+    ax.set_xlim(0., len(labels) + 1.)
 
     ax.set_ylabel("Convergence rate (number of messages)",fontsize=16)
+    ax.set_yscale("log")
+
+    plt.legend(bbox_to_anchor=(1,1),fontsize=14)
             
     plt.tick_params(axis="both",which="major",labelsize=16)
     # plt.show()
+
     if A:
-        fig.savefig(f"{images_path}/noiseEffect-violin{counter}-allN-{metric}-varyingAlpha.png",bbox_inches='tight')
+        fig.savefig(f"{images_path}/noiseEffect-varyingAlpha-allN-{metric}-violin{counter}.png",bbox_inches='tight')
     else:
-        fig.savefig(f"{images_path}/noiseEffect-violin{counter}-allN-{metric}-varyingBeta.png",bbox_inches='tight')
+        fig.savefig(f"{images_path}/noiseEffect-varyingBeta-allN-{metric}-violin{counter}.png",bbox_inches='tight')
     plt.close(fig)
 
 """Violinplot to compare effect of noise (per bin)"""
