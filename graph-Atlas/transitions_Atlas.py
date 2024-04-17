@@ -11,54 +11,10 @@ from tqdm import tqdm
 def hellinger(p, q):
     return np.sqrt(np.sum((np.sqrt(p) - np.sqrt(q)) ** 2)) / np.sqrt(2)
 
-if __name__ == "__main__":
-    # NOTE: CHOOSE DESIRED SETTINGS
-    alpha = "0_50"
-    beta = "0_00"
-    ###############################
+def comparison(alpha,beta,from_graph,to_graph):
 
     settings = f'alpha{alpha}-beta{beta}'          
     data = pd.read_csv(f'data/relationData-withoutN=2-{settings}-Atlas.tsv', sep='\t')
-
-    # NOTE: CHOOSE GRAPHS TO COMPARE IN TRANSITIONS
-    from_graph = [52,
-                  51,51,
-                  50,50,
-                  49,49,49,49,
-                  48,48,48,
-                  47,47,47,47,
-                  46,
-                  45,45,
-                  44,
-                  43,43,43,43,
-                  42,42,
-                  41,41,
-                  40,40,
-                  38,
-                  37,
-                  36,36,
-                  35,35,
-                  34]
-    
-    to_graph = [51,
-                50,49,
-                48,47,
-                48,47,46,45,
-                44,43,41,
-                43,42,41,40,
-                44,
-                41,40,
-                37,
-                38,37,36,35,
-                36,34,
-                36,35,
-                35,34,
-                31,
-                31,
-                31,30,
-                31,30,
-                29]
-    #################################
 
     data_hellinger = pd.DataFrame(data=None,index=range(37),columns=["index_graph1","index_graph2","GE_graph1","GE_graph2","Hellinger"])
     
@@ -115,3 +71,75 @@ if __name__ == "__main__":
         plt.close(fig)
 
     data_hellinger.to_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}.tsv",sep='\t',index=False)
+
+def distribution_hellinger(alpha,beta,n):
+
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}.tsv",sep='\t')
+
+    print(data_hellinger)
+
+    fig,ax = plt.subplots()
+
+    ax.hist(data_hellinger["Hellinger"],bins=10)
+    
+    ax.set_xlabel("Hellinger distance", fontsize=16)
+    ax.set_ylabel("Frequency",fontsize=16)
+    ax.tick_params(axis="both",which="major",labelsize=16)
+    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=16)
+    
+    fig.savefig(f"images/transitions/HellingerDistribution-alpha={alpha}-beta={beta}-n={n}.png",bbox_inches='tight')
+
+if __name__ == "__main__":
+
+
+    # NOTE: CHOOSE DESIRED SETTINGS
+    alpha = "0_50"
+    beta = "0_00"
+    ###############################
+
+    # NOTE: CHOOSE GRAPHS TO COMPARE IN TRANSITIONS
+    from_graph = [52,
+                  51,51,
+                  50,50,
+                  49,49,49,49,
+                  48,48,48,
+                  47,47,47,47,
+                  46,
+                  45,45,
+                  44,
+                  43,43,43,43,
+                  42,42,
+                  41,41,
+                  40,40,
+                  38,
+                  37,
+                  36,36,
+                  35,35,
+                  34]
+    
+    to_graph = [51,
+                50,49,
+                48,47,
+                48,47,46,45,
+                44,43,41,
+                43,42,41,40,
+                44,
+                41,40,
+                37,
+                38,37,36,35,
+                36,34,
+                36,35,
+                35,34,
+                31,
+                31,
+                31,30,
+                31,30,
+                29]
+    #################################
+
+    # run comparison and generate Hellinger distance data
+    # comparison(alpha,beta,from_graph,to_graph)
+
+    # plot histogram distribution of Hellinger distance
+    distribution_hellinger(alpha,beta,n=5)
+
