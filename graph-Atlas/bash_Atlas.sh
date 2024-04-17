@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name="newt"
-#SBATCH --partition genoa
+#SBATCH --job-name="sim-a50-b50"
+#SBATCH --partition=genoa
 #SBATCH --nodes=1
 #SBATCH --exclusive
-#SBATCH --time 4:00:00 #runtime
+#SBATCH --time 15:00:00 #runtime
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=192
 
@@ -22,6 +22,6 @@ pip install --user numpy
 pip install --user pandas
 
 python3 run_vectorized_parallel_Atlas.py # run script
-cd results
-zip -r alpha0_50-beta0_50.zip alpha0_50-beta0_50
-cp -r alpha1_00-beta0_50.zip $HOME/Graph-Atlas/results # copy result files in pre-existing 
+# cd results
+# zip -r alpha0_50-beta0_50.zip alpha0_50-beta0_50
+# cp -r alpha1_00-beta0_50.zip $HOME/Graph-Atlas/results # copy result files in pre-existing 
