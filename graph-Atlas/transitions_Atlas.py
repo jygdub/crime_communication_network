@@ -15,6 +15,7 @@ if __name__ == "__main__":
     # NOTE: CHOOSE DESIRED SETTINGS
     alpha = "0_50"
     beta = "0_00"
+    ###############################
 
     settings = f'alpha{alpha}-beta{beta}'          
     data = pd.read_csv(f'data/relationData-withoutN=2-{settings}-Atlas.tsv', sep='\t')
@@ -57,7 +58,8 @@ if __name__ == "__main__":
                 31,30,
                 31,30,
                 29]
-    
+    #################################
+
     data_hellinger = pd.DataFrame(data=None,index=range(37),columns=["index_graph1","index_graph2","GE_graph1","GE_graph2","Hellinger"])
     
     for i,(graph1,graph2) in tqdm(enumerate(zip(from_graph,to_graph))):
