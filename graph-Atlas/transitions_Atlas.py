@@ -5,18 +5,22 @@ Written by Jade Dubbeld
 12/04/2024
 """
 
-import pandas as pd, numpy as np, matplotlib.pyplot as plt
+import pandas as pd, numpy as np, matplotlib.pyplot as plt, networkx as nx, pickle
 from tqdm import tqdm
+from itertools import product
 
 def hellinger(p, q):
     return np.sqrt(np.sum((np.sqrt(p) - np.sqrt(q)) ** 2)) / np.sqrt(2)
 
-def comparison(alpha,beta,from_graph,to_graph):
+def pairwise_comparison(alpha,beta,from_graph,to_graph,n):
 
     settings = f'alpha{alpha}-beta{beta}'          
-    data = pd.read_csv(f'data/relationData-withoutN=2-{settings}-Atlas.tsv', sep='\t')
+    data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
 
-    data_hellinger = pd.DataFrame(data=None,index=range(37),columns=["index_graph1","index_graph2","GE_graph1","GE_graph2","Hellinger"])
+    # NOTE: DROP FIRST 100 ROWS IF EXCLUDING N=2 GRAPH SIZE
+    data = data.drop(range(0,100))
+
+    data_hellinger = pd.DataFrame(data=None,index=range(len(from_graph)),columns=["index_graph1","index_graph2","GE_graph1","GE_graph2","Hellinger"])
     
     for i,(graph1,graph2) in tqdm(enumerate(zip(from_graph,to_graph))):
 
@@ -27,22 +31,17 @@ def comparison(alpha,beta,from_graph,to_graph):
         # setup comparison data
         compare = data1['nMessages'].to_frame().rename(columns={"nMessages": f"G{graph1}"})
         compare[f"G{graph2}"] = list(data2['nMessages'])
-        # print(compare)
 
         fig, (ax0,ax1) = plt.subplots(1,2,figsize=(13,8))
-        n, bins, _ = ax0.hist(x=compare,bins=10,label=[f"G{graph1}: GE={round(data1['globalEff'].unique()[0],4)}",f"G{graph2}: GE={round(data2['globalEff'].unique()[0],4)}"])
-        # print(n)
-        # print(bins)
-        bin_centers = 0.5*(bins[1:]+bins[:-1])
-
+        x, bins, _ = ax0.hist(x=compare,bins=10,label=[f"G{graph1}: GE={round(data1['globalEff'].unique()[0],4)}",f"G{graph2}: GE={round(data2['globalEff'].unique()[0],4)}"])
+        # bin_centers = 0.5*(bins[1:]+bins[:-1])
 
         # compute probabilities
-        p_graph1 = n[0]/100
-        p_graph2 = n[1]/100
+        p_graph1 = x[0]/100
+        p_graph2 = x[1]/100
 
         # compute Hellinger distance
         dist_hellinger = hellinger(p_graph1,p_graph2)
-        # print(f"Hellinger: {dist_hellinger}")
 
         data_hellinger.iloc[i] = pd.Series(data={"index_graph1": int(graph1),
                                   "index_graph2": int(graph2),
@@ -50,33 +49,31 @@ def comparison(alpha,beta,from_graph,to_graph):
                                   "GE_graph2": data2['globalEff'].unique()[0],
                                   "Hellinger": dist_hellinger})
 
-        ax0.legend(fontsize=16)
-        ax0.set_xlabel("Number of messages",fontsize=16)
-        ax0.set_ylabel("Frequency",fontsize=16)
-        ax0.set_title(f"Hellinger={round(dist_hellinger,3)}; n_agents=5; n_repeats=100",fontsize=16)
-        ax0.tick_params(axis="both",which="major",labelsize=16)
+        # ax0.legend(fontsize=16)
+        # ax0.set_xlabel("Number of messages",fontsize=16)
+        # ax0.set_ylabel("Frequency",fontsize=16)
+        # ax0.set_title(f"Hellinger={round(dist_hellinger,3)}; n_agents={n}; n_repeats=100",fontsize=16)
+        # ax0.tick_params(axis="both",which="major",labelsize=16)
 
-        ax1.plot(bin_centers,n[0],label=f"G{graph1}: GE={round(data1['globalEff'].unique()[0],4)}")
-        ax1.plot(bin_centers,n[1],label=f"G{graph2}: GE={round(data2['globalEff'].unique()[0],4)}")
-        ax1.legend(fontsize=16)
-        ax1.set_xlabel("Number of messages",fontsize=16)
-        ax1.set_ylabel("Frequency",fontsize=16)
-        ax1.set_title(f"Hellinger={round(dist_hellinger,3)}; n_agents=5; n_repeats=100",fontsize=16)
-        ax1.tick_params(axis="both",which="major",labelsize=16)
-        # compare.hist(n_bins=10,density=True, histtype='bar')
+        # ax1.plot(bin_centers,n[0],label=f"G{graph1}: GE={round(data1['globalEff'].unique()[0],4)}")
+        # ax1.plot(bin_centers,n[1],label=f"G{graph2}: GE={round(data2['globalEff'].unique()[0],4)}")
+        # ax1.legend(fontsize=16)
+        # ax1.set_xlabel("Number of messages",fontsize=16)
+        # ax1.set_ylabel("Frequency",fontsize=16)
+        # ax1.set_title(f"Hellinger={round(dist_hellinger,3)}; n_agents={n}; n_repeats=100",fontsize=16)
+        # ax1.tick_params(axis="both",which="major",labelsize=16)
 
-
-        # plt.show()
-        fig.savefig(f"images/transitions/G{graph1}-G{graph2}.png",bbox_inches='tight')
+        # # plt.show()
+        # fig.savefig(f"images/transitions/G{graph1}-G{graph2}.png",bbox_inches='tight')
         plt.close(fig)
 
-    data_hellinger.to_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}.tsv",sep='\t',index=False)
+    data_hellinger.to_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t',index=False)
 
 def distribution_hellinger(alpha,beta,n):
 
-    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}.tsv",sep='\t')
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t')
 
-    print(data_hellinger)
+    # print(data_hellinger)
 
     fig,ax = plt.subplots()
 
@@ -89,57 +86,90 @@ def distribution_hellinger(alpha,beta,n):
     
     fig.savefig(f"images/transitions/HellingerDistribution-alpha={alpha}-beta={beta}-n={n}.png",bbox_inches='tight')
 
+    plt.close(fig)
+
+def relate_structure_operation(alpha,beta,n):
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t')
+
+    fig, ax = plt.subplots()
+    ax.scatter(x=data_hellinger["GE_graph1"]-data_hellinger["GE_graph2"],y=data_hellinger["Hellinger"])
+    ax.set_xlabel("Difference in global efficiency",fontsize=16)
+    ax.set_ylabel("Hellinger distance",fontsize=16)
+    ax.tick_params(axis="both",which="major",labelsize=16)
+    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=16)
+    plt.show()
+
+    fig.savefig(f"images/transitions/GE-Hellinger-correlation-alpha={alpha}-beta={beta}-n={n}.png",bbox_inches='tight')
+
+    plt.close(fig)
+
+def possible_transitions(n):
+    
+    df = pd.read_csv('data/data-GraphAtlas.tsv',usecols=['index','nodes'],sep='\t')
+    df = df[df['nodes']==n]
+
+    df = df.reindex(index=df.index[::-1])
+
+    from_graph = []
+    to_graph = []
+
+    for i,j in tqdm(product(df['index'],df['index'])):
+        if j > i:
+            continue
+        # print(i)
+        graph1 = 'G' + str(i)
+        file1 = f'graphs/{graph1}.pickle'
+
+        G1 = pickle.load(open(file1,'rb'))
+
+        graph2 = 'G' + str(j)
+        file2 = f'graphs/{graph2}.pickle'
+
+        G2 = pickle.load(open(file2,'rb'))
+
+        if nx.graph_edit_distance(G1,G2) == 1.0:
+            # print(f"G{i}->G{j}")
+            from_graph.append(i)
+            to_graph.append(j)
+    
+    np.savetxt(f"data/from_graph_n={n}.tsv",
+        from_graph,
+        delimiter ="\t",
+        fmt ='% i')
+
+    np.savetxt(f"data/to_graph_n={n}.tsv",
+        to_graph,
+        delimiter ="\t",
+        fmt ='% i')
+
 if __name__ == "__main__":
 
 
     # NOTE: CHOOSE DESIRED SETTINGS
-    alpha = "0_50"
+    alpha = "1_00"
     beta = "0_00"
+    n = 7
     ###############################
 
-    # NOTE: CHOOSE GRAPHS TO COMPARE IN TRANSITIONS
-    from_graph = [52,
-                  51,51,
-                  50,50,
-                  49,49,49,49,
-                  48,48,48,
-                  47,47,47,47,
-                  46,
-                  45,45,
-                  44,
-                  43,43,43,43,
-                  42,42,
-                  41,41,
-                  40,40,
-                  38,
-                  37,
-                  36,36,
-                  35,35,
-                  34]
-    
-    to_graph = [51,
-                50,49,
-                48,47,
-                48,47,46,45,
-                44,43,41,
-                43,42,41,40,
-                44,
-                41,40,
-                37,
-                38,37,36,35,
-                36,34,
-                36,35,
-                35,34,
-                31,
-                31,
-                31,30,
-                31,30,
-                29]
+    # # check possible single edge transitions within graph size
+    # possible_transitions(n=n)
+
+    # NOTE: CHOOSE GRAPHS TO COMPARE IN TRANSITIONS (below for n=5, manual analysis)
+    from_graph = list(map(int, np.loadtxt(f"data/from_graph_n={n}.tsv",delimiter='\t')))
+    to_graph = list(map(int, np.loadtxt(f"data/to_graph_n={n}.tsv",delimiter='\t')))
     #################################
 
-    # run comparison and generate Hellinger distance data
-    # comparison(alpha,beta,from_graph,to_graph)
+    print(f'alpha={alpha} & beta={beta}')
 
-    # plot histogram distribution of Hellinger distance
-    distribution_hellinger(alpha,beta,n=5)
+    # NOTE
+    # NOTE: CHOOSE FUNCTION TO RUN
+    # NOTE
+    
+    # # run comparison and generate Hellinger distance data
+    # pairwise_comparison(alpha=alpha,beta=beta,from_graph=from_graph,to_graph=to_graph,n=n)
 
+    # # plot histogram distribution of Hellinger distance
+    # distribution_hellinger(alpha,beta,n=n)
+
+    # # scatterplot relation between difference in global efficiency and difference in Helling distance
+    # relate_structure_operation(alpha,beta,n=n)
