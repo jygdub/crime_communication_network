@@ -163,21 +163,21 @@ if __name__ == "__main__":
     to_graph = list(map(int, np.loadtxt(f"data/to_graph_n={n}.tsv",delimiter='\t')))
     #################################
 
-    for alpha, beta in product(alphas,betas): 
-        if beta == '0_50' and alpha in ['0_75','0_50']:
-            continue        
+    # for alpha, beta in product(alphas,betas): 
+    #     if beta == '0_50' and alpha in ['0_75','0_50']:
+    #         continue        
         
-        print(f'alpha={alpha} & beta={beta}')
+    print(f'alpha={alpha} & beta={beta}')
 
-        # NOTE
-        # NOTE: CHOOSE FUNCTION TO RUN
-        # NOTE
+    # NOTE
+    # NOTE: CHOOSE FUNCTION TO RUN
+    # NOTE
 
-        # # run comparison and generate Hellinger distance data
-        # pairwise_comparison(alpha=alpha,beta=beta,from_graph=from_graph,to_graph=to_graph,n=n)
+    # # run comparison and generate Hellinger distance data
+    # pairwise_comparison(alpha=alpha,beta=beta,from_graph=from_graph,to_graph=to_graph,n=n)
 
-        # # plot histogram distribution of Hellinger distance
-        # distribution_hellinger(alpha,beta,n=n)
+    # # plot histogram distribution of Hellinger distance
+    # distribution_hellinger(alpha,beta,n=n)
 
-        # # scatterplot relation between difference in global efficiency and difference in Helling distance
-        # relate_structure_operation(alpha,beta,n=n)
+    # scatterplot relation between difference in global efficiency and difference in Helling distance
+    relate_structure_operation(alpha,beta,n=n)
