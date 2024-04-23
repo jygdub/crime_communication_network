@@ -148,6 +148,10 @@ if __name__ == "__main__":
     # NOTE: CHOOSE DESIRED SETTINGS
     alpha = "1_00"
     beta = "0_00"
+
+    alphas = ['1_00','0_75','0_50']
+    betas = ['0_00','0_25', '0_50']    
+
     n = 7
     ###############################
 
@@ -159,17 +163,21 @@ if __name__ == "__main__":
     to_graph = list(map(int, np.loadtxt(f"data/to_graph_n={n}.tsv",delimiter='\t')))
     #################################
 
-    print(f'alpha={alpha} & beta={beta}')
+    for alpha, beta in product(alphas,betas): 
+        if beta == '0_50' and alpha in ['0_75','0_50']:
+            continue        
+        
+        print(f'alpha={alpha} & beta={beta}')
 
-    # NOTE
-    # NOTE: CHOOSE FUNCTION TO RUN
-    # NOTE
-    
-    # # run comparison and generate Hellinger distance data
-    # pairwise_comparison(alpha=alpha,beta=beta,from_graph=from_graph,to_graph=to_graph,n=n)
+        # NOTE
+        # NOTE: CHOOSE FUNCTION TO RUN
+        # NOTE
 
-    # # plot histogram distribution of Hellinger distance
-    # distribution_hellinger(alpha,beta,n=n)
+        # # run comparison and generate Hellinger distance data
+        # pairwise_comparison(alpha=alpha,beta=beta,from_graph=from_graph,to_graph=to_graph,n=n)
 
-    # # scatterplot relation between difference in global efficiency and difference in Helling distance
-    # relate_structure_operation(alpha,beta,n=n)
+        # # plot histogram distribution of Hellinger distance
+        # distribution_hellinger(alpha,beta,n=n)
+
+        # # scatterplot relation between difference in global efficiency and difference in Helling distance
+        # relate_structure_operation(alpha,beta,n=n)
