@@ -8,83 +8,72 @@ Written by Jade Dubbeld
 import numpy as np, pandas as pd
 from tqdm import tqdm
 
-"""Combine structural metrics and number of messages"""
-metrics = pd.read_csv('data/data-GraphAtlas.tsv', sep='\t')
+def combineData(alpha: str, beta: str):
+    """Combine structural metrics and number of messages"""
+    metrics = pd.read_csv('data/data-GraphAtlas.tsv', sep='\t')
 
-without2 = metrics[metrics['nodes'] != 2]
+    complete = pd.DataFrame(data=None, index=np.arange(len(metrics)*100), 
+                            columns=['index',
+                                    'nodes',
+                                    'degree',
+                                    'betweenness',
+                                    'CFbetweenness',
+                                    'closeness',
+                                    'clustering',
+                                    'globalEff',
+                                    'localEff',
+                                    'nMessages'])
 
-#############################################################################
-# NOTE: CHOOSE DATA CORRECTLY                                               #
-# (METRICS FOR GRAPH SIZES N=2 TO N=7; WITHOUT2 FOR GRAPH SIZES N=3 TO N=7) #
-graphData = without2
-#############################################################################
 
-print(graphData)
+    settings = f'alpha{alpha}-beta{beta}'                       
 
-complete = pd.DataFrame(data=None, index=np.arange(len(graphData)*100), 
-                        columns=['index',
-                                 'nodes',
-                                 'degree',
-                                 'betweenness',
-                                 'CFbetweenness',
-                                 'closeness',
-                                 'clustering',
-                                 'globalEff',
-                                 'localEff',
-                                 'nMessages'])
+    for idx in tqdm(range(len(metrics))):
 
-#######################################################
-# NOTE: Set simulation settings to save appropriately #
-settings = 'alpha1_00-beta0_50'                       #
-#######################################################
+        n100 = idx*100
 
-for idx in tqdm(range(len(graphData))):
+        # generate filename and load corresponding convergence data
+        name = 'G' + str(metrics['index'].iloc[idx])
+        convergence = pd.read_csv(f'results/{settings}/convergence-{name}.tsv', usecols=['nMessages'], sep='\t')
 
-    if graphData['nodes'].iloc[idx] == 2:
-        continue
+        # insert convergence data into DataFrame with average number of messages 
+        complete['index'].iloc[n100:n100+100] = metrics['index'].iloc[idx]
+        complete['nodes'].iloc[n100:n100+100] = metrics['nodes'].iloc[idx]
+        complete['degree'].iloc[n100:n100+100] = metrics['degree'].iloc[idx]
+        complete['betweenness'].iloc[n100:n100+100] = metrics['betweenness'].iloc[idx]
 
-    n100 = idx*100
+        if name == 'G3':
+            complete['CFbetweenness'].iloc[n100:n100+100] = 0
+        else:
+            complete['CFbetweenness'].iloc[n100:n100+100] = metrics['CFbetweenness'].iloc[idx]
 
-    # generate filename and load corresponding convergence data
-    name = 'G' + str(graphData['index'].iloc[idx])
-    convergence = pd.read_csv(f'results/{settings}/convergence-{name}.tsv', usecols=['nMessages'], sep='\t')
+        complete['closeness'].iloc[n100:n100+100] = metrics['closeness'].iloc[idx]
+        complete['clustering'].iloc[n100:n100+100] = metrics['clustering'].iloc[idx]
+        complete['globalEff'].iloc[n100:n100+100] = metrics['globalEff'].iloc[idx]
+        complete['localEff'].iloc[n100:n100+100] = metrics['localEff'].iloc[idx]
+        complete['nMessages'].iloc[n100:n100+100] = convergence['nMessages']
 
-    # insert convergence data into DataFrame with average number of messages 
-    complete['index'].iloc[n100:n100+100] = graphData['index'].iloc[idx]
-    complete['nodes'].iloc[n100:n100+100] = graphData['nodes'].iloc[idx]
-    complete['degree'].iloc[n100:n100+100] = graphData['degree'].iloc[idx]
-    complete['betweenness'].iloc[n100:n100+100] = graphData['betweenness'].iloc[idx]
-    
-    if name == 'G3':
-        complete['CFbetweenness'].iloc[n100:n100+100] = 0
-    else:
-        complete['CFbetweenness'].iloc[n100:n100+100] = graphData['CFbetweenness'].iloc[idx]
+    print(complete)
+    complete.to_csv(f'data/relationData-{settings}-Atlas.tsv',sep='\t',index=False)
 
-    complete['CFbetweenness'].iloc[n100:n100+100] = graphData['CFbetweenness'].iloc[idx]
-    complete['closeness'].iloc[n100:n100+100] = graphData['closeness'].iloc[idx]
-    complete['clustering'].iloc[n100:n100+100] = graphData['clustering'].iloc[idx]
-    complete['globalEff'].iloc[n100:n100+100] = graphData['globalEff'].iloc[idx]
-    complete['localEff'].iloc[n100:n100+100] = graphData['localEff'].iloc[idx]
-    complete['nMessages'].iloc[n100:n100+100] = convergence['nMessages']
+def meanData(alpha: str, beta: str):
+    """Average number of messages per graph"""
+    settings = f'alpha{alpha}-beta{beta}'
+    data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
 
-print(complete)
-complete.to_csv(f'data/relationData-withoutN=2-{settings}-Atlas.tsv',sep='\t',index=False)
-"""Combine structural metrics and number of messages"""
+    meanData = data.groupby('index').agg({'index':'mean',
+                                        'nodes':'mean',
+                                        'degree':'mean',
+                                        'betweenness':'mean',
+                                        'CFbetweenness': 'mean',
+                                        'closeness':'mean',
+                                        'clustering':'mean',
+                                        'globalEff':'mean',
+                                        'localEff':'mean',
+                                        'nMessages':'mean'})   
 
-"""Average number of messages per graph"""
-# settings = 'alpha0_50-beta0_00'
-# data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
+    data.to_csv(f'data/meanRelationData-{settings}-Atlas.tsv',sep='\t',index=False) 
 
-# meanData = data.groupby('index').agg({'index':'mean',
-#                                     'nodes':'mean',
-#                                     'degree':'mean',
-#                                     'betweenness':'mean',
-#                                     'CFbetweenness': 'mean',
-#                                     'closeness':'mean',
-#                                     'clustering':'mean',
-#                                     'globalEff':'mean',
-#                                     'localEff':'mean',
-#                                     'nMessages':'mean'})   
-
-# data.to_csv(f'data/meanRelationData-{settings}-Atlas.tsv',sep='\t',index=False) 
-"""Average number of messages per graph"""
+if __name__ == "__main__":
+    alpha = '0_50'
+    beta = '0_25'
+    combineData(alpha=alpha,beta=beta)
