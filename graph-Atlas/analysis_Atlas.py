@@ -873,8 +873,8 @@ if __name__ == "__main__":
         if beta == '0_50' and alpha in ['0_75','0_50']:
             continue
         print(f'alpha={alpha} & beta={beta}')
-        violin_per_params(alpha=alpha,beta=beta) # NOTE: CHANGE PLOT SETTINGS AS DESIRED (in function!)
+        violin_per_params(alpha=alpha,beta=beta) # NOTE: CHANGE FILENAME (@end function!)
 
-    # hist_per_violin(alphas=alphas,betas=betas) # NOTE: CHANGE PLOT SETTINGS AS DESIRED (in function!)
+    # hist_per_violin(alphas=alphas,betas=betas) # NOTE: CHANGE FILENAME (@end function!)
 
-    # violin_noiseEffect(fixed_param=beta,varying_param=alphas,A=True,metric='global') # NOTE: CHANGE PLOT SETTINGS AS DESIRED (in function!)
+    # violin_noiseEffect(fixed_param=beta,varying_param=alphas,A=True,metric='global') # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
