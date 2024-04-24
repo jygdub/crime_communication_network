@@ -865,6 +865,51 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
         plt.close(fig)
 
 
+def GE_distribution(n: int = 0, without2: bool = True) -> None:
+    """
+    Function to show global efficiency distribution (in histogram) of all graphs in Graph Atlas.
+    - Optional to show distribution per graph size
+
+    Parameters:
+    - n (int): Indicates graph size, if preferred to cluster graphs
+    - without2 (bool): Include graph size of 2 (True) or not (False) 
+
+    Returns:
+    - None
+    """
+
+    # load data with relevant columns
+    data = pd.read_csv(f"data/data-GraphAtlas.tsv", sep='\t', usecols=['index','nodes','edges','globalEff'])
+    
+    # initialize figure
+    fig, ax = plt.subplots()
+
+    if n==0:
+        ax.hist(x=data.globalEff,bins=20)
+    else:
+        data = data[data['nodes']==n]
+        ax.hist(x=data.globalEff,bins=10)
+
+    ax.set_xlabel("Global efficiency",fontsize=16)
+    ax.set_ylabel("Frequency",fontsize=16)
+    ax.tick_params(axis="both",which="major",labelsize=16)
+
+    plt.show()
+
+    if n==0:
+        if without2:
+            ax.set_title(fr"n$\in#{{3,4,5,6,7}}",fontsize=16)
+            fig.savefig(fname=f"images/GE-distribution-ALL-without2.png",bbox_inches='tight')
+        else:
+            ax.set_title(fr"n$\in${{2,3,4,5,6,7}}",fontsize=16)
+            fig.savefig(fname=f"images/GE-distribution-ALL.png",bbox_inches='tight')
+    else:
+        ax.set_title(fr"n={n}",fontsize=16)
+        fig.savefig(fname=f"images/GE-distribution-n={n}.png",bbox_inches='tight')
+
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     #######################################################
     # NOTE: Set simulation settings to save appropriately #
@@ -875,28 +920,41 @@ if __name__ == "__main__":
     betas = ['0_00','0_25', '0_50']                                                               
     #######################################################
 
+    # # show raw data per metric (optional 3rd degree polynomial fit)
     # scatterALL(alpha=alpha,beta=beta,draw_polynomial=False)
+
+    # # show mean data per metric (optional 3rd degree polynomial fit)
     # scatterMEAN(alpha=alpha,beta=beta,draw_polynomial=False)
+
+    # # compare effect of noise using 3rd degre polynomial fit (varying only one noise parameter)
     # polynomialFit_compareSingleNoise(changing='alpha')
+
+    # # compare effect of all noise settings using 3rd degre polynomial fit
     # polynomialFit_compareALL()
 
-    # NOTE NOTE: RUN SCRIPT USING -W "ignore" :NOTE NOTE #
+    # # show global efficiency distribution
+    # GE_distribution(n=0,without2=False)
     
     # for alpha, beta in product(alphas,betas):
     #     if beta == '0_50' and alpha == '0_50':
     #         continue
 
     #     print(f'alpha={alpha} & beta={beta}')
-    #     violin_per_params(alpha=alpha,
-    #                         beta=beta,
-    #                         perN=False,
-    #                         fit='exponential',
-    #                         without2=True) # NOTE: CHANGE FILENAME (@end function!)
 
+        # # NOTE NOTE: RUN SCRIPT USING -W "ignore" :NOTE NOTE #
+        # # show probability distribution per parameter settings per metric (optionally per graph size)
+        # violin_per_params(alpha=alpha,
+        #                     beta=beta,
+        #                     perN=False,
+        #                     fit='exponential',
+        #                     without2=True) # NOTE: CHANGE FILENAME (@end function!)
+
+        # # show histogram distribution per violin (per parameter settings, per metric, optionally per graph size)
         # hist_per_violin(alpha=alpha,
         #                 beta=beta,
         #                 perN=False) # NOTE: CHANGE FILENAME (@end function!)
 
+    # # show shift in probability distribution for varying noise per metric
     # violin_noiseEffect(fixed_param=beta,
     #                    varying_param=alphas,
     #                    variable='alpha',
