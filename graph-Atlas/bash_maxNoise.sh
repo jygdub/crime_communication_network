@@ -1,16 +1,16 @@
 #!/bin/bash
-#SBATCH --job-name="sim-a50-b50"
-#SBATCH --partition=genoa
+#SBATCH --job-name="maxNoise"
+#SBATCH --partition=rome
 #SBATCH --nodes=1
 #SBATCH --exclusive
-#SBATCH --time 3:00:00 #runtime
+#SBATCH --time 15:00:00 #runtime
 #SBATCH --tasks-per-node=1
-#SBATCH --cpus-per-task=192
+#SBATCH --cpus-per-task=128
 
 cp $HOME/Graph-Atlas/data-GraphAtlas.tsv /scratch-shared/Graph-Atlas
 cp -r $HOME/Graph-Atlas/graphs /scratch-shared/Graph-Atlas
-cp $HOME/Graph-Atlas/run_vectorized_parallel_Atlas.py /scratch-shared/Graph-Atlas
-cp $HOME/Graph-Atlas/dynamics_vectorized_Atlas.py /scratch-shared/Graph-Atlas
+cp $HOME/Graph-Atlas/adjusted_parallel_run.py /scratch-shared/Graph-Atlas
+cp $HOME/Graph-Atlas/adjusted_dynamics_vectorized.py /scratch-shared/Graph-Atlas
 
 cd /scratch-shared/Graph-Atlas
 module load 2023 
@@ -21,4 +21,4 @@ module load Python/3.11.3-GCCcore-12.3.0 # python version
 pip install --user numpy
 pip install --user pandas
 
-python3 run_vectorized_parallel_Atlas.py # run script
+python3 adjusted_parallel_run.py # run script
