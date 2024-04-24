@@ -11,7 +11,7 @@ from itertools import product
 import numpy as np, pandas as pd, seaborn as sns
 
 
-def scatterALL(alpha: str, beta: str, draw_polynomial: bool) -> None:
+def scatterALL(alpha: str, beta: str, draw_polynomial: bool):
     """
     Function to scatter all raw datapoints.
     - X-axis: Network metric
@@ -21,9 +21,6 @@ def scatterALL(alpha: str, beta: str, draw_polynomial: bool) -> None:
     - alpha (str): Sender bias/noise value
     - beta (str): Receiver bias/noise value
     - draw_polynomial (bool): True indicates fitting a 3rd degree polynomial; False indicates no polynomial fit
-
-    Returns:
-    - None
     """
 
     settings = f'alpha{alpha}-beta{beta}'
@@ -111,7 +108,7 @@ def scatterALL(alpha: str, beta: str, draw_polynomial: bool) -> None:
         plt.close(fig)
 
 
-def scatterMEAN(alpha: str, beta: str, draw_polynomial: bool) -> None:
+def scatterMEAN(alpha: str, beta: str, draw_polynomial: bool):
     """
     Function to scatter all mean datapoints, where the mean is taken per graph.
     - X-axis: Network metric
@@ -121,9 +118,6 @@ def scatterMEAN(alpha: str, beta: str, draw_polynomial: bool) -> None:
     - alpha (str): Sender bias/noise value
     - beta (str): Receiver bias/noise value
     - draw_polynomial (bool): True indicates fitting a 3rd degree polynomial; False indicates no polynomial fit
-
-    Returns:
-    - None
     """
 
     # set paths
@@ -235,16 +229,13 @@ def scatterMEAN(alpha: str, beta: str, draw_polynomial: bool) -> None:
         plt.close(fig)
 
 
-def polynomialFit_compareSingleNoise(changing: str) -> None:
+def polynomialFit_compareSingleNoise(changing: str):
     """
     Function to compare model parameter settings per changing 'alpha' or 'beta' noise using 
     the 3rd degree polynomial fit through mean data per graph size.
 
     Parameters:
     - changing (str): Indicator for comparing varying 'alpha' or 'beta'
-
-    Returns:
-    - None
     """
 
     # plot for each network metric per graph size
@@ -326,16 +317,10 @@ def polynomialFit_compareSingleNoise(changing: str) -> None:
         
         plt.close(fig)
 
-def polynomialFit_compareALL() -> None:
+def polynomialFit_compareALL():
     """
     Function to compare ALL model parameter settings using the 3rd degree polynomial fit 
     through mean data per graph size.
-
-    Parameters:
-    - None
-
-    Returns:
-    - None
     """
 
     # plot for each network metric per graph size
@@ -398,11 +383,11 @@ def polynomialFit_compareALL() -> None:
         plt.close(fig)
 
 
-def my_floor(a: float, precision: int = 0):
+def my_floor(a: float, precision: int = 0) -> np.float64:
     return np.true_divide(np.floor(a * 10**precision), 10**precision)
 
 
-def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2: bool) -> None:
+def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2: bool):
     """ 
     Violinplot distribution of convergence rates per metric per bin (size=0.1).
 
@@ -412,9 +397,6 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
     - perN (bool): False if combined data; True if per graph size
     - fit (str): Fitting linear fit ('linear') or exponential fit ('exponential) or no fit ('none')
     - without2 (bool): Indicator to remove graph size n=2 from data
-
-    Returns:
-    - None
     """
     
     # set paths
@@ -568,7 +550,7 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
         plt.close(fig)
 
 
-def hist_per_violin(alpha: float, beta: float, perN: bool) -> None:
+def hist_per_violin(alpha: float, beta: float, perN: bool):
     """ 
     Histogram distribution of convergence rates per metric per bin/violin (size=0.1).
 
@@ -576,9 +558,6 @@ def hist_per_violin(alpha: float, beta: float, perN: bool) -> None:
     - alpha (float): Alpha noise
     - beta (float): Beta noise
     - perN (bool): False if combined data; True if per graph size
-
-    Returns:
-    - None
     """
 
     # set paths
@@ -671,7 +650,7 @@ def hist_per_violin(alpha: float, beta: float, perN: bool) -> None:
                 plt.close(fig)
 
 
-def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, metric: str, fit: str, without2: bool) -> None:
+def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, metric: str, fit: str, without2: bool):
     """ 
     Violinplot distribution of convergence rates per metric per bin (size=0.1).
 
@@ -682,9 +661,6 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
     - metric (str): network metric
     - fit (str): Fitting linear fit ('linear') or exponential fit ('exponential) or no fit ('none')
     - without2 (bool): Indicator to remove graph size n=2 from data
-
-    Returns:
-    - None
     """
 
     # initials
@@ -865,7 +841,7 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
         plt.close(fig)
 
 
-def GE_distribution(n: int = 0, without2: bool = True) -> None:
+def GE_distribution(n: int = 0, without2: bool = True):
     """
     Function to show global efficiency distribution (in histogram) of all graphs in Graph Atlas.
     - Optional to show distribution per graph size
@@ -873,9 +849,6 @@ def GE_distribution(n: int = 0, without2: bool = True) -> None:
     Parameters:
     - n (int): Indicates graph size, if preferred to cluster graphs
     - without2 (bool): Include graph size of 2 (True) or not (False) 
-
-    Returns:
-    - None
     """
 
     # load data with relevant columns
