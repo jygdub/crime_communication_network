@@ -74,6 +74,6 @@ def meanData(alpha: str, beta: str):
     data.to_csv(f'data/meanRelationData-{settings}-Atlas.tsv',sep='\t',index=False) 
 
 if __name__ == "__main__":
-    alpha = '0_50'
-    beta = '0_25'
+    alpha = '0_75'
+    beta = '0_50'
     combineData(alpha=alpha,beta=beta)
