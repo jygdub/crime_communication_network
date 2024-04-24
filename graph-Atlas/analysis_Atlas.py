@@ -529,9 +529,13 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
                     np.exp(poly1d_fn_exp(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05))), 
                     'k--', 
                     label=f'ln(C)={round(coef_exp[0],2)} * GE + {round(coef_exp[1],2)}')
+        
+        elif fit == 'none':
+            # plot maximum probability density
+            ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
 
         # decorate figure
-        plt.legend(bbox_to_anchor=(1,1),fontsize=14)
+        plt.legend(bbox_to_anchor=(1,1),fontsize=10)
 
         if efficiency:
             ax.set_xlabel(f"{metric.capitalize()} efficiency",fontsize=16)
@@ -782,25 +786,25 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
             labels = [fr"$\alpha$=1.00", fr"$\alpha$=0.75", fr"$\alpha$=0.50"]
 
             if efficiency:
-                ax.set_title(fr"$\beta$={beta.replace('_','.')} for all n's | {metric.capitalize()} efficiency {round(TH,2)}-{round(TH+0.1,2)}",fontsize=16)
+                ax.set_title(fr"$\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}} | {metric.capitalize()} efficiency {round(th,2)}-{round(th+0.1,2)}",fontsize=16)
             elif coefficient:
-                ax.set_title(fr"$\beta$={beta.replace('_','.')} for all n's | {metric.capitalize()} coefficient {round(TH,2)}-{round(TH+0.1,2)}",fontsize=16)
+                ax.set_title(fr"$\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}} | {metric.capitalize()} coefficient {round(th,2)}-{round(th+0.1,2)}",fontsize=16)
             elif metric == 'CFbetweenness':
-                ax.set_title(fr"$\beta$={beta.replace('_','.')} for all n's | Current flow betweenness centrality {round(TH,2)}-{round(TH+0.1,2)}",fontsize=16)
+                ax.set_title(fr"$\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}} | Current flow betweenness centrality {round(th,2)}-{round(th+0.1,2)}",fontsize=16)
             else:
-                ax.set_title(fr"$\beta$={beta.replace('_','.')} for all n's | {metric.capitalize()} centrality {round(TH,2)}-{round(TH+0.1,2)}",fontsize=16)
+                ax.set_title(fr"$\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}} | {metric.capitalize()} centrality {round(th,2)}-{round(th+0.1,2)}",fontsize=16)
         else:
 
             labels = [fr"$\beta$=0.00", fr"$\beta$=0.25", fr"$\beta$=0.50"]        
 
             if efficiency:
-                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} for all n's | {metric.capitalize()} efficiency {round(TH,2)}-{round(TH+0.1,2)}",fontsize=16)
+                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & n$\in${{3,4,5,6,7}} | {metric.capitalize()} efficiency {round(th,2)}-{round(th+0.1,2)}",fontsize=16)
             elif coefficient:
-                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} for all n's | {metric.capitalize()} coefficient {round(TH,2)}-{round(TH+0.1,2)}",fontsize=16)
+                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & n$\in${{3,4,5,6,7}} | {metric.capitalize()} coefficient {round(th,2)}-{round(th+0.1,2)}",fontsize=16)
             elif metric == 'CFbetweenness':
-                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} for all n's | Current flow betweenness centrality {round(TH,2)}-{round(TH+0.1,2)}",fontsize=16)
+                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & n$\in${{3,4,5,6,7}} | Current flow betweenness centrality {round(th,2)}-{round(th+0.1,2)}",fontsize=16)
             else:
-                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} for all n's | {metric.capitalize()} centrality {round(TH,2)}-{round(TH+0.1,2)}",fontsize=16)
+                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & n$\in${{3,4,5,6,7}} | {metric.capitalize()} centrality {round(th,2)}-{round(th+0.1,2)}",fontsize=16)
 
         # set x-axis
         Xaxis = np.arange(1, len(labels) + 1)
@@ -823,10 +827,17 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
 
             # plot maximum probability density
             ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
-            ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), np.exp(poly1d_fn_exp(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05))), 'k--', label=f'ln(y)={round(coef_exp[0],2)} x + {round(coef_exp[1],2)}')
+            ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), 
+                    np.exp(poly1d_fn_exp(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05))), 
+                    'k--') 
+                    # label=f'ln(y)={round(coef_exp[0],2)} x + {round(coef_exp[1],2)}')
+        
+        elif fit == 'none':
+            # plot maximum probability density
+            ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
 
         # decorate figure
-        plt.legend(bbox_to_anchor=(1,1),fontsize=14)
+        plt.legend(bbox_to_anchor=(1,1),fontsize=10)
 
         ax.set_xticks(Xaxis, labels=labels)
         ax.set_xlim(0., len(labels) + 1.)
@@ -836,17 +847,19 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
 
         plt.tick_params(axis="both",which="major",labelsize=16)
 
-        plt.show()
+        # plt.show()
 
         #######################################################
         # NOTE: add LOG for regular log scale; add linePlot for linear fit; change allN to withoutN=2 if applied
         if variable == 'alpha':
+            fig.savefig(f"{images_path}/LOG-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
             # fig.savefig(f"{images_path}/linePlot-noiseEffect-varyingAlpha-allN-{metric}-violin{counter}.png",bbox_inches='tight')
-            fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingAlpha-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            # fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
 
         else:
+            fig.savefig(f"{images_path}/LOG-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
             # fig.savefig(f"{images_path}/linePlot-noiseEffect-varyingBeta-allN-{metric}-violin{counter}.png",bbox_inches='tight')
-            fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingBeta-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            # fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
         #######################################################
 
         plt.close(fig)
@@ -855,8 +868,8 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
 if __name__ == "__main__":
     #######################################################
     # NOTE: Set simulation settings to save appropriately #
-    alpha = '1_00'
-    beta = '0_00'      
+    alpha = '0_75'
+    beta = '0_25'      
 
     alphas = ['1_00','0_75','0_50']
     betas = ['0_00','0_25', '0_50']                                                               
@@ -869,15 +882,16 @@ if __name__ == "__main__":
 
     # NOTE NOTE: RUN SCRIPT USING -W "ignore" :NOTE NOTE #
     
-    for alpha, beta in product(alphas,betas):
-        if beta == '0_50' and alpha in ['0_75','0_50']:
-            continue
-        print(f'alpha={alpha} & beta={beta}')
-        violin_per_params(alpha=alpha,
-                          beta=beta,
-                          perN=False,
-                          fit='exponential',
-                          without2=True) # NOTE: CHANGE FILENAME (@end function!)
+    # for alpha, beta in product(alphas,betas):
+    #     if beta == '0_50' and alpha == '0_50':
+    #         continue
+
+    #     print(f'alpha={alpha} & beta={beta}')
+    #     violin_per_params(alpha=alpha,
+    #                         beta=beta,
+    #                         perN=False,
+    #                         fit='exponential',
+    #                         without2=True) # NOTE: CHANGE FILENAME (@end function!)
 
         # hist_per_violin(alpha=alpha,
         #                 beta=beta,
@@ -887,5 +901,5 @@ if __name__ == "__main__":
     #                    varying_param=alphas,
     #                    variable='alpha',
     #                    metric='global',
-    #                    fit='exponential',
+    #                    fit='none',
     #                    without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
