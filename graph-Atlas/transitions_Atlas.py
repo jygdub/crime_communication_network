@@ -135,7 +135,7 @@ def distribution_hellinger(alpha: str, beta: str, n: int, efficient: bool = Fals
     ax.tick_params(axis="both",which="major",labelsize=16)
     ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=16)
     
-    fig.savefig(f"images/transitions/HellingerDistribution-{settings}-n={n}.png",bbox_inches='tight')
+    fig.savefig(f"images/transitions/n={n}/HellingerDistribution-{settings}-n={n}.png",bbox_inches='tight')
 
     plt.close(fig)
 
@@ -178,7 +178,7 @@ def correlate_hellinger_globalEff(alpha: str, beta: str, n: int, startGraph: boo
         ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=16)
         plt.show()
 
-        # fig.savefig(f"images/transitions/GE-Hellinger-correlation-alpha={alpha}-beta={beta}-n={n}.png",bbox_inches='tight')
+        fig.savefig(f"images/transitions/n={n}/GE-Hellinger-correlation-{settings}-n={n}.png",bbox_inches='tight')
         plt.close(fig)
 
     elif startGraph:
@@ -393,26 +393,26 @@ if __name__ == "__main__":
     #     # NOTE: CHOOSE FUNCTION TO RUN
     #     # NOTE
 
-    # run comparison and generate Hellinger distance data
-    pairwise_comparison(alpha=alpha,
-                        beta=beta,
-                        from_graph=from_graph,
-                        to_graph=to_graph,
-                        n=n,
-                        plots=False,
-                        efficient=False)
+    # # run comparison and generate Hellinger distance data
+    # pairwise_comparison(alpha=alpha,
+    #                     beta=beta,
+    #                     from_graph=from_graph,
+    #                     to_graph=to_graph,
+    #                     n=n,
+    #                     plots=False,
+    #                     efficient=False)
 
     # # plot histogram distribution of Hellinger distance
-    # distribution_hellinger(alpha,
-    #                        beta,
+    # distribution_hellinger(alpha=alpha,
+    #                        beta=beta,
     #                        n=n,
     #                        efficient=False)
 
-    # # scatterplot relation between difference in global efficiency and difference in Helling distance
+    # # scatterplot relation between difference in global efficiency and difference in Hellinger distance
     # correlate_hellinger_globalEff(alpha=alpha,
     #                               beta=beta,
     #                               n=n,
-    #                               startGraph=True,
+    #                               startGraph=False,
     #                               efficient=False) # if TRUE, adjust range as desired
 
     # # investigate graph pairs
