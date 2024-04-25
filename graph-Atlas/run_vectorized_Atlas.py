@@ -26,6 +26,7 @@ for i in range(len(df)):
 
 alpha = 0.75
 beta = 0.25
+nbits = 3
 
 a = '1_00'
 b = '0_00'
@@ -64,7 +65,7 @@ for j in tqdm(range(len(df))):
         # states = []
         # G_init = init(G)
 
-        M, meanHammingDistance, states_trajectory, graph = simulate(graph=graph, alpha=alpha, beta=beta)
+        M, meanHammingDistance, states_trajectory, graph = simulate(graph=graph, alpha=alpha, beta=beta, nbits=nbits)
 
         # save state diversity to DataFrame
         df_states = pd.DataFrame(states_trajectory)

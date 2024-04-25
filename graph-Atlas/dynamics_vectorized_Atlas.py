@@ -132,7 +132,7 @@ def count_states(states: np.ndarray, states_trajectory: dict) -> dict:
     return states_trajectory
 
 
-def simulate(graph: str, alpha: float = 1.0, beta: float = 0.0) -> int | list:
+def simulate(graph: str, alpha: float = 1.0, beta: float = 0.0, nbits: int =3) -> int | list:
     """
     Function to run simulation of communication dynamics on network.
 
@@ -140,6 +140,7 @@ def simulate(graph: str, alpha: float = 1.0, beta: float = 0.0) -> int | list:
     - G (nx.classes.graph.Graph): generated networkx graph
     - alpha (float): probability of sender bias (sending match or mismatch bits)
     - beta (float): probability of receiver bias (flipping message or not)
+    - nbits (int): length of agent's state
 
     Returns:
     - M (int): total messages sent in simulation
@@ -149,7 +150,7 @@ def simulate(graph: str, alpha: float = 1.0, beta: float = 0.0) -> int | list:
     file = f'graphs/{graph}.pickle'
     G = pickle.load(open(file,'rb'))
 
-    states = init(n=G.number_of_nodes(),nbits=3)
+    states = init(n=G.number_of_nodes(),nbits=nbits)
 
     meanHammingDistance = []
     M = 0
@@ -166,16 +167,27 @@ def simulate(graph: str, alpha: float = 1.0, beta: float = 0.0) -> int | list:
     states_trajectory = count_states(states,states_trajectory)
 
     hammingDistance = hamming_vector(states,range(len(states)))
-    meanHammingDistance.append(hammingDistance.mean())
+    meanHD = hammingDistance.mean()
+    meanHammingDistance.append(meanHD)
 
     # print(M, meanHammingDistance[-1])
 
     nodes = list(G.nodes())
 
+    # initialize neighbor dictionary
+    dictNeighbors = {key: [] for key in nodes}
+
+    # find neighbors of all nodes and store in dictionary
+    for node in nodes:
+        neighbors = G.neighbors(node)
+        
+        for nb in neighbors:
+            dictNeighbors[node].append(nb)
+
     # converge when all nodes agree on state
-    while (meanHammingDistance[-1] != 0.0):
+    while (meanHD != 0.0):
         source = np.random.choice(nodes)
-        destination = np.random.choice(list(G.neighbors(source))) # TODO: pre-define neighbors
+        destination = np.random.choice(dictNeighbors[source])
 
         states = message_update(states, source, destination, alpha=alpha, beta=beta)
         states_trajectory = count_states(states,states_trajectory)
@@ -187,6 +199,7 @@ def simulate(graph: str, alpha: float = 1.0, beta: float = 0.0) -> int | list:
 
         # re-calculate normalized hamming distance for all pair combinations for node update
         hammingDistance = hamming_vector(states, destination)
-        meanHammingDistance.append(hammingDistance.mean())
+        meanHD = hammingDistance.mean()
+        meanHammingDistance.append(meanHD)
 
     return M, meanHammingDistance, states_trajectory, graph

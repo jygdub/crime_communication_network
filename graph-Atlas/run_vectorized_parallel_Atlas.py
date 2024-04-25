@@ -19,8 +19,9 @@ def run(x):
 
     alpha = 0.50
     beta = 0.50
+    nbits = 3
 
-    totalMessages, meanHammingDistance, statesTrajectories, graph = simulate(graph=graph, alpha=alpha, beta=beta)
+    totalMessages, meanHammingDistance, statesTrajectories, graph = simulate(graph=graph, alpha=alpha, beta=beta, nbits=nbits)
     
     return totalMessages, meanHammingDistance, statesTrajectories, graph, i
 
