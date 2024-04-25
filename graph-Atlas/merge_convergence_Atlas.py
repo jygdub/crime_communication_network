@@ -10,13 +10,13 @@ Written by Jade Dubbeld
 import pandas as pd
 from tqdm import tqdm
 
-settings = f'alpha0_75-beta0_50'
+settings = f'alpha0_50-beta0_50'
 
 df = pd.read_csv('data/data-GraphAtlas.tsv',sep='\t')
 
 graphs = []
 
-for j in range(553,len(df)):
+for j in range(len(df)):
 
     # generate graph ID
     name = 'G' + str(df['index'].iloc[j])
@@ -24,10 +24,10 @@ for j in range(553,len(df)):
 
 for graph in tqdm(graphs):
 
-    data = pd.DataFrame(index=range(100),columns=['nMessages','meanHammingDist'])
+    data = pd.DataFrame(index=range(100),columns=['nMessages'])#,'meanHammingDist'])
 
     for i in range(100):
-        run = pd.read_csv(f'results/{settings}/convergence-{graph}-run{i}.tsv', sep='\t', usecols=['nMessages','meanHammingDist'])
+        run = pd.read_csv(f'results/{settings}/convergence-{graph}-run{i}.tsv', sep='\t', usecols=['nMessages'])#,'meanHammingDist'])
         data.iloc[i] = run.iloc[0]
 
     data.to_csv(f'results/{settings}/merged/convergence-{graph}.tsv', sep='\t',index=False)

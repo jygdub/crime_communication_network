@@ -497,7 +497,7 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
             ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
             ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), poly1d_fn_lin(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05)), 
                     'g--', 
-                    label=f'{round(coef_lin[0],2)} x + {round(coef_lin[1],2)}')
+                    label=f'C = {round(coef_lin[0],2)} * GE + {round(coef_lin[1],2)}')
         
         elif fit == 'exponential':
 
@@ -510,7 +510,7 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
             ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), 
                     np.exp(poly1d_fn_exp(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05))), 
                     'k--', 
-                    label=f'ln(C)={round(coef_exp[0],2)} * GE + {round(coef_exp[1],2)}')
+                    label=f'ln(C) = {round(coef_exp[0],2)} * GE + {round(coef_exp[1],2)}')
         
         elif fit == 'none':
             # plot maximum probability density
@@ -828,14 +828,14 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
         #######################################################
         # NOTE: add LOG for regular log scale; add linePlot for linear fit; change allN to withoutN=2 if applied
         if variable == 'alpha':
-            fig.savefig(f"{images_path}/LOG-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            # fig.savefig(f"{images_path}/LOG-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
             # fig.savefig(f"{images_path}/linePlot-noiseEffect-varyingAlpha-allN-{metric}-violin{counter}.png",bbox_inches='tight')
-            # fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
 
         else:
-            fig.savefig(f"{images_path}/LOG-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            # fig.savefig(f"{images_path}/LOG-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
             # fig.savefig(f"{images_path}/linePlot-noiseEffect-varyingBeta-allN-{metric}-violin{counter}.png",bbox_inches='tight')
-            # fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
         #######################################################
 
         plt.close(fig)
@@ -886,8 +886,8 @@ def GE_distribution(n: int = 0, without2: bool = True):
 if __name__ == "__main__":
     #######################################################
     # NOTE: Set simulation settings to save appropriately #
-    alpha = '0_75'
-    beta = '0_25'      
+    alpha = '0_50'
+    beta = '0_50'      
 
     alphas = ['1_00','0_75','0_50']
     betas = ['0_00','0_25', '0_50']                                                               
@@ -909,18 +909,16 @@ if __name__ == "__main__":
     # GE_distribution(n=0,without2=False)
     
     # for alpha, beta in product(alphas,betas):
-    #     if beta == '0_50' and alpha == '0_50':
-    #         continue
 
     #     print(f'alpha={alpha} & beta={beta}')
 
-        # # NOTE NOTE: RUN SCRIPT USING -W "ignore" :NOTE NOTE #
-        # # show probability distribution per parameter settings per metric (optionally per graph size)
-        # violin_per_params(alpha=alpha,
-        #                     beta=beta,
-        #                     perN=False,
-        #                     fit='exponential',
-        #                     without2=True) # NOTE: CHANGE FILENAME (@end function!)
+    #     # NOTE NOTE: RUN SCRIPT USING -W "ignore" :NOTE NOTE #
+    #     # show probability distribution per parameter settings per metric (optionally per graph size)
+    #     violin_per_params(alpha=alpha,
+    #                         beta=beta,
+    #                         perN=False,
+    #                         fit='exponential',
+    #                         without2=True) # NOTE: CHANGE FILENAME (@end function!)
 
         # # show histogram distribution per violin (per parameter settings, per metric, optionally per graph size)
         # hist_per_violin(alpha=alpha,
@@ -932,5 +930,5 @@ if __name__ == "__main__":
     #                    varying_param=alphas,
     #                    variable='alpha',
     #                    metric='global',
-    #                    fit='none',
+    #                    fit='exponential',
     #                    without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
