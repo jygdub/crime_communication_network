@@ -24,7 +24,7 @@ def hellinger(p: np.ndarray, q: np.ndarray) -> np.float64:
     return np.sqrt(np.sum((np.sqrt(p) - np.sqrt(q)) ** 2)) / np.sqrt(2)
 
 
-def pairwise_comparison(alpha: str, beta: str, from_graph: list, to_graph: list, n: int, plots: bool = False):
+def pairwise_comparison(alpha: str, beta: str, from_graph: list, to_graph: list, n: int, plots: bool = False, efficient: bool = False):
     """
     Function to pairwise compare a graph transition to compute Hellinger distance (and save computations).
     - Optional to generate corresponding distribution plots for visual comparison.
@@ -36,10 +36,14 @@ def pairwise_comparison(alpha: str, beta: str, from_graph: list, to_graph: list,
     - to_graph (list): List of graph IDs AFTER transition
     - n (int): Graph size
     - plots (bool): True to indicate to generate plots; False if not
+    - efficient (bool): False for random dynamics; True for efficient dynamics
     """
 
     # set paths
-    settings = f'alpha{alpha}-beta{beta}'      
+    settings = f"alpha{alpha}-beta{beta}"  
+
+    if efficient:
+        settings = f"efficient-alpha{alpha}-beta{beta}" 
 
     # load graph data    
     data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
@@ -100,10 +104,10 @@ def pairwise_comparison(alpha: str, beta: str, from_graph: list, to_graph: list,
     data_hellinger["GE_difference"] = data_hellinger["GE_graph1"] - data_hellinger["GE_graph2"]
 
     # save Hellinger distance data
-    data_hellinger.to_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t',index=False)
+    data_hellinger.to_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t',index=False)
 
 
-def distribution_hellinger(alpha: str, beta: str, n: int):
+def distribution_hellinger(alpha: str, beta: str, n: int, efficient: bool = False):
     """
     Function to visualize Hellinger distance distribution for given parameter settings.
 
@@ -111,10 +115,17 @@ def distribution_hellinger(alpha: str, beta: str, n: int):
     - alpha (str): Setting value of alpha noise 
     - beta (str): Setting value of beta noise
     - n (int): Graph size
+    - efficient (bool): False for random dynamics; True for efficient dynamics
     """
 
+    # set paths
+    settings = f"alpha{alpha}-beta{beta}"  
+
+    if efficient:
+        settings = f"efficient-alpha{alpha}-beta{beta}" 
+
     # load data
-    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t')
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t')
 
     # plot and save histogram distribution of Hellinger distances
     fig,ax = plt.subplots()
@@ -124,11 +135,12 @@ def distribution_hellinger(alpha: str, beta: str, n: int):
     ax.tick_params(axis="both",which="major",labelsize=16)
     ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=16)
     
-    fig.savefig(f"images/transitions/HellingerDistribution-alpha={alpha}-beta={beta}-n={n}.png",bbox_inches='tight')
+    fig.savefig(f"images/transitions/HellingerDistribution-{settings}-n={n}.png",bbox_inches='tight')
+
     plt.close(fig)
 
 
-def correlate_hellinger_globalEff(alpha: str, beta: str, n: int, startGraph: bool = False):
+def correlate_hellinger_globalEff(alpha: str, beta: str, n: int, startGraph: bool = False, efficient: bool = False):
     """
     Function to show relation between operational efficiency (Hellinger distance) and structural efficiency
     (global efficiency) by comparing single edge transitions between graphs.
@@ -141,13 +153,20 @@ def correlate_hellinger_globalEff(alpha: str, beta: str, n: int, startGraph: boo
     - n (int): Graph size
     - startGraph (bool): Including all transitions in analysis (False) or 
                          only transitions from specific starting graph (True) 
+    - efficient (bool): False for random dynamics; True for efficient dynamics
     
     Returns:
     - None
     """
 
+    # set paths
+    settings = f"alpha{alpha}-beta{beta}"  
+
+    if efficient:
+        settings = f"efficient-alpha{alpha}-beta{beta}" 
+
     # load Hellinger data for given graph size
-    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t')
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t')
 
     if not startGraph:
         # plot Hellinger distance against global efficiency difference between each transition pair
@@ -184,12 +203,12 @@ def correlate_hellinger_globalEff(alpha: str, beta: str, n: int, startGraph: boo
             ax.set_title(f"G{int(s)}->G{l}")
             plt.show()
             
-            # fig.savefig(f"images/transitions/startG{int(s)}-GE-Hellinger-correlation-alpha={alpha}-beta={beta}-n={n}.png",bbox_inches='tight')
+            # fig.savefig(f"images/transitions/startG{int(s)}-GE-Hellinger-correlation-{settings}-n={n}.png",bbox_inches='tight')
             plt.close(fig)
 
 
 
-def investigate_intervention(alpha: str, beta: str, n: int):
+def investigate_intervention(alpha: str, beta: str, n: int, efficient: bool = False):
     """
     Function to investigate difference in efficiency, both structural and operational, 
     after single edge transition (i.e., intervention) per starting graph
@@ -198,19 +217,26 @@ def investigate_intervention(alpha: str, beta: str, n: int):
     - alpha (str): Setting value of alpha noise 
     - beta (str): Setting value of beta noise
     - n (int): Graph size
+    - efficient (bool): False for random dynamics; True for efficient dynamics
     """
 
-    # load data
-    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t')
-    
-    startGraphs = data_hellinger['index_graph1'].unique()[800:805]
-    bothMaximum = []
-    notMaximum = []
+    # set paths
+    settings = f"alpha{alpha}-beta{beta}"  
 
-    for s in startGraphs:
+    if efficient:
+        settings = f"efficient-alpha{alpha}-beta{beta}" 
+
+    # load data
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t')
+    
+    startGraphs = data_hellinger['index_graph1'].unique()[800:820]
+    bothMaximum = {}
+    notMaximum = {}
+
+    for s in tqdm(startGraphs):
 
         subset = data_hellinger[data_hellinger['index_graph1']==s]
-        print(subset)
+        # print(subset)
 
         # find maximum values for Hellinger distance and global efficiency difference
         maxHellinger = max(subset['Hellinger'])
@@ -221,13 +247,23 @@ def investigate_intervention(alpha: str, beta: str, n: int):
         indicesGE = subset[subset['GE_difference'] == maxGE].index
 
         for idxHellinger, idxGE in product(indicesHellinger,indicesGE):
+            graphID1 = int(subset['index_graph1'][idxHellinger])
+            graphID2 = int(subset['index_graph2'][idxHellinger])
+            
             if idxHellinger == idxGE:
-                bothMaximum.append((int(subset['index_graph1'][idxHellinger]),int(subset['index_graph2'][idxHellinger])))
+                if graphID1 in bothMaximum:
+                    bothMaximum[graphID1].append(graphID2)
+                else:
+                    bothMaximum[graphID1] = [graphID2]
             else:
-                notMaximum.append((int(subset['index_graph1'][idxHellinger]),int(subset['index_graph2'][idxHellinger])))
-        
-        print(bothMaximum)
-        print(notMaximum)
+                if graphID1 in notMaximum:
+                    notMaximum[graphID1].append(graphID2)
+                else:
+                    notMaximum[graphID1] = [graphID2]
+    
+    print(startGraphs)
+    print(bothMaximum)
+    print(notMaximum)
 
 
 def possible_transitions(n: int) -> None:
@@ -280,7 +316,7 @@ def possible_transitions(n: int) -> None:
         fmt ='% i')
     
 
-def analyze_graphPairs(alpha: str, beta: str, n: int):
+def analyze_graphPairs(alpha: str, beta: str, n: int, efficient: bool = False):
     """
     Function to obtain/show top 10 highest and top 10 lowest for both Hellinger distance and global efficiency.
     
@@ -288,9 +324,16 @@ def analyze_graphPairs(alpha: str, beta: str, n: int):
     - alpha (str): Setting value of alpha noise 
     - beta (str): Setting value of beta noise
     - n (int): Graph size
+    - efficient (bool): False for random dynamics; True for efficient dynamics
     """
 
-    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t')
+    # set paths
+    settings = f"alpha{alpha}-beta{beta}"  
+
+    if efficient:
+        settings = f"efficient-alpha{alpha}-beta{beta}" 
+
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t')
 
     # find top 10 graph pairs with highest Hellinger distance
     sortedHellinger = data_hellinger.sort_values(by=['Hellinger'],axis=0,ascending=False)
@@ -350,29 +393,33 @@ if __name__ == "__main__":
     #     # NOTE: CHOOSE FUNCTION TO RUN
     #     # NOTE
 
-    #     # run comparison and generate Hellinger distance data
-    #     pairwise_comparison(alpha=alpha,
-    #                         beta=beta,
-    #                         from_graph=from_graph,
-    #                         to_graph=to_graph,
-    #                         n=n,
-    #                         plots=False)
+    # run comparison and generate Hellinger distance data
+    pairwise_comparison(alpha=alpha,
+                        beta=beta,
+                        from_graph=from_graph,
+                        to_graph=to_graph,
+                        n=n,
+                        plots=False,
+                        efficient=False)
 
     # # plot histogram distribution of Hellinger distance
     # distribution_hellinger(alpha,
     #                        beta,
-    #                        n=n)
+    #                        n=n,
+    #                        efficient=False)
 
-    # scatterplot relation between difference in global efficiency and difference in Helling distance
-    correlate_hellinger_globalEff(alpha=alpha,
-                                  beta=beta,
-                                  n=n,
-                                  startGraph=True) # if TRUE, adjust range as desired
+    # # scatterplot relation between difference in global efficiency and difference in Helling distance
+    # correlate_hellinger_globalEff(alpha=alpha,
+    #                               beta=beta,
+    #                               n=n,
+    #                               startGraph=True,
+    #                               efficient=False) # if TRUE, adjust range as desired
 
     # # investigate graph pairs
     # analyze_graphPairs(alpha=alpha, 
     #                    beta=beta, 
-    #                    n=n)
+    #                    n=n,
+    #                    efficient=False)
 
     # # investigate intervention effectiveness
     # investigate_intervention(alpha=alpha,
