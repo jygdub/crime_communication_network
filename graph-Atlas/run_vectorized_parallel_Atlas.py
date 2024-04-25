@@ -44,8 +44,8 @@ if __name__ == "__main__":
         for result in p.imap_unordered(run, product(graphs,np.arange(100))):
             M, meanHammingDistance, states_trajectory, graph, i = result
 
-            # df_states = pd.DataFrame(states_trajectory)
-            # df_states.to_csv(f'{path}/states-{graph}-run{i}.tsv',sep='\t',index=False)
+            df_states = pd.DataFrame(states_trajectory)
+            df_states.to_csv(f'{path}/states-{graph}-run{i}.tsv',sep='\t',index=False)
 
             df_convergence = pd.DataFrame(
                 {'graph': graph,
