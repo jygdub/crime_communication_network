@@ -30,6 +30,10 @@ if __name__ == "__main__":
 
     path = "results/alpha0_50-beta0_50"
 
+    # # setting for local simulation
+    # df = pd.read_csv('data/data-GraphAtlas.tsv',sep='\t')
+
+    # setting for Snellius simulation
     df = pd.read_csv('data-GraphAtlas.tsv',sep='\t')
 
     graphs = []
