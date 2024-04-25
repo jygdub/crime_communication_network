@@ -43,26 +43,6 @@ def saveGraph(data: pd.DataFrame):
         # plt.savefig(f'graphs/{graph}.png')
         plt.close(fig)
 
-# def showSideBySide(graphID1: int, graphID2: int):
-def showSideBySide(graphIDs: list):
-    """
-    Function to visualize two graphs side-by-side.
-
-    Parameters:
-    - graphIDs (list): Contains graph IDs to visualize/compare
-    """
-
-    fig, axs = plt.subplots(nrows=1,ncols=len(graphIDs),figsize=(20,5))
-
-    for index,id in enumerate(graphIDs):
-        G = nx.graph_atlas(id)
-        nx.draw(G=G,pos=nx.kamada_kawai_layout(G),ax=axs[index],node_size=50)
-        axs[index].set_title(f"G{id}")
-
-    plt.show()
-    fig.savefig("images/test-figure.png",bbox_inches='tight')
-    plt.close(fig)
-
 if __name__ == "__main__":
 
     # load data
@@ -70,6 +50,3 @@ if __name__ == "__main__":
 
     # # save graph image
     # saveGraph(data=df['index'])
-
-    # showSideBySide(graphID1=286,graphID2=433)
-    showSideBySide(graphIDs=[340,348,351,353,337,338,336,350,349,286])
