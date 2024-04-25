@@ -128,7 +128,7 @@ def distribution_hellinger(alpha: str, beta: str, n: int):
     plt.close(fig)
 
 
-def correlate_hellinger_globalEff(alpha: str, beta: str, n: int):
+def correlate_hellinger_globalEff(alpha: str, beta: str, n: int, startGraph: bool = False):
     """
     Function to show relation between operational efficiency (Hellinger distance) and structural efficiency
     (global efficiency) by comparing single edge transitions between graphs.
@@ -139,25 +139,54 @@ def correlate_hellinger_globalEff(alpha: str, beta: str, n: int):
     - alpha (float): Setting value of alpha noise 
     - beta (float): Setting value of beta noise
     - n (int): Graph size
+    - startGraph (bool): Including all transitions in analysis (False) or 
+                         only transitions from specific starting graph (True) 
     
     Returns:
     - None
     """
 
-    # load data
+    # load Hellinger data for given graph size
     data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t')
 
-    # plot Hellinger distance against global efficiency difference between each transition pair
-    fig, ax = plt.subplots()
-    ax.scatter(x=data_hellinger["GE_difference"],y=data_hellinger["Hellinger"])
-    ax.set_xlabel("Difference in global efficiency",fontsize=16)
-    ax.set_ylabel("Hellinger distance",fontsize=16)
-    ax.tick_params(axis="both",which="major",labelsize=16)
-    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=16)
-    plt.show()
+    if not startGraph:
+        # plot Hellinger distance against global efficiency difference between each transition pair
+        fig, ax = plt.subplots()
+        ax.scatter(x=data_hellinger["GE_difference"],y=data_hellinger["Hellinger"])
+        ax.set_xlabel("Difference in global efficiency",fontsize=16)
+        ax.set_ylabel("Hellinger distance",fontsize=16)
+        ax.tick_params(axis="both",which="major",labelsize=16)
+        ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=16)
+        plt.show()
 
-    # fig.savefig(f"images/transitions/GE-Hellinger-correlation-alpha={alpha}-beta={beta}-n={n}.png",bbox_inches='tight')
-    plt.close(fig)
+        # fig.savefig(f"images/transitions/GE-Hellinger-correlation-alpha={alpha}-beta={beta}-n={n}.png",bbox_inches='tight')
+        plt.close(fig)
+
+    elif startGraph:
+
+        startGraphs = data_hellinger['index_graph1'].unique()[800:805] # NOTE: POSSIBLE TO ADJUST RANGE
+
+        for s in startGraphs:
+            print(s)
+
+            subset = data_hellinger[data_hellinger['index_graph1']==s]
+            l = list(map(int,subset['index_graph2']))
+            x = list(subset['GE_difference'])
+            y = list(subset['Hellinger'])
+            print(subset)
+
+            fig, ax = plt.subplots()
+            ax.scatter(x=x,y=y)
+            for i, txt in enumerate(l):
+                ax.annotate(txt, (x[i], y[i]))
+            ax.set_xlabel("GE difference")
+            ax.set_ylabel("Hellinger distance")
+            ax.set_title(f"G{int(s)}->G{l}")
+            plt.show()
+            
+            # fig.savefig(f"images/transitions/startG{int(s)}-GE-Hellinger-correlation-alpha={alpha}-beta={beta}-n={n}.png",bbox_inches='tight')
+            plt.close(fig)
+
 
 
 def investigate_intervention(alpha: str, beta: str, n: int):
@@ -173,37 +202,32 @@ def investigate_intervention(alpha: str, beta: str, n: int):
 
     # load data
     data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha={alpha}-beta={beta}-n={n}.tsv",sep='\t')
-    fig, ax = plt.subplots()
-
-    startGraphs = data_hellinger['index_graph1'].unique()[100:105]
+    
+    startGraphs = data_hellinger['index_graph1'].unique()[800:805]
+    bothMaximum = []
+    notMaximum = []
 
     for s in startGraphs:
+
         subset = data_hellinger[data_hellinger['index_graph1']==s]
         print(subset)
 
-        # TODO
+        # find maximum values for Hellinger distance and global efficiency difference
+        maxHellinger = max(subset['Hellinger'])
+        maxGE = max(subset['GE_difference'])
 
-    plt.close(fig)
+        # and find corresponding indices in DataFrame
+        indicesHellinger = subset[subset['Hellinger'] == maxHellinger].index
+        indicesGE = subset[subset['GE_difference'] == maxGE].index
 
-
-def showSideBySide(graphIDs: list):
-    """
-    Function to visualize two graphs side-by-side.
-
-    Parameters:
-    - graphIDs (list): Contains graph IDs to visualize/compare
-    """
-
-    fig, axs = plt.subplots(nrows=1,ncols=len(graphIDs),figsize=(20,5))
-
-    for index,id in enumerate(graphIDs):
-        G = nx.graph_atlas(id)
-        nx.draw(G=G,pos=nx.kamada_kawai_layout(G),ax=axs[index],node_size=50)
-        axs[index].set_title(f"G{id}")
-
-    plt.show()
-    fig.savefig("images/test-figure.png",bbox_inches='tight')
-    plt.close(fig)
+        for idxHellinger, idxGE in product(indicesHellinger,indicesGE):
+            if idxHellinger == idxGE:
+                bothMaximum.append((int(subset['index_graph1'][idxHellinger]),int(subset['index_graph2'][idxHellinger])))
+            else:
+                notMaximum.append((int(subset['index_graph1'][idxHellinger]),int(subset['index_graph2'][idxHellinger])))
+        
+        print(bothMaximum)
+        print(notMaximum)
 
 
 def possible_transitions(n: int) -> None:
@@ -339,20 +363,19 @@ if __name__ == "__main__":
     #                        beta,
     #                        n=n)
 
-    # # scatterplot relation between difference in global efficiency and difference in Helling distance
-    # correlate_hellinger_globalEff(alpha=alpha,
-    #                               beta=beta,
-    #                               n=n)
+    # scatterplot relation between difference in global efficiency and difference in Helling distance
+    correlate_hellinger_globalEff(alpha=alpha,
+                                  beta=beta,
+                                  n=n,
+                                  startGraph=True) # if TRUE, adjust range as desired
 
     # # investigate graph pairs
     # analyze_graphPairs(alpha=alpha, 
     #                    beta=beta, 
     #                    n=n)
 
-    # investigate intervention effectiveness
-    investigate_intervention(alpha=alpha,
-                             beta=beta,
-                             n=n) 
-    
-    # showSideBySide(graphID1=286,graphID2=433)
-    showSideBySide(graphIDs=[340,348,351,353,337,338,336,350,349,286])
+    # # investigate intervention effectiveness
+    # investigate_intervention(alpha=alpha,
+    #                          beta=beta,
+    #                          n=n) 
+
