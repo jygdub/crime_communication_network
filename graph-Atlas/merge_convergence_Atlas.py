@@ -10,9 +10,12 @@ Written by Jade Dubbeld
 import pandas as pd
 from tqdm import tqdm
 
-settings = f'alpha0_50-beta0_50'
+settings = f'alpha1_00-beta0_00'
 
 df = pd.read_csv('data/data-GraphAtlas.tsv',sep='\t')
+
+# # NOTE: USE FOR SPECIFIC CASE OF ONLY USING GRAPH SIZE 7
+# df = df[df['nodes']==7]
 
 graphs = []
 
@@ -24,10 +27,14 @@ for j in range(len(df)):
 
 for graph in tqdm(graphs):
 
-    data = pd.DataFrame(index=range(100),columns=['nMessages'])#,'meanHammingDist'])
+    data = pd.DataFrame(index=range(100),columns=['nMessages','meanHammingDist'])
 
-    for i in range(100):
+    for i in range(100): # NOTE: LOAD CORRECT CONVERGENCE RESULTS
         run = pd.read_csv(f'results/{settings}/convergence-{graph}-run{i}.tsv', sep='\t', usecols=['nMessages'])#,'meanHammingDist'])
+        # run = pd.read_csv(f'results/efficient-{settings}/convergence-{graph}-run{i}.tsv', sep='\t', usecols=['nMessages'])#,'meanHammingDist'])
+
         data.iloc[i] = run.iloc[0]
 
-    data.to_csv(f'results/{settings}/merged/convergence-{graph}.tsv', sep='\t',index=False)
+    # NOTE: SAVE ACCORDINGLY
+    data.to_csv(f'results/{settings}/merged/convergence-{graph}.tsv', sep='\t',index=False)   
+    # data.to_csv(f'results/efficient-{settings}/merged/convergence-{graph}.tsv', sep='\t',index=False)

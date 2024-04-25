@@ -10,7 +10,11 @@ from tqdm import tqdm
 
 def combineData(alpha: str, beta: str):
     """Combine structural metrics and number of messages"""
+
     metrics = pd.read_csv('data/data-GraphAtlas.tsv', sep='\t')
+    
+    # # NOTE: USE FOR SPECIFIC CASE OF ONLY USING GRAPH SIZE 7
+    # metrics = metrics[metrics['nodes']==7]
 
     complete = pd.DataFrame(data=None, index=np.arange(len(metrics)*100), 
                             columns=['index',
@@ -33,7 +37,10 @@ def combineData(alpha: str, beta: str):
 
         # generate filename and load corresponding convergence data
         name = 'G' + str(metrics['index'].iloc[idx])
+
+        # # NOTE: LOAD CORRECT CONVERGENCE RESULTS
         convergence = pd.read_csv(f'results/{settings}/convergence-{name}.tsv', usecols=['nMessages'], sep='\t')
+        # convergence = pd.read_csv(f'results/efficient-{settings}/convergence-{name}.tsv', usecols=['nMessages'], sep='\t')
 
         # insert convergence data into DataFrame with average number of messages 
         complete['index'].iloc[n100:n100+100] = metrics['index'].iloc[idx]
@@ -53,7 +60,10 @@ def combineData(alpha: str, beta: str):
         complete['nMessages'].iloc[n100:n100+100] = convergence['nMessages']
 
     print(complete)
+
+    # # NOTE: SAVE ACCORDINGLY
     complete.to_csv(f'data/relationData-{settings}-Atlas.tsv',sep='\t',index=False)
+    # complete.to_csv(f'data/relationData-efficient-{settings}-Atlas.tsv',sep='\t',index=False)
 
 def meanData(alpha: str, beta: str):
     """Average number of messages per graph"""
@@ -74,6 +84,6 @@ def meanData(alpha: str, beta: str):
     data.to_csv(f'data/meanRelationData-{settings}-Atlas.tsv',sep='\t',index=False) 
 
 if __name__ == "__main__":
-    alpha = '0_50'
-    beta = '0_50'
+    alpha = '1_00'
+    beta = '0_00'
     combineData(alpha=alpha,beta=beta)
