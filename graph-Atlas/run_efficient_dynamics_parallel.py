@@ -1,10 +1,11 @@
 """
-Script to run communication dynamics on networkx's Graph Atlas networks.
+Script to run efficient sampling communication dynamics on networkx's Graph Atlas networks.
 - Saving intermediate results
 - Using vectorized implementation
 
-Written by Jade Dubbeld
-19/03/2024
+Adapted from run_vectorized_parallel_Atlas.py
+Adjusted by Jade Dubbeld
+25/04/2024
 """
 
 from efficient_dynamics import simulate
