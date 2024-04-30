@@ -25,17 +25,13 @@ def run(x):
 
 if __name__ == "__main__":
 
-    path = "results/fixed-alpha1_00-beta0_00"
+    path = "results/fixed2-alpha1_00-beta0_00"
 
     # # setting for local simulation
     # df = pd.read_csv('data/data-GraphAtlas.tsv',sep='\t')
 
     # setting for Snellius simulation
     df = pd.read_csv('data-GraphAtlas.tsv',sep='\t')
-
-
-    # only select graph sizes n=7
-    df = df[df['nodes']==7]
 
     graphs = []
 

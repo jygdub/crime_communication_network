@@ -12,16 +12,32 @@ Adjusted by Jade Dubbeld
 import numpy as np, pickle
 
 
-def fixedInit() -> np.ndarray:
+def fixedInit(n: int) -> np.ndarray:
     """
     Function to initialize agents in a network with fixed initial bit strings.
     - For graph size n=7
+
+    Parameters:
+    - n (int): number agents in network
 
     Returns:
     - _ (np.ndarray): array containing states of all agents
     """
 
-    return np.array(([0,0,0],[1,0,1],[0,0,1],[0,1,0],[1,0,0],[0,1,1],[1,1,0]))
+    states = None
+    
+    if n == 7:
+        states = np.array(([0,0,0],[1,0,1],[0,0,1],[0,1,0],[1,0,0],[0,1,1],[1,1,0]))
+    elif n == 6:
+        states = np.array(([1,0,1],[0,0,1],[0,1,0],[1,0,0],[0,1,1],[1,1,0]))
+    elif n == 5:
+        states = np.array(([1,0,1],[0,0,1],[0,1,0],[1,0,0],[0,1,1]))
+    elif n == 4:
+        states = np.array(([1,0,1],[0,0,1],[0,1,0],[1,0,0]))
+    elif n == 3:
+        states = np.array(([1,0,1],[0,1,0],[1,0,0]))
+
+    return states
 
 def message_update(states: np.ndarray, source: int, destination: int, alpha: float = 1.0, beta: float = 0.0) -> np.ndarray:
     """
