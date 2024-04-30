@@ -17,9 +17,8 @@ def run(x):
 
     alpha = 1.00
     beta = 0.00
-    nbits = 3
 
-    totalMessages, graph = simulate(graph=graph, alpha=alpha, beta=beta, nbits=nbits)
+    totalMessages, graph = simulate(graph=graph, alpha=alpha, beta=beta)
     
     return totalMessages, graph, i
 
