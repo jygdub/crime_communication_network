@@ -126,13 +126,13 @@ def simulate(graph: str, alpha: float = 1.0, beta: float = 0.0) -> int | list:
     file = f'graphs/{graph}.pickle'
     G = pickle.load(open(file,'rb'))
 
-    states = fixedInit()
+    nodes = list(G.nodes())
+
+    states = fixedInit(n=len(nodes))
 
     M = 0
 
     hammingDistance = hamming_vector(states,range(len(states)))
-
-    nodes = list(G.nodes())
 
     # initialize neighbor dictionary
     dictNeighbors = {key: [] for key in nodes}
