@@ -387,7 +387,7 @@ def my_floor(a: float, precision: int = 0) -> np.float64:
     return np.true_divide(np.floor(a * 10**precision), 10**precision)
 
 
-def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2: bool):
+def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2: bool, metric: str = None, fixed: bool = False):
     """ 
     Violinplot distribution of convergence rates per metric per bin (size=0.1).
 
@@ -397,12 +397,20 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
     - perN (bool): False if combined data; True if per graph size
     - fit (str): Fitting linear fit ('linear') or exponential fit ('exponential) or no fit ('none')
     - without2 (bool): Indicator to remove graph size n=2 from data
+    - metric (str): Choose a single metric to apply to figures (otherwise all networks are generated)
+    - fixed (bool): False for random initialization; True for fixed pre-defined initialization
     """
     
     # set paths
-    settings = f'alpha{alpha}-beta{beta}'                       
-    images_path = f'images/relations/{settings}/all-datapoints'  
-
+    settings = ''
+    images_path = ''
+    if fixed:
+        settings = f'fixed-alpha{alpha}-beta{beta}'  
+        images_path = f'images/relations/{settings}'  
+    else:
+        settings = f'alpha{alpha}-beta{beta}'   
+        images_path = f'images/relations/{settings}/all-datapoints'                      
+    
     # load all data
     data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
     
@@ -412,11 +420,15 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
 
     # set iterative for for-loop
     iterative = None
-    if perN:
+    if metric != None and not perN:
+        iterative = product([metric], [0])
+    elif metric != None and perN:
+        iterative = product([metric], [3,4,5,6,7])
+    elif perN:
         iterative = product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7])
     else:
         iterative = product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[0])
-
+    
     # generate plots according to iterative
     for metric, n in tqdm(iterative):
 
@@ -510,14 +522,14 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
             ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), 
                     np.exp(poly1d_fn_exp(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05))), 
                     'k--', 
-                    label=f'ln(C) = {round(coef_exp[0],2)} * GE + {round(coef_exp[1],2)}')
+                    label=f'C = exp({round(coef_exp[0],2)} * GE + {round(coef_exp[1],2)})')
         
         elif fit == 'none':
             # plot maximum probability density
             ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
 
         # decorate figure
-        plt.legend(bbox_to_anchor=(1,1),fontsize=10)
+        plt.legend(loc='upper right',fontsize=10)
 
         if efficiency:
             ax.set_xlabel(f"{metric.capitalize()} efficiency",fontsize=16)
@@ -886,8 +898,8 @@ def GE_distribution(n: int = 0, without2: bool = True):
 if __name__ == "__main__":
     #######################################################
     # NOTE: Set simulation settings to save appropriately #
-    alpha = '0_50'
-    beta = '0_50'      
+    alpha = '1_00'
+    beta = '0_00'      
 
     alphas = ['1_00','0_75','0_50']
     betas = ['0_00','0_25', '0_50']                                                               
@@ -910,15 +922,17 @@ if __name__ == "__main__":
     
     # for alpha, beta in product(alphas,betas):
 
-    #     print(f'alpha={alpha} & beta={beta}')
+        # print(f'alpha={alpha} & beta={beta}')
 
-    #     # NOTE NOTE: RUN SCRIPT USING -W "ignore" :NOTE NOTE #
-    #     # show probability distribution per parameter settings per metric (optionally per graph size)
-    #     violin_per_params(alpha=alpha,
-    #                         beta=beta,
-    #                         perN=False,
-    #                         fit='exponential',
-    #                         without2=True) # NOTE: CHANGE FILENAME (@end function!)
+        # # NOTE NOTE: RUN SCRIPT USING -W "ignore" :NOTE NOTE #
+        # # show probability distribution per parameter settings per metric (optionally per graph size)
+        # violin_per_params(alpha=alpha,
+        #                     beta=beta,
+        #                     perN=False,
+        #                     fit='exponential',
+        #                     without2=True,
+        #                     metric='global',
+        #                     fixed=False) # NOTE: CHANGE FILENAME (@end function!)
 
         # # show histogram distribution per violin (per parameter settings, per metric, optionally per graph size)
         # hist_per_violin(alpha=alpha,
