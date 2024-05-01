@@ -16,7 +16,7 @@ Function mergeData() added from separate script.
 import numpy as np, pandas as pd
 from tqdm import tqdm
 
-def mergeData(alpha: str, beta: str, efficient: bool = False):
+def mergeData(alpha: str, beta: str, efficient: bool = False, fixed: bool = False):
     """
     Function to merge separate convergence result files from Snellius server (parallel simulation).
     
@@ -24,6 +24,7 @@ def mergeData(alpha: str, beta: str, efficient: bool = False):
     - alpha (str): Setting value of alpha noise 
     - beta (str): Setting value of beta noise
     - efficient (bool): False for random dynamics; True for efficient dynamics
+    - fixed (bool): False for random states initialization; True for fixed states initialization
     """
 
     settings = f"alpha{alpha}-beta{beta}"
@@ -32,6 +33,9 @@ def mergeData(alpha: str, beta: str, efficient: bool = False):
     if efficient:
         settings = f"efficient-alpha{alpha}-beta{beta}"
         df = df[df['nodes']==7]  # NOTE: FOR SPECIFIC CASE OF ANALYSIS FOCUSSED ON GRAPH SIZE 7
+    
+    if fixed:
+        settings = f"fixed2-alpha{alpha}-beta{beta}"
 
     graphs = []
 
@@ -52,7 +56,7 @@ def mergeData(alpha: str, beta: str, efficient: bool = False):
         data.to_csv(f'results/{settings}/merged/convergence-{graph}.tsv', sep='\t',index=False)   
 
 
-def combineData(alpha: str, beta: str, efficient: bool = False):
+def combineData(alpha: str, beta: str, efficient: bool = False, fixed: bool = False):
     """
     Function to combine structural metrics and number of messages.
     
@@ -60,12 +64,17 @@ def combineData(alpha: str, beta: str, efficient: bool = False):
     - alpha (str): Setting value of alpha noise 
     - beta (str): Setting value of beta noise
     - efficient (bool): False for random dynamics; True for efficient dynamics
+    - fixed (bool): False for random states initialization; True for fixed states initialization
     """
 
     metrics = pd.read_csv('data/data-GraphAtlas.tsv', sep='\t')
     
     if efficient:
         metrics = metrics[metrics['nodes']==7]
+
+    if fixed:
+        metrics = metrics[metrics['nodes']==7]
+
 
     complete = pd.DataFrame(data=None, index=np.arange(len(metrics)*100), 
                             columns=['index',
@@ -83,7 +92,10 @@ def combineData(alpha: str, beta: str, efficient: bool = False):
     settings = f"alpha{alpha}-beta{beta}"
 
     if efficient:
-        settings = f"efficient-alpha{alpha}-beta{beta}"                     
+        settings = f"efficient-alpha{alpha}-beta{beta}"  
+
+    if fixed:
+        settings = f"fixed-alpha{alpha}-beta{beta}"                     
 
     for idx in tqdm(range(len(metrics))):
 
@@ -148,6 +160,7 @@ if __name__ == "__main__":
     alpha = '1_00'
     beta = '0_00'
     efficient = False
+    fixed = True
 
-    mergeData(alpha=alpha,beta=beta,efficient=False)
-    combineData(alpha=alpha,beta=beta,efficient=False)
+    # mergeData(alpha=alpha,beta=beta,efficient=efficient,fixed=fixed)
+    # combineData(alpha=alpha,beta=beta,efficient=efficient,fixed=fixed)
