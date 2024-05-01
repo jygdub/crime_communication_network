@@ -8,7 +8,7 @@ Written by Jade Dubbeld
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 from itertools import product
-import numpy as np, pandas as pd, seaborn as sns
+import numpy as np, pandas as pd, seaborn as sns, networkx as nx
 
 
 def scatterALL(alpha: str, beta: str, draw_polynomial: bool):
@@ -895,6 +895,32 @@ def GE_distribution(n: int = 0, without2: bool = True):
     plt.close(fig)
 
 
+def GE_pathGraphSize(N: int):
+    """
+    Function to show relation between path graph size and global efficiency.
+
+    Parameters:
+    - N (int): maximum number of nodes
+    """
+
+    globalEfficiency = []
+
+    for n in range(2,N):
+        G = nx.path_graph(range(n))
+        globalEfficiency.append(nx.global_efficiency(G))
+
+    fig,ax = plt.subplots()
+    ax.scatter(x=range(2,N),y=globalEfficiency)
+    ax.set_xlabel("Number of agents")
+    ax.set_ylabel("Global efficiency")
+    ax.set_title("Path graphs")
+
+    plt.show()
+    fig.savefig("images/GE-pathGraphSizes.png",bbox_inches='tight')
+    plt.close(fig)
+
+
+
 if __name__ == "__main__":
     #######################################################
     # NOTE: Set simulation settings to save appropriately #
@@ -904,6 +930,8 @@ if __name__ == "__main__":
     alphas = ['1_00','0_75','0_50']
     betas = ['0_00','0_25', '0_50']                                                               
     #######################################################
+
+    GE_pathGraphSize(100)
 
     # # show raw data per metric (optional 3rd degree polynomial fit)
     # scatterALL(alpha=alpha,beta=beta,draw_polynomial=False)
