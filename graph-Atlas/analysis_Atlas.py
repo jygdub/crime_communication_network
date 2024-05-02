@@ -95,7 +95,7 @@ def scatterALL(alpha: str, beta: str, draw_polynomial: bool):
         else:
             ax.set_xlabel(f"{metric.capitalize()} centrality")
 
-        ax.set_ylabel("Convergence rate (number of messages)")
+        ax.set_ylabel("Convergence time")
         ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')}')
         # plt.show()
 
@@ -215,7 +215,7 @@ def scatterMEAN(alpha: str, beta: str, draw_polynomial: bool):
             ax.set_xlabel(f"Current flow betweenness centrality")
         else:
             ax.set_xlabel(f"{metric.capitalize()} centrality")
-        ax.set_ylabel("Convergence rate (number of messages)")
+        ax.set_ylabel("Convergence time")
         ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')}')
         
         # plt.show()
@@ -302,7 +302,7 @@ def polynomialFit_compareSingleNoise(changing: str):
         else:
             ax.set_xlabel(f"{metric.capitalize()} centrality")
             ax.set_title(f"Relation between {metric} centrality and consensus formation")
-        ax.set_ylabel("Convergence rate (number of messages)")
+        ax.set_ylabel("Convergence time")
 
         # plt.show()
 
@@ -374,7 +374,7 @@ def polynomialFit_compareALL():
         else:
             ax.set_xlabel(f"{metric.capitalize()} centrality")
 
-        ax.set_ylabel("Convergence rate (number of messages)")
+        ax.set_ylabel("Convergence time")
         ax.set_title(f"Varying alpha and beta parameters (n={n})")
 
         # save figure
@@ -389,7 +389,7 @@ def my_floor(a: float, precision: int = 0) -> np.float64:
 
 def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2: bool, metric: str = None, fixed: bool = False):
     """ 
-    Violinplot distribution of convergence rates per metric per bin (size=0.1).
+    Violinplot distribution of convergence time per metric per bin (size=0.1).
 
     Parameters:
     - alpha (float): Alpha noise
@@ -540,7 +540,7 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
         else:
             ax.set_xlabel(f"{metric.capitalize()} centrality",fontsize=16)
 
-        ax.set_ylabel("Convergence rate (number of messages)",fontsize=16)
+        ax.set_ylabel("Convergence time",fontsize=16)
 
         if perN:
             ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}',fontsize=16)
@@ -564,7 +564,7 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
 
 def hist_per_violin(alpha: float, beta: float, perN: bool):
     """ 
-    Histogram distribution of convergence rates per metric per bin/violin (size=0.1).
+    Histogram distribution of convergence time per metric per bin/violin (size=0.1).
 
     Parameters:
     - alpha (float): Alpha noise
@@ -643,7 +643,7 @@ def hist_per_violin(alpha: float, beta: float, perN: bool):
                 else:
                     ax.set_xlabel(f"{metric.capitalize()} centrality",fontsize=16)
 
-                ax.set_ylabel("Convergence rate (number of messages)",fontsize=16)
+                ax.set_ylabel("Convergence time",fontsize=16)
 
                 if perN:
                     ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n} | violin {counter}',fontsize=16)
@@ -664,7 +664,7 @@ def hist_per_violin(alpha: float, beta: float, perN: bool):
 
 def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, metric: str, fit: str, without2: bool):
     """ 
-    Violinplot distribution of convergence rates per metric per bin (size=0.1).
+    Violinplot distribution of convergence time per metric per bin (size=0.1).
 
     Parameters:
     - fixed_param (str): value of fixed parameter (alpha or beta)
@@ -830,7 +830,7 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
         ax.set_xticks(Xaxis, labels=labels)
         ax.set_xlim(0., len(labels) + 1.)
 
-        ax.set_ylabel("Convergence rate (number of messages)",fontsize=16)
+        ax.set_ylabel("Convergence time",fontsize=16)
         ax.set_yscale("log")
 
         plt.tick_params(axis="both",which="major",labelsize=16)
