@@ -8,6 +8,7 @@ Written by Jade Dubbeld
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 from itertools import product
+from typing import Tuple
 import numpy as np, pandas as pd, seaborn as sns, networkx as nx
 
 
@@ -402,14 +403,12 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
     """
     
     # set paths
-    settings = ''
-    images_path = ''
+    settings = f'alpha{alpha}-beta{beta}'   
+    images_path = f'images/relations/{settings}/all-datapoints'  
+    
     if fixed:
         settings = f'fixed-alpha{alpha}-beta{beta}'  
-        images_path = f'images/relations/{settings}'  
-    else:
-        settings = f'alpha{alpha}-beta{beta}'   
-        images_path = f'images/relations/{settings}/all-datapoints'                      
+        images_path = f'images/relations/{settings}'                  
     
     # load all data
     data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
@@ -734,6 +733,12 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
         counter += 1
         max_density = []
 
+        colors = []
+        if variable == 'beta':
+            colors = ['maroon','forestgreen','indigo']
+        elif variable == 'alpha':
+            colors = ['darkorange','mediumblue','mediumvioletred']
+
         ########################################
         # NOTE: SET CORRECT FOR-LOOP
         # for i, alpha in enumerate(alphas):
@@ -764,7 +769,18 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
             # plt.show()
             plt.close(pdf)
 
-            ax.violinplot(subset['nMessages'],positions=[np.linspace(0.,4.,5)[i+1]])
+            plots = ax.violinplot(subset['nMessages'],positions=[np.linspace(0.,4.,5)[i+1]])
+        
+            # style violinplot
+            for vp in plots['bodies']:
+                vp.set_facecolor(colors[i])
+                vp.set_edgecolor("black")
+            
+            # more styling violinplot
+            for _, partname in enumerate(('cbars', 'cmins', 'cmaxes')): 
+                vp = plots[partname]
+                vp.set_edgecolor(colors[i])
+                vp.set_linewidth(1)
 
         labels = []
 
@@ -803,8 +819,6 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
             coef = np.polyfit(Xaxis, max_density, 1)
             poly1d_fn = np.poly1d(coef) 
 
-            # plot maximum probability density
-            ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
             ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), poly1d_fn(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05)), 'g--', label=f'{round(coef[0],2)} x + {round(coef[1],2)}')
 
         elif fit == 'exponential':
@@ -813,19 +827,16 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
             coef_exp = np.polyfit(Xaxis, np.log(max_density), 1)
             poly1d_fn_exp = np.poly1d(coef_exp) 
 
-            # plot maximum probability density
-            ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
             ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), 
                     np.exp(poly1d_fn_exp(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05))), 
                     'k--') 
                     # label=f'ln(y)={round(coef_exp[0],2)} x + {round(coef_exp[1],2)}')
-        
-        elif fit == 'none':
-            # plot maximum probability density
-            ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
+
+        # plot maximum probability density
+        ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
 
         # decorate figure
-        plt.legend(bbox_to_anchor=(1,1),fontsize=10)
+        # plt.legend(bbox_to_anchor=(1,1),fontsize=10)
 
         ax.set_xticks(Xaxis, labels=labels)
         ax.set_xlim(0., len(labels) + 1.)
@@ -840,17 +851,39 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
         #######################################################
         # NOTE: add LOG for regular log scale; add linePlot for linear fit; change allN to withoutN=2 if applied
         if variable == 'alpha':
-            # fig.savefig(f"{images_path}/LOG-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            fig.savefig(f"{images_path}/LOG-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
             # fig.savefig(f"{images_path}/linePlot-noiseEffect-varyingAlpha-allN-{metric}-violin{counter}.png",bbox_inches='tight')
-            fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
-
-        else:
-            # fig.savefig(f"{images_path}/LOG-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            # fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+        elif variable == 'beta':
+            fig.savefig(f"{images_path}/LOG-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
             # fig.savefig(f"{images_path}/linePlot-noiseEffect-varyingBeta-allN-{metric}-violin{counter}.png",bbox_inches='tight')
-            fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            # fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
         #######################################################
 
         plt.close(fig)
+
+
+def summary_noiseEffect(alpha: float, beta: float, without2: bool) -> Tuple[pd.DataFrame,pd.DataFrame]:
+    """ 
+    Summary plot of noise effect on time to consensus using random sampling in communication framework.
+
+    Parameters:
+    - alpha (float): Alpha noise
+    - beta (float): Beta noise
+    - without2 (bool): Indicator to remove graph size n=2 from data
+    """
+
+    # set paths
+    settings = f'alpha{alpha}-beta{beta}'   
+
+    # load all data
+    data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
+    
+    # eliminate graph size n=2, if desired
+    if without2:
+        data = data.drop(range(0,100))
+
+    return data['globalEff'], data['nMessages']
 
 
 def check_initEffect(alpha: str, beta: str, without2: bool = True):
@@ -930,7 +963,7 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
     ax.legend(handles=handles)
     ax.set_xlabel("Initial Hamming distance",fontsize=16)
     ax.set_ylabel("Convergence time",fontsize=16)
-    ax.set_title(fr"alpha={alpha.replace('_','.')} & beta={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
+    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
     plt.tick_params(axis="both",which="major",labelsize=16)
     
     ax.set_yscale("log")
@@ -1056,17 +1089,74 @@ if __name__ == "__main__":
         #                 perN=False) # NOTE: CHANGE FILENAME (@end function!)
 
 
-    # for alpha in alphas:
-    # # for beta in betas:
-    #     # show shift in probability distribution for varying noise per metric
-    #     violin_noiseEffect(fixed_param=alpha,
-    #                     varying_param=betas,
-    #                     variable='beta',
-    #                     metric='global',
-    #                     fit='exponential',
-    #                     without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
+    for alpha in alphas:
+    # for beta in betas:
+        # show shift in probability distribution for varying noise per metric
+        violin_noiseEffect(fixed_param=alpha,
+                        varying_param=betas,
+                        variable='beta',
+                        metric='global',
+                        fit='none',
+                        without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
 
-    # show relation between convergence and initial mean Hamming distance
-    check_initEffect(alpha=alpha,
-                     beta=beta,
-                     without2=True) # NOTE: CHANGE FILENAME (@end function!)
+    # # summary plot of noise effect
+    # # NOTE: CHANGE ACCORDING TO VARYING PARAMETER
+    # vary = 'alpha'
+
+    # # NOTE: CHANGE ACCORDING TO VARYING PARAMETER
+    # # for alpha in alphas: 
+    # for beta in betas:
+    #     fig, ax = plt.subplots(figsize=(13,8))
+
+    #     colors = []
+    #     if vary == 'beta':
+    #         colors = ['maroon','forestgreen','indigo']
+    #     elif vary == 'alpha':
+    #         colors = ['darkorange','mediumblue','mediumvioletred']
+
+    #     # NOTE: CHANGE ACCORDING TO VARYING PARAMETER
+    #     # for i, beta in enumerate(betas):
+    #     for i, alpha in enumerate(alphas):
+
+    #         x,y = summary_noiseEffect(alpha=alpha,beta=beta,without2=True)
+
+    #         ax.scatter(x=x,y=y,c=colors[i],alpha=0.2)
+
+    #     handles = []
+    #     if vary == 'beta':
+    #         handles = [
+    #             plt.scatter([], [], color=c, label=l)
+    #             for c, l in zip("maroon forestgreen indigo".split(), fr"$\beta$=0.00 $\beta$=0.25 $\beta$=0.50".split())
+    #         ]
+    #     elif vary == 'alpha':
+    #         handles = [
+    #             plt.scatter([], [], color=c, label=l)
+    #             for c, l in zip("darkorange mediumblue mediumvioletred".split(), fr"$\alpha$=1.00 $\alpha$=0.75 $\alpha$=0.50".split())
+    #         ]
+
+    #     ax.legend(handles=handles,fontsize=14,loc='upper left', bbox_to_anchor=(1, 1))
+    #     ax.set_xlabel("Global efficiency",fontsize=16)
+    #     ax.set_ylabel("Convergence time",fontsize=16)
+
+    #     if vary == 'beta':
+    #         ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
+    #     elif vary == 'alpha':
+    #         ax.set_title(fr"$\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)  
+        
+    #     plt.tick_params(axis="both",which="major",labelsize=16)
+        
+    #     ax.set_yscale("log")
+
+    #     if vary == 'beta':
+    #         fig.savefig(f"images/relations/noiseEffect/summaryNoise-alpha={alpha}-varyingBeta.png",bbox_inches="tight")
+    #     elif vary == 'alpha':
+    #         fig.savefig(f"images/relations/noiseEffect/summaryNoise-beta={beta}-varyingAlpha.png",bbox_inches="tight")
+        
+    #     plt.show()
+
+    #     plt.close(fig)
+
+    # # show relation between convergence and initial mean Hamming distance
+    # check_initEffect(alpha=alpha,
+    #                  beta=beta,
+    #                  without2=True) # NOTE: CHANGE FILENAME (@end function!)
