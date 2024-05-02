@@ -558,7 +558,7 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
         # (add LOG if log-scale; add lineFit for linear line or expFit for exponential
         # change allN to withoutN=2 if applied)
         # fig.savefig(f"{images_path}/expFit-LOGdistribution-n={n}-convergence-per-{metric}-violin.png",bbox_inches='tight')
-        fig.savefig(f"{images_path}/expFit-LOGdistribution-withoutN=2-convergence-per-{metric}-violin.png",bbox_inches='tight')
+        fig.savefig(f"{images_path}/LOGdistribution-withoutN=2-convergence-per-{metric}-violin.png",bbox_inches='tight')
         plt.close(fig)
 
 
@@ -736,8 +736,8 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
 
         ########################################
         # NOTE: SET CORRECT FOR-LOOP
-        for i, alpha in enumerate(alphas):
-        # for i, beta in enumerate(betas):
+        # for i, alpha in enumerate(alphas):
+        for i, beta in enumerate(betas):
         ########################################
             
             # set path
@@ -853,6 +853,94 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
         plt.close(fig)
 
 
+def check_initEffect(alpha: str, beta: str, without2: bool = True):
+    """ 
+    Function to account for effect of random initialization process.
+    - Answer question "Can the convergence time be predicted by the initial state configuration?"
+
+    Parameters:
+    - alpha (float): Alpha noise
+    - beta (float): Beta noise
+    - without2 (bool): Indicator to remove graph size n=2 from data
+    """
+
+    # set paths
+    settings = f"alpha{alpha}-beta{beta}"
+    dataPath = f"results/{settings}"
+
+    # load graph data
+    graphData = pd.read_csv("data/data-GraphAtlas.tsv",sep='\t')
+
+    # omit graph size 2 from data, if applicable
+    if without2:
+        graphData = graphData[graphData['nodes']!=2]
+
+    fig, ax = plt.subplots(figsize=(13,8))
+
+    cmap = {'0.5-0.6': 'tab:blue',
+            '0.6-0.7': 'tab:orange',
+            '0.7-0.8': 'tab:green',
+            '0.8-0.9': 'tab:red',
+            '0.9-1.0': 'tab:purple'}
+
+    print(graphData)
+    # scatter all repeats per graph with distinction between global efficiency bins
+    for i in graphData['index'].index:
+        
+        ID = graphData['index'][i]
+
+        # load convergence data
+        data = pd.read_csv(f"{dataPath}/convergence-G{ID}.tsv",sep='\t')
+
+        # construct list object
+        data['meanHammingDist'] = data['meanHammingDist'].apply(lambda x : x.strip('][').split(', '))
+        data['nMessages'] = data['nMessages'].apply(lambda x : float(x))
+
+        # retrieve convergence times
+        nMessages = data['nMessages']
+
+        # retrieve initial Hamming distances per repeat
+        initStates = data['meanHammingDist'].apply(lambda x : float(x[0]))
+
+        # retrieve global efficiecy score
+        GE = graphData['globalEff'][i]
+
+        color = ''
+
+        # set color according global efficiency bins
+        if GE >= 0.9:
+            color = cmap['0.9-1.0']
+        elif GE >= 0.8:
+            color = cmap['0.8-0.9']
+        elif GE >= 0.7:
+            color = cmap['0.7-0.8']
+        elif GE >= 0.6:
+            color = cmap['0.6-0.7']
+        elif GE >= 0.5:
+            color = cmap['0.5-0.6']
+        
+        # scatter convergence against Hamming distance with pre-defined colormap
+        ax.scatter(x=initStates,y=nMessages,c=color,alpha=0.3)
+
+    # decorate plot
+    handles = [
+        plt.scatter([], [], color=c, label=l)
+        for c, l in zip(list(cmap.values()), list(cmap.keys()))
+    ]
+    ax.legend(handles=handles)
+    ax.set_xlabel("Initial Hamming distance",fontsize=16)
+    ax.set_ylabel("Convergence time",fontsize=16)
+    ax.set_title(fr"alpha={alpha.replace('_','.')} & beta={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
+    plt.tick_params(axis="both",which="major",labelsize=16)
+    
+    ax.set_yscale("log")
+
+    fig.savefig(f"images/relations/LOG-convergence-initialStates-{settings}.png",bbox_inches="tight")
+    # plt.show()
+
+    plt.close(fig)
+
+
 def GE_distribution(n: int = 0, without2: bool = True):
     """
     Function to show global efficiency distribution (in histogram) of all graphs in Graph Atlas.
@@ -920,7 +1008,6 @@ def GE_pathGraphSize(N: int):
     plt.close(fig)
 
 
-
 if __name__ == "__main__":
     #######################################################
     # NOTE: Set simulation settings to save appropriately #
@@ -931,7 +1018,8 @@ if __name__ == "__main__":
     betas = ['0_00','0_25', '0_50']                                                               
     #######################################################
 
-    GE_pathGraphSize(100)
+    # # show global efficiency measure per path graph size
+    # GE_pathGraphSize(100)
 
     # # show raw data per metric (optional 3rd degree polynomial fit)
     # scatterALL(alpha=alpha,beta=beta,draw_polynomial=False)
@@ -950,14 +1038,14 @@ if __name__ == "__main__":
     
     # for alpha, beta in product(alphas,betas):
 
-        # print(f'alpha={alpha} & beta={beta}')
+    #     print(f'alpha={alpha} & beta={beta}')
 
         # # NOTE NOTE: RUN SCRIPT USING -W "ignore" :NOTE NOTE #
         # # show probability distribution per parameter settings per metric (optionally per graph size)
         # violin_per_params(alpha=alpha,
         #                     beta=beta,
         #                     perN=False,
-        #                     fit='exponential',
+        #                     fit='none',
         #                     without2=True,
         #                     metric='global',
         #                     fixed=False) # NOTE: CHANGE FILENAME (@end function!)
@@ -967,10 +1055,18 @@ if __name__ == "__main__":
         #                 beta=beta,
         #                 perN=False) # NOTE: CHANGE FILENAME (@end function!)
 
-    # # show shift in probability distribution for varying noise per metric
-    # violin_noiseEffect(fixed_param=beta,
-    #                    varying_param=alphas,
-    #                    variable='alpha',
-    #                    metric='global',
-    #                    fit='exponential',
-    #                    without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
+
+    # for alpha in alphas:
+    # # for beta in betas:
+    #     # show shift in probability distribution for varying noise per metric
+    #     violin_noiseEffect(fixed_param=alpha,
+    #                     varying_param=betas,
+    #                     variable='beta',
+    #                     metric='global',
+    #                     fit='exponential',
+    #                     without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
+
+    # show relation between convergence and initial mean Hamming distance
+    check_initEffect(alpha=alpha,
+                     beta=beta,
+                     without2=True) # NOTE: CHANGE FILENAME (@end function!)
