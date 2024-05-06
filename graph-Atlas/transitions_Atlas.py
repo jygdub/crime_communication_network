@@ -283,7 +283,7 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
     json.dump(maxProbs, open(f"data/probabilities-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w')) # NOTE: read JSON-file -> data = json.load( open( "file_name.json" ) )
     json.dump(bothMaximum, open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
 
-    x = ['Maximum effect','Not maximum effect']
+    x = ['Maximal','Not maximal']
     y = [len(bothMaximum),len(startGraphs)-len(bothMaximum)]
     
     # barplot ratio success/fail maxGE-maxHellinger from start graphs
@@ -296,7 +296,7 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
 
     ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
     ax.set_ylabel("Frequency",fontsize=14)
-    # ax.set_ylim(0,550)
+    ax.set_ylim(0,550)
     ax.tick_params(axis="both",which="major",labelsize=14)
     # ax.tick_params(axis='x', labelrotation=90)
 
