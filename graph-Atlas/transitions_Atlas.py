@@ -5,7 +5,7 @@ Written by Jade Dubbeld
 12/04/2024
 """
 
-import pandas as pd, numpy as np, matplotlib.pyplot as plt, networkx as nx, pickle
+import pandas as pd, numpy as np, matplotlib.pyplot as plt, networkx as nx, pickle, json
 from tqdm import tqdm
 from itertools import product
 
@@ -24,7 +24,7 @@ def hellinger(p: np.ndarray, q: np.ndarray) -> np.float64:
     return np.sqrt(np.sum((np.sqrt(p) - np.sqrt(q)) ** 2)) / np.sqrt(2)
 
 
-def pairwise_comparison(alpha: str, beta: str, from_graph: list, to_graph: list, n: int, plots: bool = False, efficient: bool = False):
+def pairwise_comparison(alpha: str, beta: str, from_graph: list, to_graph: list, n: int, plots: bool = False, efficient: bool = False, saveData: bool = False):
     """
     Function to pairwise compare a graph transition to compute Hellinger distance (and save computations).
     - Optional to generate corresponding distribution plots for visual comparison.
@@ -37,6 +37,7 @@ def pairwise_comparison(alpha: str, beta: str, from_graph: list, to_graph: list,
     - n (int): Graph size
     - plots (bool): True to indicate to generate plots; False if not
     - efficient (bool): False for random dynamics; True for efficient dynamics
+    - saveData (bool): False if not writing stored data to file; True if writing stored data to file
     """
 
     # set paths
@@ -104,7 +105,8 @@ def pairwise_comparison(alpha: str, beta: str, from_graph: list, to_graph: list,
     data_hellinger["GE_difference"] = data_hellinger["GE_graph1"] - data_hellinger["GE_graph2"]
 
     # save Hellinger distance data
-    data_hellinger.to_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t',index=False)
+    if saveData:
+        data_hellinger.to_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t',index=False)
 
 
 def distribution_hellinger(alpha: str, beta: str, n: int, efficient: bool = False):
@@ -229,42 +231,47 @@ def investigate_intervention(alpha: str, beta: str, n: int, efficient: bool = Fa
     # load data
     data_hellinger = pd.read_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t')
     
-    startGraphs = data_hellinger['index_graph1'].unique()[800:820]
+    startGraphs = data_hellinger['index_graph1'].unique()
     bothMaximum = {}
-    notMaximum = {}
+    maxProbs = {}
 
-    for s in tqdm(startGraphs):
+    for s in startGraphs:
 
         subset = data_hellinger[data_hellinger['index_graph1']==s]
-        # print(subset)
 
         # find maximum values for Hellinger distance and global efficiency difference
         maxHellinger = max(subset['Hellinger'])
         maxGE = max(subset['GE_difference'])
 
-        # and find corresponding indices in DataFrame
-        indicesHellinger = subset[subset['Hellinger'] == maxHellinger].index
-        indicesGE = subset[subset['GE_difference'] == maxGE].index
+        for index in subset.index:
 
-        for idxHellinger, idxGE in product(indicesHellinger,indicesGE):
-            graphID1 = int(subset['index_graph1'][idxHellinger])
-            graphID2 = int(subset['index_graph2'][idxHellinger])
+            graphID1 = int(subset['index_graph1'][index])
+            graphID2 = int(subset['index_graph2'][index])
             
-            if idxHellinger == idxGE:
+            if subset['Hellinger'][index] == maxHellinger and subset['GE_difference'][index] == maxGE:
                 if graphID1 in bothMaximum:
-                    bothMaximum[graphID1].append(graphID2)
+                    bothMaximum.append(graphID2)
                 else:
                     bothMaximum[graphID1] = [graphID2]
-            else:
-                if graphID1 in notMaximum:
-                    notMaximum[graphID1].append(graphID2)
-                else:
-                    notMaximum[graphID1] = [graphID2]
-    
-    print(startGraphs)
-    print(bothMaximum)
-    print(notMaximum)
 
+        if graphID1 in bothMaximum:
+            maxProbs[graphID1] = len(bothMaximum[graphID1]) / len(subset)
+        else:
+            maxProbs[graphID1] = 0.0
+
+    # serialize data into file:
+    json.dump(maxProbs, open(f"data/probabilities-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w')) # NOTE: read JSON-file -> data = json.load( open( "file_name.json" ) )
+    json.dump(bothMaximum, open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
+
+    fig,ax = plt.subplots()
+    ax.hist(maxProbs.values())
+    ax.set_xlabel("Fraction of paired maximum measures", fontsize=16)
+    ax.set_ylabel("Frequency",fontsize=16)
+    ax.tick_params(axis="both",which="major",labelsize=16)
+    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n} ({round(len(maxProbs.values())/len(data_hellinger),3)*100}%)",fontsize=16)
+    # plt.show()
+    fig.savefig(f"images/transitions/n={n}/freqPairedMaximum-{settings}-n={n}.png",bbox_inches='tight')
+    plt.close(fig)
 
 def possible_transitions(n: int) -> None:
     """
@@ -357,6 +364,41 @@ def analyze_graphPairs(alpha: str, beta: str, n: int, efficient: bool = False):
     print("Top 10 LOWEST global efficiency difference")
     print(sortedGE.tail(10))
 
+
+def examineProbs_PairedMaxima():
+    """
+    Function that retrieves graph pairs conform given probability.
+    """
+
+    data = json.load(open("data/probabilities-PairedMaxima-alpha1_00-beta0_00-n=7.json") )
+    data = {int(k):v for k,v in data.items()} # convert key strings back to ints
+
+    res=dict()
+    x=list(data.values())    
+    y=list(set(x))
+    for i in y:
+        res[i]=x.count(i)
+    
+    print(res[1.0])
+
+    p = 1.0
+
+    for key, value in data.items():
+        if value == p:
+            print(key)
+
+def findCycles(graphs: list):
+
+    G = nx.graph_atlas(graphs[0])
+    print(id,nx.cycle_basis(G))
+    
+    for id in graphs[1:]:
+        G = nx.graph_atlas(id)
+        print(id, nx.cycle_basis(G))
+
+
+        
+
 if __name__ == "__main__":
 
 
@@ -378,16 +420,18 @@ if __name__ == "__main__":
     from_graph = list(map(int, np.loadtxt(f"data/from_graph_n={n}.tsv",delimiter='\t')))
     to_graph = list(map(int, np.loadtxt(f"data/to_graph_n={n}.tsv",delimiter='\t')))
 
-    # # manual selection
+    # manual selection
+    # from_graph = [316,316]
+    # to_graph = [278,272]
     # from_graph = [556,714,572,850,348,340,334,433,443,348]
     # to_graph = [394,497,432,609,279,286,280,349,349,286]
     #################################
 
     # for alpha, beta in product(alphas,betas): 
-    #     if beta == '0_50' and alpha == '0_50':
-    #         continue        
+        # if beta == '0_50' and alpha == '0_50':
+        #     continue        
         
-    #     print(f'alpha={alpha} & beta={beta}')
+        # print(f'alpha={alpha} & beta={beta}')
 
     #     # NOTE
     #     # NOTE: CHOOSE FUNCTION TO RUN
@@ -399,8 +443,9 @@ if __name__ == "__main__":
     #                     from_graph=from_graph,
     #                     to_graph=to_graph,
     #                     n=n,
-    #                     plots=False,
-    #                     efficient=False)
+    #                     plots=True,
+    #                     efficient=False,
+    #                     saveData=False)
 
     # # plot histogram distribution of Hellinger distance
     # distribution_hellinger(alpha=alpha,
@@ -423,6 +468,13 @@ if __name__ == "__main__":
 
     # # investigate intervention effectiveness
     # investigate_intervention(alpha=alpha,
-    #                          beta=beta,
-    #                          n=n) 
+    #                         beta=beta,
+    #                         n=n) 
+
+    examineProbs_PairedMaxima()
+
+    # graphs = [730,550,573,578]
+    # findCycles(graphs=graphs)
+
+
 
