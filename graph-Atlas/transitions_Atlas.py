@@ -209,8 +209,19 @@ def correlate_hellinger_globalEff(alpha: str, beta: str, n: int, startGraph: boo
             plt.close(fig)
 
 
+def addlabels(x: list, y: list):
+    """
+    Function to add value labels.
 
-def investigate_intervention(alpha: str, beta: str, n: int, efficient: bool = False):
+    Parameters:
+    - x (list): x-values
+    - y (list): y-values
+    """
+
+    for i in range(len(x)):
+        plt.text(i, y[i]+5, y[i], ha = 'center', fontsize=14)
+
+def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
     """
     Function to investigate difference in efficiency, both structural and operational, 
     after single edge transition (i.e., intervention) per starting graph
@@ -231,13 +242,17 @@ def investigate_intervention(alpha: str, beta: str, n: int, efficient: bool = Fa
     # load data
     data_hellinger = pd.read_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t')
     
+    # find all start graphs
     startGraphs = data_hellinger['index_graph1'].unique()
     bothMaximum = {}
     maxProbs = {}
 
+    print(len(startGraphs))
+
     for s in startGraphs:
 
         subset = data_hellinger[data_hellinger['index_graph1']==s]
+        # print(subset)
 
         # find maximum values for Hellinger distance and global efficiency difference
         maxHellinger = max(subset['Hellinger'])
@@ -245,33 +260,59 @@ def investigate_intervention(alpha: str, beta: str, n: int, efficient: bool = Fa
 
         for index in subset.index:
 
+            # get graph IDs from transition pair
             graphID1 = int(subset['index_graph1'][index])
             graphID2 = int(subset['index_graph2'][index])
             
+            # append final graph ID to dictionary if both Hellinger distance and global efficiency difference is maximum
             if subset['Hellinger'][index] == maxHellinger and subset['GE_difference'][index] == maxGE:
                 if graphID1 in bothMaximum:
                     bothMaximum.append(graphID2)
                 else:
                     bothMaximum[graphID1] = [graphID2]
 
+        # compute probabilities of finding maximum values for both measures per start graph
         if graphID1 in bothMaximum:
             maxProbs[graphID1] = len(bothMaximum[graphID1]) / len(subset)
         else:
             maxProbs[graphID1] = 0.0
 
+    print(len(bothMaximum))
+
     # serialize data into file:
     json.dump(maxProbs, open(f"data/probabilities-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w')) # NOTE: read JSON-file -> data = json.load( open( "file_name.json" ) )
     json.dump(bothMaximum, open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
 
-    fig,ax = plt.subplots()
-    ax.hist(maxProbs.values())
-    ax.set_xlabel("Fraction of paired maximum measures", fontsize=16)
-    ax.set_ylabel("Frequency",fontsize=16)
-    ax.tick_params(axis="both",which="major",labelsize=16)
-    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n} ({round(len(maxProbs.values())/len(data_hellinger),3)*100}%)",fontsize=16)
-    # plt.show()
-    fig.savefig(f"images/transitions/n={n}/freqPairedMaximum-{settings}-n={n}.png",bbox_inches='tight')
+    x = ['Maximum effect','Not maximum effect']
+    y = [len(bothMaximum),len(startGraphs)-len(bothMaximum)]
+    
+    # barplot ratio success/fail maxGE-maxHellinger from start graphs
+    fig, ax = plt.subplots(figsize=(5,5))
+    ax.bar(x=x,
+           height=y,
+           color=['green','tab:red'])
+
+    addlabels(x, y)
+
+    ax.set_ylabel("Frequency",fontsize=14)
+    ax.set_ylim(0,550)
+    ax.tick_params(axis="both",which="major",labelsize=14)
+    # ax.tick_params(axis='x', labelrotation=90)
+
+    plt.show()
+    fig.savefig(f"images/transitions/n={n}/binomialDistribution-{settings}-n={n}.png",bbox_inches='tight')
     plt.close(fig)
+
+    # # plot distribution of maxGE-maxHellinger probability per start graph
+    # fig,ax = plt.subplots()
+    # ax.hist(maxProbs.values())
+    # ax.set_xlabel("Fraction of paired maximum measures", fontsize=16)
+    # ax.set_ylabel("Frequency",fontsize=16)
+    # ax.tick_params(axis="both",which="major",labelsize=16)
+    # ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n} ({round(len(maxProbs.values())/len(data_hellinger),3)*100}%)",fontsize=16)
+    # plt.show()
+    # fig.savefig(f"images/transitions/n={n}/freqPairedMaximum-{settings}-n={n}.png",bbox_inches='tight')
+    # plt.close(fig)
 
 def possible_transitions(n: int) -> None:
     """
@@ -467,11 +508,12 @@ if __name__ == "__main__":
     #                    efficient=False)
 
     # # investigate intervention effectiveness
-    # investigate_intervention(alpha=alpha,
-    #                         beta=beta,
-    #                         n=n) 
+    # successTransitions(alpha=alpha,
+    #                    beta=beta,
+    #                    n=n,
+    #                    efficient=False) 
 
-    examineProbs_PairedMaxima()
+    # examineProbs_PairedMaxima()
 
     # graphs = [730,550,573,578]
     # findCycles(graphs=graphs)
