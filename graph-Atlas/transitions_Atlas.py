@@ -294,8 +294,9 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
 
     addlabels(x, y)
 
+    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
     ax.set_ylabel("Frequency",fontsize=14)
-    ax.set_ylim(0,550)
+    # ax.set_ylim(0,550)
     ax.tick_params(axis="both",which="major",labelsize=14)
     # ax.tick_params(axis='x', labelrotation=90)
 
@@ -507,11 +508,11 @@ if __name__ == "__main__":
     #                    n=n,
     #                    efficient=False)
 
-    # # investigate intervention effectiveness
-    # successTransitions(alpha=alpha,
-    #                    beta=beta,
-    #                    n=n,
-    #                    efficient=False) 
+    # investigate intervention effectiveness
+    successTransitions(alpha=alpha,
+                       beta=beta,
+                       n=n,
+                       efficient=False) 
 
     # examineProbs_PairedMaxima()
 
