@@ -863,28 +863,409 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
         plt.close(fig)
 
 
-def summary_noiseEffect(alpha: float, beta: float, without2: bool) -> Tuple[pd.DataFrame,pd.DataFrame]:
+def summary_noiseEffect(alphas: list, betas: list, vary: str, without2: bool):
     """ 
     Summary plot of noise effect on time to consensus using random sampling in communication framework.
 
     Parameters:
-    - alpha (float): Alpha noise
-    - beta (float): Beta noise
+    - alphas (list): list of alpha noise values
+    - betas (list): list of beta noise values
+    - vary (str): 'alpha' if alpha varying noise parameter; 'beta' if beta varying noise parameter
     - without2 (bool): Indicator to remove graph size n=2 from data
     """
 
-    # set paths
-    settings = f'alpha{alpha}-beta{beta}'   
+    # NOTE: CHANGE ACCORDING TO VARYING PARAMETER (choose fixed parameter)
+    for alpha in alphas: 
+    # for beta in betas:
+        fig, ax = plt.subplots(figsize=(13,8))
+
+        colors = []
+        if vary == 'beta':
+            colors = ['maroon','forestgreen','indigo']
+        elif vary == 'alpha':
+            colors = ['darkorange','mediumblue','mediumvioletred']
+
+        # NOTE: CHANGE ACCORDING TO VARYING PARAMETER (choose varying parameter)
+        for i, beta in enumerate(betas):
+        # for i, alpha in enumerate(alphas):
+
+            # set paths
+            settings = f'alpha{alpha}-beta{beta}'   
+
+            # load all data
+            data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
+            
+            # eliminate graph size n=2, if desired
+            if without2:
+                data = data.drop(range(0,100))
+
+            ax.scatter(x=data['globalEff'],y=data['nMessages'],c=colors[i],alpha=0.2)
+
+        handles = []
+        if vary == 'beta':
+            handles = [
+                plt.scatter([], [], color=c, label=l)
+                for c, l in zip("maroon forestgreen indigo".split(), fr"$\beta$=0.00 $\beta$=0.25 $\beta$=0.50".split())
+            ]
+        elif vary == 'alpha':
+            handles = [
+                plt.scatter([], [], color=c, label=l)
+                for c, l in zip("darkorange mediumblue mediumvioletred".split(), fr"$\alpha$=1.00 $\alpha$=0.75 $\alpha$=0.50".split())
+            ]
+
+        ax.legend(handles=handles,fontsize=14,loc='upper left', bbox_to_anchor=(1, 1))
+        ax.set_xlabel("Global efficiency",fontsize=16)
+        ax.set_ylabel("Convergence time",fontsize=16)
+
+        if vary == 'beta':
+            ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
+        elif vary == 'alpha':
+            ax.set_title(fr"$\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)  
+        
+        plt.tick_params(axis="both",which="major",labelsize=16)
+        
+        ax.set_yscale("log")
+
+        if vary == 'beta':
+            fig.savefig(f"images/relations/noiseEffect/summaryNoise-alpha={alpha}-varyingBeta.png",bbox_inches="tight")
+        elif vary == 'alpha':
+            fig.savefig(f"images/relations/noiseEffect/summaryNoise-beta={beta}-varyingAlpha.png",bbox_inches="tight")
+        
+        plt.show()
+
+        plt.close(fig)
+
+
+def hellinger(p: np.ndarray, q: np.ndarray) -> np.float64:
+    """
+    Function to compute Hellinger distance between two probability distributions.
+
+    Parameters:
+    - p (np.ndarray): First probability distribution in comparison
+    - q (np.ndarray): Second probability distribution in comparison
+
+    Returns:
+    - (np.float64): Computed Hellinger distance
+    """
+    return np.sqrt(np.sum((np.sqrt(p) - np.sqrt(q)) ** 2)) / np.sqrt(2)
+
+
+def quantifyNoiseDifference():
+    """
+    Function to quantify difference in alpha- and beta-noise effect using baricenter and spread computation.
+    """
 
     # load all data
-    data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
+    a1_00b0_00 = pd.read_csv(f'data/relationData-alpha1_00-beta0_00-Atlas.tsv', sep='\t')
+    a1_00b0_25 = pd.read_csv(f'data/relationData-alpha1_00-beta0_25-Atlas.tsv', sep='\t')
+    a1_00b0_50 = pd.read_csv(f'data/relationData-alpha1_00-beta0_50-Atlas.tsv', sep='\t')
+    a0_75b0_00 = pd.read_csv(f'data/relationData-alpha0_75-beta0_00-Atlas.tsv', sep='\t')
+    a0_75b0_25 = pd.read_csv(f'data/relationData-alpha0_75-beta0_25-Atlas.tsv', sep='\t')
+    a0_75b0_50 = pd.read_csv(f'data/relationData-alpha0_75-beta0_50-Atlas.tsv', sep='\t')
+    a0_50b0_00 = pd.read_csv(f'data/relationData-alpha0_50-beta0_00-Atlas.tsv', sep='\t')
+    a0_50b0_25 = pd.read_csv(f'data/relationData-alpha0_50-beta0_25-Atlas.tsv', sep='\t')
+    a0_50b0_50 = pd.read_csv(f'data/relationData-alpha0_50-beta0_50-Atlas.tsv', sep='\t')
     
-    # eliminate graph size n=2, if desired
-    if without2:
-        data = data.drop(range(0,100))
+    # eliminate graph size n=2
+    a1_00b0_00 = a1_00b0_00.drop(range(0,100))
+    a1_00b0_25 = a1_00b0_25.drop(range(0,100))
+    a1_00b0_50 = a1_00b0_50.drop(range(0,100))
 
-    return data['globalEff'], data['nMessages']
+    a0_75b0_00 = a0_75b0_00.drop(range(0,100))
+    a0_75b0_25 = a0_75b0_25.drop(range(0,100))
+    a0_75b0_50 = a0_75b0_50.drop(range(0,100))
 
+    a0_50b0_00 = a0_50b0_00.drop(range(0,100))
+    a0_50b0_25 = a0_50b0_25.drop(range(0,100))
+    a0_50b0_50 = a0_50b0_50.drop(range(0,100))
+
+    arr1 = np.array([list(a1_00b0_00['globalEff']),list(a1_00b0_00['nMessages'])])
+    arr2 = np.array([list(a1_00b0_25['globalEff']),list(a1_00b0_25['nMessages'])])
+    arr3 = np.array([list(a1_00b0_50['globalEff']),list(a1_00b0_50['nMessages'])])
+
+    arr4 = np.array([list(a0_75b0_00['globalEff']),list(a0_75b0_00['nMessages'])])
+    arr5 = np.array([list(a0_75b0_25['globalEff']),list(a0_75b0_25['nMessages'])])
+    arr6 = np.array([list(a0_75b0_50['globalEff']),list(a0_75b0_50['nMessages'])])
+
+    arr7 = np.array([list(a0_50b0_00['globalEff']),list(a0_50b0_00['nMessages'])])
+    arr8 = np.array([list(a0_50b0_25['globalEff']),list(a0_50b0_25['nMessages'])])
+    arr9 = np.array([list(a0_50b0_50['globalEff']),list(a0_50b0_50['nMessages'])])
+
+    # calculate baricenters
+    bc1 = np.mean(arr1, axis=0)
+    bc2 = np.mean(arr2, axis=0)
+    bc3 = np.mean(arr3, axis=0)
+
+    bc4 = np.mean(arr4, axis=0)
+    bc5 = np.mean(arr5, axis=0)
+    bc6 = np.mean(arr6, axis=0)
+
+    bc7 = np.mean(arr7, axis=0)
+    bc8 = np.mean(arr8, axis=0)
+    bc9 = np.mean(arr9, axis=0)
+
+    # calculate the distance between baricenters
+    dist1_2=np.linalg.norm(bc1-bc3)
+    dist2_3=np.linalg.norm(bc2-bc3)
+
+    dist4_5=np.linalg.norm(bc4-bc5)
+    dist5_6=np.linalg.norm(bc5-bc6)
+
+    dist7_8=np.linalg.norm(bc7-bc8)
+    dist8_9=np.linalg.norm(bc8-bc9)
+
+    dist1_4=np.linalg.norm(bc1-bc4)
+    dist4_7=np.linalg.norm(bc4-bc7)
+
+    dist2_5=np.linalg.norm(bc2-bc5)
+    dist5_8=np.linalg.norm(bc5-bc8)
+
+    dist3_6=np.linalg.norm(bc3-bc6)
+    dist6_9=np.linalg.norm(bc6-bc9)
+
+    print("baricenter distance between distribution 1 and distribution 2 =", dist1_2)
+    print("baricenter distance between distribution 2 and distribution 3 =", dist2_3)
+    print ("\n")
+    print("baricenter distance between distribution 4 and distribution 5 =", dist4_5)
+    print("baricenter distance between distribution 5 and distribution 6 =", dist5_6)
+    print ("\n")
+    print("baricenter distance between distribution 7 and distribution 8 =", dist7_8)
+    print("baricenter distance between distribution 8 and distribution 9 =", dist8_9)
+    print ("\n")
+    print("baricenter distance between distribution 1 and distribution 4 =", dist1_4)
+    print("baricenter distance between distribution 4 and distribution 7 =", dist4_7)
+    print ("\n")
+    print("baricenter distance between distribution 2 and distribution 5 =", dist2_5)
+    print("baricenter distance between distribution 5 and distribution 8 =", dist5_8)
+    print ("\n")
+    print("baricenter distance between distribution 3 and distribution 6 =", dist3_6)
+    print("baricenter distance between distribution 6 and distribution 9 =", dist6_9)
+    print ("\n")
+    print ("\n")
+
+    #calculate the spread of the distributions, e.g. their standard deviation
+    stdev1 = np.std(arr1)
+    stdev2 = np.std(arr2)
+    stdev3 = np.std(arr3)
+
+    stdev4 = np.std(arr4)
+    stdev5 = np.std(arr5)
+    stdev6 = np.std(arr6)
+
+    stdev7 = np.std(arr7)
+    stdev8 = np.std(arr8)
+    stdev9 = np.std(arr9)
+
+    # calculate the distance between spread (measured in standard deviation)
+    spread1_2 = np.abs(stdev1-stdev2)
+    spread2_3 = np.abs(stdev2-stdev3)
+
+    spread4_5 = np.abs(stdev4-stdev5)
+    spread5_6 = np.abs(stdev5-stdev6)
+
+    spread7_8 = np.abs(stdev7-stdev8)
+    spread8_9 = np.abs(stdev8-stdev9)
+
+    spread1_4 = np.abs(stdev1-stdev4)
+    spread4_7 = np.abs(stdev4-stdev7)
+
+    spread2_5 = np.abs(stdev2-stdev5)
+    spread5_8 = np.abs(stdev5-stdev8)
+
+    spread3_6 = np.abs(stdev3-stdev6)
+    spread6_9 = np.abs(stdev6-stdev9)
+
+    print("spread distance between distribution 1 and distribution 2 = ", spread1_2)
+    print("spread distance between distribution 2 and distribution 3 = ", spread2_3)
+    print ("\n")
+
+    print("spread distance between distribution 4 and distribution 5 = ", spread4_5)
+    print("spread distance between distribution 5 and distribution 6 = ", spread5_6)
+    print ("\n")
+
+    print("spread distance between distribution 7 and distribution 8 = ", spread7_8)
+    print("spread distance between distribution 8 and distribution 9 = ", spread8_9)
+    print ("\n")
+
+    print("spread distance between distribution 1 and distribution 4 = ", spread1_4)
+    print("spread distance between distribution 4 and distribution 7 = ", spread4_7)
+    print ("\n")
+
+    print("spread distance between distribution 2 and distribution 5 = ", spread2_5)
+    print("spread distance between distribution 5 and distribution 8 = ", spread5_8)
+    print ("\n")
+
+    print("spread distance between distribution 3 and distribution 6 = ", spread3_6)
+    print("spread distance between distribution 6 and distribution 9 = ", spread6_9)
+    print ("\n")
+
+    # fig, ((ax1,ax2,ax3),(ax4,ax5,ax6),(ax7,ax8,ax9)) = plt.subplots(3,3,figsize=(10,8))
+    # # fig = plt.figure(figsize=(10,8))
+    # # fig.add_subplot(111, frameon=False)
+    # bins = (50,100)
+
+    # h1, _, _, plot1 = ax1.hist2d(x=a1_00b0_00['globalEff'],y=a1_00b0_00['nMessages'],bins=bins)
+    # ax1.set_xlabel("Global efficiency")
+    # ax1.set_ylabel("Convergence time")
+    # ax1.set_title(fr"$\alpha$=1.00 & $\beta$=0.00")
+    
+    # h2, _, _, plot2 = ax2.hist2d(x=a1_00b0_25['globalEff'],y=a1_00b0_25['nMessages'],bins=bins)
+    # ax2.set_xlabel("Global efficiency")
+    # ax2.set_ylabel("Convergence time")
+    # ax2.set_title(fr"$\alpha$=1.00 & $\beta$=0.25")
+    
+    # h3, _, _, plot3 = ax3.hist2d(x=a1_00b0_50['globalEff'],y=a1_00b0_50['nMessages'],bins=bins)
+    # ax3.set_xlabel("Global efficiency")
+    # ax3.set_ylabel("Convergence time")
+    # ax3.set_title(fr"$\alpha$=1.00 & $\beta$=0.50")
+
+    # h4, _, _, plot4 = ax4.hist2d(x=a0_75b0_00['globalEff'],y=a0_75b0_00['nMessages'],bins=bins)
+    # ax4.set_xlabel("Global efficiency")
+    # ax4.set_ylabel("Convergence time")
+    # ax4.set_title(fr"$\alpha$=0.75 & $\beta$=0.00")
+    
+    # h5, _, _, plot5 = ax5.hist2d(x=a0_75b0_25['globalEff'],y=a0_75b0_25['nMessages'],bins=bins)
+    # ax5.set_xlabel("Global efficiency")
+    # ax5.set_ylabel("Convergence time")
+    # ax5.set_title(fr"$\alpha$=0.75 & $\beta$=0.25")
+    
+    # h6, _, _, plot6 = ax6.hist2d(x=a0_75b0_50['globalEff'],y=a0_75b0_50['nMessages'],bins=bins)
+    # ax6.set_xlabel("Global efficiency")
+    # ax6.set_ylabel("Convergence time")
+    # ax6.set_title(fr"$\alpha$=0.75 & $\beta$=0.50")
+
+    # h7, _, _, plot7 = ax7.hist2d(x=a0_50b0_00['globalEff'],y=a0_50b0_00['nMessages'],bins=bins)
+    # ax7.set_xlabel("Global efficiency")
+    # ax7.set_ylabel("Convergence time")
+    # ax7.set_title(fr"$\alpha$=0.50 & $\beta$=0.00")
+    
+    # h8, _, _, plot8 = ax8.hist2d(x=a0_50b0_25['globalEff'],y=a0_50b0_25['nMessages'],bins=bins)
+    # ax8.set_xlabel("Global efficiency")
+    # ax8.set_ylabel("Convergence time")
+    # ax8.set_title(fr"$\alpha$=0.50 & $\beta$=0.25")
+
+    # h9, _, _, plot9 = ax9.hist2d(x=a0_50b0_50['globalEff'],y=a0_50b0_50['nMessages'],bins=bins)
+    # ax9.set_xlabel("Global efficiency")
+    # ax9.set_ylabel("Convergence time")
+    # ax9.set_title(fr"$\alpha$=0.50 & $\beta$=0.50")
+
+    # # ax1.set_yscale("log")
+    # # ax2.set_yscale("log")
+    # # ax3.set_yscale("log")
+    # # ax4.set_yscale("log")
+    # # ax5.set_yscale("log")
+    # # ax6.set_yscale("log")
+    # # ax7.set_yscale("log")
+    # # ax8.set_yscale("log")
+    # # ax9.set_yscale("log")
+
+    # plt.subplots_adjust(left=0.1,
+    #                     bottom=0.1, 
+    #                     right=0.9, 
+    #                     top=0.9, 
+    #                     wspace=0.4, 
+    #                     hspace=0.4) 
+    
+    # # plt.show()
+
+    # alpha1_00, (ax1,ax2,ax3) = plt.subplots(1,3)
+    # # transform scatterplots to 2D histograms with identical bins taken from highest noise (alpha=1.00)
+    # h3, xedges, yedges, plot3 = ax3.hist2d(x=a1_00b0_50['globalEff'],y=a1_00b0_50['nMessages'],bins=bins)
+    # h1, _, _, plot1 = ax1.hist2d(x=a1_00b0_00['globalEff'],y=a1_00b0_00['nMessages'],bins=(xedges,yedges))
+    # h2, _, _, plot2 = ax2.hist2d(x=a1_00b0_25['globalEff'],y=a1_00b0_25['nMessages'],bins=(xedges,yedges))
+
+    # # compute probability density function
+    # pdf1 = h1 / h1.sum()
+    # pdf2 = h2 / h2.sum()
+    # pdf3 = h3 / h3.sum()
+
+    # print(hellinger(pdf1, pdf2))
+    # print(hellinger(pdf2, pdf3))
+    # print(hellinger(pdf1,pdf3))
+    # print()
+
+    # alpha0_75, (ax4,ax5,ax6) = plt.subplots(1,3)
+    # # transform scatterplots to 2D histograms with identical bins taken from highest noise (alpha=0.75)
+    # h6, xedges, yedges, plot6 = ax6.hist2d(x=a0_75b0_50['globalEff'],y=a0_75b0_50['nMessages'],bins=bins)
+    # h4, _, _, plot4 = ax4.hist2d(x=a0_75b0_00['globalEff'],y=a0_75b0_00['nMessages'],bins=(xedges,yedges))
+    # h5, _, _, plot5 = ax5.hist2d(x=a0_75b0_25['globalEff'],y=a0_75b0_25['nMessages'],bins=(xedges,yedges))
+
+    # # compute probability density function
+    # pdf4 = h4 / h4.sum()
+    # pdf5 = h5 / h5.sum()
+    # pdf6 = h6 / h6.sum()
+    
+    # print(hellinger(pdf4, pdf5))
+    # print(hellinger(pdf5, pdf6))
+    # print(hellinger(pdf4,pdf6))
+    # print() 
+
+    # alpha0_50, (ax7,ax8,ax9) = plt.subplots(1,3)
+    # # transform scatterplots to 2D histograms with identical bins taken from highest noise (alpha=0.50)
+    # h9, xedges, yedges, plot9 = ax9.hist2d(x=a0_50b0_50['globalEff'],y=a0_50b0_50['nMessages'],bins=bins)
+    # h7, _, _, plot7 = ax7.hist2d(x=a0_50b0_00['globalEff'],y=a0_50b0_00['nMessages'],bins=(xedges,yedges))
+    # h8, _, _, plot8 = ax8.hist2d(x=a0_50b0_25['globalEff'],y=a0_50b0_25['nMessages'],bins=(xedges,yedges))
+
+    # # compute probability density function
+    # pdf7 = h7 / h7.sum()
+    # pdf8 = h8 / h8.sum()
+    # pdf9 = h9 / h9.sum()
+
+    # print(hellinger(pdf7, pdf8))
+    # print(hellinger(pdf8, pdf9))
+    # print(hellinger(pdf7,pdf9))
+    # print()
+
+    # beta0_00, (ax1,ax4,ax7) = plt.subplots(1,3)
+    # # transform scatterplots to 2D histograms with identical bins taken from highest noise (beta=0.00)
+    # h7, xedges, yedges, plot7 = ax7.hist2d(x=a0_50b0_00['globalEff'],y=a0_50b0_00['nMessages'],bins=bins)
+    # h1, _, _, plot1 = ax1.hist2d(x=a1_00b0_00['globalEff'],y=a1_00b0_00['nMessages'],bins=(xedges,yedges))
+    # h4, _, _, plot4 = ax4.hist2d(x=a0_75b0_00['globalEff'],y=a0_75b0_00['nMessages'],bins=(xedges,yedges))
+
+    # # compute probability density function
+    # pdf1 = h1 / h1.sum()
+    # pdf4 = h4 / h4.sum()
+    # pdf7 = h7 / h7.sum()
+
+    # print(hellinger(pdf1, pdf4))
+    # print(hellinger(pdf4, pdf7))
+    # print(hellinger(pdf1,pdf7))
+    # print()
+
+    # beta0_25, (ax2,ax5,ax8) = plt.subplots(1,3)
+    # # transform scatterplots to 2D histograms with identical bins taken from highest noise (beta=0.25)
+    # h8, xedges, yedges, plot8 = ax8.hist2d(x=a0_50b0_25['globalEff'],y=a0_50b0_25['nMessages'],bins=bins)
+    # h2, _, _, plot2 = ax2.hist2d(x=a1_00b0_25['globalEff'],y=a1_00b0_25['nMessages'],bins=(xedges,yedges))
+    # h5, _, _, plot5 = ax5.hist2d(x=a0_75b0_25['globalEff'],y=a0_75b0_25['nMessages'],bins=(xedges,yedges))
+
+    # # compute probability density function
+    # pdf2 = h2 / h2.sum()
+    # pdf5 = h5 / h5.sum()
+    # pdf8 = h8 / h8.sum()
+
+    # print(hellinger(pdf2, pdf5))
+    # print(hellinger(pdf5, pdf8))
+    # print(hellinger(pdf2,pdf8))
+    # print()
+
+    # beta0_50, (ax3,ax6,ax9) = plt.subplots(1,3)
+    # # transform scatterplots to 2D histograms with identical bins taken from highest noise (beta=0.50)
+    # h9, xedges, yedges, plot9 = ax9.hist2d(x=a0_50b0_50['globalEff'],y=a0_50b0_50['nMessages'],bins=bins)
+    # h3, _, _, plot3 = ax3.hist2d(x=a1_00b0_50['globalEff'],y=a1_00b0_50['nMessages'],bins=(xedges,yedges))
+    # h6, _, _, plot6 = ax6.hist2d(x=a0_75b0_50['globalEff'],y=a0_75b0_50['nMessages'],bins=(xedges,yedges))
+
+    # # compute probability density function
+    # pdf3 = h3 / h3.sum()
+    # pdf6 = h6 / h6.sum()
+    # pdf9 = h9 / h9.sum()
+
+    # print(hellinger(pdf3, pdf6))
+    # print(hellinger(pdf6, pdf9))
+    # print(hellinger(pdf3,pdf9))
+    # print()
+
+    # plt.show()
+    # plt.close(fig)
 
 def check_initEffect(alpha: str, beta: str, without2: bool = True):
     """ 
@@ -1089,72 +1470,23 @@ if __name__ == "__main__":
         #                 perN=False) # NOTE: CHANGE FILENAME (@end function!)
 
 
-    for alpha in alphas:
-    # for beta in betas:
-        # show shift in probability distribution for varying noise per metric
-        violin_noiseEffect(fixed_param=alpha,
-                        varying_param=betas,
-                        variable='beta',
-                        metric='global',
-                        fit='none',
-                        without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
+    # for alpha in alphas:
+    # # for beta in betas:
+    #     # show shift in probability distribution for varying noise per metric
+    #     violin_noiseEffect(fixed_param=alpha,
+    #                     varying_param=betas,
+    #                     variable='beta',
+    #                     metric='global',
+    #                     fit='none',
+    #                     without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
+
+    quantifyNoiseDifference()
 
     # # summary plot of noise effect
-    # # NOTE: CHANGE ACCORDING TO VARYING PARAMETER
-    # vary = 'alpha'
-
-    # # NOTE: CHANGE ACCORDING TO VARYING PARAMETER
-    # # for alpha in alphas: 
-    # for beta in betas:
-    #     fig, ax = plt.subplots(figsize=(13,8))
-
-    #     colors = []
-    #     if vary == 'beta':
-    #         colors = ['maroon','forestgreen','indigo']
-    #     elif vary == 'alpha':
-    #         colors = ['darkorange','mediumblue','mediumvioletred']
-
-    #     # NOTE: CHANGE ACCORDING TO VARYING PARAMETER
-    #     # for i, beta in enumerate(betas):
-    #     for i, alpha in enumerate(alphas):
-
-    #         x,y = summary_noiseEffect(alpha=alpha,beta=beta,without2=True)
-
-    #         ax.scatter(x=x,y=y,c=colors[i],alpha=0.2)
-
-    #     handles = []
-    #     if vary == 'beta':
-    #         handles = [
-    #             plt.scatter([], [], color=c, label=l)
-    #             for c, l in zip("maroon forestgreen indigo".split(), fr"$\beta$=0.00 $\beta$=0.25 $\beta$=0.50".split())
-    #         ]
-    #     elif vary == 'alpha':
-    #         handles = [
-    #             plt.scatter([], [], color=c, label=l)
-    #             for c, l in zip("darkorange mediumblue mediumvioletred".split(), fr"$\alpha$=1.00 $\alpha$=0.75 $\alpha$=0.50".split())
-    #         ]
-
-    #     ax.legend(handles=handles,fontsize=14,loc='upper left', bbox_to_anchor=(1, 1))
-    #     ax.set_xlabel("Global efficiency",fontsize=16)
-    #     ax.set_ylabel("Convergence time",fontsize=16)
-
-    #     if vary == 'beta':
-    #         ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
-    #     elif vary == 'alpha':
-    #         ax.set_title(fr"$\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)  
-        
-    #     plt.tick_params(axis="both",which="major",labelsize=16)
-        
-    #     ax.set_yscale("log")
-
-    #     if vary == 'beta':
-    #         fig.savefig(f"images/relations/noiseEffect/summaryNoise-alpha={alpha}-varyingBeta.png",bbox_inches="tight")
-    #     elif vary == 'alpha':
-    #         fig.savefig(f"images/relations/noiseEffect/summaryNoise-beta={beta}-varyingAlpha.png",bbox_inches="tight")
-        
-    #     plt.show()
-
-    #     plt.close(fig)
+    # summary_noiseEffect(alphas=alphas,
+    #                     betas=betas,
+    #                     vary='beta',
+    #                     without2=True) # NOTE: CHANGE FOR-LOOPS ACCORDING TO VARYING NOISE PARAMETER
 
     # # show relation between convergence and initial mean Hamming distance
     # check_initEffect(alpha=alpha,
