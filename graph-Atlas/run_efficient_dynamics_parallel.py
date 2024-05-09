@@ -35,10 +35,6 @@ if __name__ == "__main__":
     # setting for Snellius simulation
     df = pd.read_csv('data-GraphAtlas.tsv',sep='\t')
 
-
-    # only select graph sizes n=7
-    df = df[df['nodes']==7]
-
     graphs = []
 
     for j in range(len(df)):
