@@ -388,7 +388,7 @@ def my_floor(a: float, precision: int = 0) -> np.float64:
     return np.true_divide(np.floor(a * 10**precision), 10**precision)
 
 
-def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2: bool, metric: str = None, fixed: bool = False):
+def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2: bool, metric: str = None, fixed: bool = False, efficient: bool = False):
     """ 
     Violinplot distribution of convergence time per metric per bin (size=0.1).
 
@@ -400,6 +400,7 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
     - without2 (bool): Indicator to remove graph size n=2 from data
     - metric (str): Choose a single metric to apply to figures (otherwise all networks are generated)
     - fixed (bool): False for random initialization; True for fixed pre-defined initialization
+    - efficient (bool): False for random dynamics; True for efficient dynamics
     """
     
     # set paths
@@ -408,7 +409,10 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
     
     if fixed:
         settings = f'fixed-alpha{alpha}-beta{beta}'  
-        images_path = f'images/relations/{settings}'                  
+        images_path = f'images/relations/{settings}'  
+    if efficient:
+        settings = f'efficient-alpha{alpha}-beta{beta}'     
+        images_path = f'images/relations/{settings}'           
     
     # load all data
     data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
@@ -557,8 +561,45 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
         # (add LOG if log-scale; add lineFit for linear line or expFit for exponential
         # change allN to withoutN=2 if applied)
         # fig.savefig(f"{images_path}/expFit-LOGdistribution-n={n}-convergence-per-{metric}-violin.png",bbox_inches='tight')
-        fig.savefig(f"{images_path}/LOGdistribution-withoutN=2-convergence-per-{metric}-violin.png",bbox_inches='tight')
+        fig.savefig(f"{images_path}/expFit-LOGdistribution-withoutN=2-convergence-per-{metric}-violin.png",bbox_inches='tight')
         plt.close(fig)
+
+
+def summary_redundantMessaging():
+    """ 
+    Effect of redundant messages on variation in convergence time.
+    """
+ 
+    # load all data
+    dataRandom = pd.read_csv(f'data/relationData-alpha1_00-beta0_00-Atlas.tsv', sep='\t')
+    dataEfficient = pd.read_csv(f'data/relationData-efficient-alpha1_00-beta0_00-Atlas.tsv', sep='\t')
+    
+    # eliminate graph size n=2, if desired
+    dataRandom = dataRandom.drop(range(0,100))
+    dataEfficient = dataEfficient.drop(range(0,100))
+
+    fig, ax = plt.subplots(figsize=(13,7))
+
+    ax.scatter(dataRandom['globalEff'],dataRandom['nMessages'],color='darkcyan',alpha=0.3)
+    ax.scatter(dataEfficient['globalEff'],dataEfficient['nMessages'],color='sandybrown',alpha=0.3)
+
+    handles = [
+        plt.scatter([], [], color=c, label=l)
+        for c, l in zip("darkcyan sandybrown".split(), "Random Efficient".split())
+    ]
+
+    ax.legend(handles=handles,title="Messaging strategy")
+
+    ax.set_title(fr"$\alpha$=1.00 & $\beta$=0.00 & n$\in${{3,4,5,6,7}}",fontsize=16)
+    ax.set_ylabel("Convergence time",fontsize=16)
+    ax.set_xlabel("Global efficiency",fontsize=16)
+
+    # ax.set_yscale("log")
+    plt.tick_params(axis='both', which='major', labelsize=16)
+
+    # plt.show()
+    fig.savefig(f"images/relations/convergence-redundantMessaging-alpha1_00-beta0_00.png",bbox_inches="tight")
+    plt.close(fig)
 
 
 def hist_per_violin(alpha: float, beta: float, perN: bool):
@@ -1289,7 +1330,7 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
     if without2:
         graphData = graphData[graphData['nodes']!=2]
 
-    fig, ax = plt.subplots(figsize=(13,8))
+    fig, ax = plt.subplots(figsize=(13,7))
 
     cmap = {'0.5-0.6': 'tab:blue',
             '0.6-0.7': 'tab:orange',
@@ -1341,15 +1382,15 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
         plt.scatter([], [], color=c, label=l)
         for c, l in zip(list(cmap.values()), list(cmap.keys()))
     ]
-    ax.legend(handles=handles)
+    ax.legend(handles=handles,title="Global efficiency")
     ax.set_xlabel("Initial Hamming distance",fontsize=16)
     ax.set_ylabel("Convergence time",fontsize=16)
     ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
     plt.tick_params(axis="both",which="major",labelsize=16)
     
-    ax.set_yscale("log")
+    # ax.set_yscale("log")
 
-    fig.savefig(f"images/relations/LOG-convergence-initialStates-{settings}.png",bbox_inches="tight")
+    fig.savefig(f"images/relations/convergence-initialStates-{settings}.png",bbox_inches="tight")
     # plt.show()
 
     plt.close(fig)
@@ -1459,10 +1500,13 @@ if __name__ == "__main__":
         # violin_per_params(alpha=alpha,
         #                     beta=beta,
         #                     perN=False,
-        #                     fit='none',
+        #                     fit='exponential',
         #                     without2=True,
         #                     metric='global',
-        #                     fixed=False) # NOTE: CHANGE FILENAME (@end function!)
+        #                     fixed=False,
+        #                     efficient=True) # NOTE: CHANGE FILENAME (@end function!)
+
+    summary_redundantMessaging()
 
         # # show histogram distribution per violin (per parameter settings, per metric, optionally per graph size)
         # hist_per_violin(alpha=alpha,
@@ -1480,7 +1524,7 @@ if __name__ == "__main__":
     #                     fit='none',
     #                     without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
 
-    quantifyNoiseDifference()
+    # quantifyNoiseDifference()
 
     # # summary plot of noise effect
     # summary_noiseEffect(alphas=alphas,
@@ -1488,7 +1532,7 @@ if __name__ == "__main__":
     #                     vary='beta',
     #                     without2=True) # NOTE: CHANGE FOR-LOOPS ACCORDING TO VARYING NOISE PARAMETER
 
-    # # show relation between convergence and initial mean Hamming distance
-    # check_initEffect(alpha=alpha,
-    #                  beta=beta,
-    #                  without2=True) # NOTE: CHANGE FILENAME (@end function!)
+    # show relation between convergence and initial mean Hamming distance
+    check_initEffect(alpha=alpha,
+                     beta=beta,
+                     without2=True) # NOTE: CHANGE FILENAME (@end function!)
