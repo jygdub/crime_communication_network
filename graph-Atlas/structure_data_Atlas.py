@@ -32,10 +32,9 @@ def mergeData(alpha: str, beta: str, efficient: bool = False, fixed: bool = Fals
 
     if efficient:
         settings = f"efficient-alpha{alpha}-beta{beta}"
-        df = df[df['nodes']==7]  # NOTE: FOR SPECIFIC CASE OF ANALYSIS FOCUSSED ON GRAPH SIZE 7
     
     if fixed:
-        settings = f"fixed2-alpha{alpha}-beta{beta}"
+        settings = f"fixed-alpha{alpha}-beta{beta}"
 
     graphs = []
 
@@ -68,9 +67,6 @@ def combineData(alpha: str, beta: str, efficient: bool = False, fixed: bool = Fa
     """
 
     metrics = pd.read_csv('data/data-GraphAtlas.tsv', sep='\t')
-    
-    if efficient:
-        metrics = metrics[metrics['nodes']==7]
 
     if fixed:
         metrics = metrics[metrics['nodes']==7]
@@ -159,8 +155,8 @@ def meanData(alpha: str, beta: str, efficient: bool = False):
 if __name__ == "__main__":
     alpha = '1_00'
     beta = '0_00'
-    efficient = False
-    fixed = True
+    efficient = True
+    fixed = False
 
     # mergeData(alpha=alpha,beta=beta,efficient=efficient,fixed=fixed)
     # combineData(alpha=alpha,beta=beta,efficient=efficient,fixed=fixed)
