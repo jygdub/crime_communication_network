@@ -1506,7 +1506,7 @@ if __name__ == "__main__":
         #                     fixed=False,
         #                     efficient=True) # NOTE: CHANGE FILENAME (@end function!)
 
-    summary_redundantMessaging()
+    # summary_redundantMessaging()
 
         # # show histogram distribution per violin (per parameter settings, per metric, optionally per graph size)
         # hist_per_violin(alpha=alpha,
@@ -1532,7 +1532,7 @@ if __name__ == "__main__":
     #                     vary='beta',
     #                     without2=True) # NOTE: CHANGE FOR-LOOPS ACCORDING TO VARYING NOISE PARAMETER
 
-    # show relation between convergence and initial mean Hamming distance
-    check_initEffect(alpha=alpha,
-                     beta=beta,
-                     without2=True) # NOTE: CHANGE FILENAME (@end function!)
+    # # show relation between convergence and initial mean Hamming distance
+    # check_initEffect(alpha=alpha,
+    #                  beta=beta,
+    #                  without2=True) # NOTE: CHANGE FILENAME (@end function!)

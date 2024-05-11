@@ -172,7 +172,7 @@ def correlate_hellinger_globalEff(alpha: str, beta: str, n: int, startGraph: boo
 
     if not startGraph:
         # plot Hellinger distance against global efficiency difference between each transition pair
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(13,8))
         ax.scatter(x=data_hellinger["GE_difference"],y=data_hellinger["Hellinger"])
         ax.set_xlabel("Difference in global efficiency",fontsize=16)
         ax.set_ylabel("Hellinger distance",fontsize=16)
@@ -497,10 +497,10 @@ if __name__ == "__main__":
 
     # # scatterplot relation between difference in global efficiency and difference in Hellinger distance
     # correlate_hellinger_globalEff(alpha=alpha,
-    #                               beta=beta,
-    #                               n=n,
-    #                               startGraph=False,
-    #                               efficient=False) # if TRUE, adjust range as desired
+    #                             beta=beta,
+    #                             n=n,
+    #                             startGraph=False,
+    #                             efficient=False) # if TRUE, adjust range as desired
 
     # # investigate graph pairs
     # analyze_graphPairs(alpha=alpha, 
@@ -508,11 +508,11 @@ if __name__ == "__main__":
     #                    n=n,
     #                    efficient=False)
 
-    # investigate intervention effectiveness
-    successTransitions(alpha=alpha,
-                       beta=beta,
-                       n=n,
-                       efficient=False) 
+    # # investigate intervention effectiveness
+    # successTransitions(alpha=alpha,
+    #                    beta=beta,
+    #                    n=n,
+    #                    efficient=False) 
 
     # examineProbs_PairedMaxima()
 
