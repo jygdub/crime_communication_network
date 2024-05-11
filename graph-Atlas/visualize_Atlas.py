@@ -5,7 +5,7 @@ Written by Jade Dubbeld
 19/03/2024
 """
 
-import pandas as pd, matplotlib.pyplot as plt, networkx as nx, pickle
+import pandas as pd, matplotlib.pyplot as plt, networkx as nx, pickle, json
 from tqdm import tqdm
 
 def visualize(G: nx.classes.graph.Graph) -> None:
@@ -76,10 +76,84 @@ def graphsSideBySide(graphIDs: list):
     fig.savefig(f"images/transitions/transitions-startG{graphIDs[0]}.png",bbox_inches='tight')
     plt.close(fig)
 
+
+
+def identicalLayout(G_layout: nx.classes.graph.Graph, graphIDs: list):
+
+    fig, axs = plt.subplots(nrows=1,ncols=len(graphIDs),figsize=(13,8))
+
+    pos = nx.kamada_kawai_layout(G_layout)
+
+    # edgesLayout = G_layout.edges()
+    # print(edgesLayout)
+
+    # degreeLayout = {}
+    
+    # for node in G_layout.nodes():
+    #     degreeLayout[node] = G_layout.degree(node)
+
+    # print(degreeLayout)
+
+    # print("---------------")
+
+    for index,id in enumerate(graphIDs):
+
+        G = nx.graph_atlas(id)
+
+        # degreeDict = {}
+        
+        # for node in G.nodes():
+        #     degreeDict[node] = G.degree(node)
+        
+        # print(degreeDict)
+
+
+        # if id == 271:
+        #     G = nx.relabel_nodes(G, {0: 2, 1: 1, 2: 0, 3: 3, 4: 4, 5: 5, 6: 6})
+
+        # edgesG = G.edges()
+        # print(edgesG)
+
+        # if id == 271:
+        #     G = nx.relabel_nodes(G, {0: 3, 1: 6, 2: 0, 3: 2, 4: 4, 5: 5, 6: 1})
+        # if id == 270:
+        #     G = nx.relabel_nodes(G, {0: 6, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 0})
+
+        # if nx.is_isomorphic(G,G_layout):
+        #     nx.draw(G=G_layout,pos=nx.kamada_kawai_layout(G_layout),ax=axs[index],node_color="tab:green",with_labels=True)
+        # else:
+        #     nx.draw(G=G,pos=pos,ax=axs[index],node_color="tab:blue",with_labels=True)
+
+        nx.draw(G=G,pos=pos,ax=axs[index],node_color="tab:blue",with_labels=True)
+        axs[index].set_title(f"G{id}")
+
+    # plt.show()
+
+    fig.savefig(fname=f"images/transitions/n=7/successfulTransitions/G{graphIDs[0]}-G{graphIDs[1]}.png",bbox_inches='tight')
+
+    plt.close(fig)
+
+def compareSuccessTransitions(G_layout: nx.classes.graph.Graph, graphIDs: list):
+    
+    fig, axs = plt.subplots(nrows=1,ncols=len(graphIDs),figsize=(13,8))
+
+    pos = nx.kamada_kawai_layout(G_layout)
+    
+
 if __name__ == "__main__":
 
-    # load data
-    df = pd.read_csv('data/data-GraphAtlas.tsv',usecols=['index'],sep='\t')
+    # # load data
+    # df = pd.read_csv('data/data-GraphAtlas.tsv',usecols=['index'],sep='\t')
+
+    alpha = '1_00'
+    beta = '0_00'
+    n = 7
+
+    data = json.load(open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json"))
+
+    for ID in tqdm(list(data.keys())):
+        transition = [int(ID)] + data[ID]
+        identicalLayout(nx.graph_atlas(int(ID) ), transition)
 
     # # save graph image
     # saveGraph(data=df['index'])
