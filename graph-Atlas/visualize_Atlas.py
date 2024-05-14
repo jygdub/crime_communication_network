@@ -124,12 +124,38 @@ def identicalLayout(G_layout: nx.classes.graph.Graph, graphIDs: list):
         # else:
         #     nx.draw(G=G,pos=pos,ax=axs[index],node_color="tab:blue",with_labels=True)
 
+
+        # G = nx.relabel_nodes(G, {0: -, 1: -, 2: -, 3: -, 4: -, 5: -, 6: -})
+        # G = nx.relabel_nodes(G, {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6})
+        if graphIDs[0] == 317 and id == 276:
+            G = nx.relabel_nodes(G, {0: 2, 1: 4, 2: 0, 3: 5, 4: 1, 5: 3, 6: 6})
+        elif graphIDs[0] == 324 and id == 276:
+            G = nx.relabel_nodes(G, {0: 6, 1: 2, 2: 1, 3: 4, 4: 5, 5: 3, 6: 0})
+        elif graphIDs[0] == 331 and id == 279:
+            G = nx.relabel_nodes(G, {0: 5, 1: 0, 2: 2, 3: 3, 4: 4, 5: 1, 6: 6})
+        elif graphIDs[0] == 383 and id == 320:
+            G = nx.relabel_nodes(G, {0: 0, 1: 2, 2: 5, 3: 6, 4: 3, 5: 4, 6: 1})
+        elif graphIDs[0] == 416 and id == 416:
+            G = nx.relabel_nodes(G, {0: 1, 1: 6, 2: 3, 3: 5, 4: 2, 5: 4, 6: 0})
+        elif graphIDs[0] == 440 and id == 337:
+            G = nx.relabel_nodes(G, {0: 0, 1: 4, 2: 2, 3: 3, 4: 6, 5: 5, 6: 1})
+        elif graphIDs[0] == 486 and id == 411:
+            G = nx.relabel_nodes(G, {0: 3, 1: 5, 2: 0, 3: 1, 4: 2, 5: 4, 6: 6})
+        elif graphIDs[0] == 561 and id == 432:
+            G = nx.relabel_nodes(G, {0: 0, 1: 4, 2: 3, 3: 5, 4: 1, 5: 2, 6: 6})
+        elif graphIDs[0] == 620 and id == 489:
+            G = nx.relabel_nodes(G, {0: 4, 1: 0, 2: 1, 3: 5, 4: 3, 5: 6, 6: 2})
+        elif graphIDs[0] == 636 and id == 526:
+            G = nx.relabel_nodes(G, {0: 0, 1: 2, 2: 5, 3: 1, 4: 3, 5: 6, 6: 4})
+        elif graphIDs[0] == 639 and id == 525:
+            G = nx.relabel_nodes(G, {0: 1, 1: 0, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6})
+
         nx.draw(G=G,pos=pos,ax=axs[index],node_color="tab:blue",with_labels=True)
         axs[index].set_title(f"G{id}")
 
-    # plt.show()
+    plt.show()
 
-    fig.savefig(fname=f"images/transitions/n=7/successfulTransitions/G{graphIDs[0]}-G{graphIDs[1]}.png",bbox_inches='tight')
+    # fig.savefig(fname=f"images/transitions/n=7/successfulTransitions/G{graphIDs[0]}-G{graphIDs[1]}.png",bbox_inches='tight')
 
     plt.close(fig)
 
@@ -151,9 +177,10 @@ if __name__ == "__main__":
 
     data = json.load(open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json"))
 
-    for ID in tqdm(list(data.keys())):
-        transition = [int(ID)] + data[ID]
-        identicalLayout(nx.graph_atlas(int(ID) ), transition)
+    # for ID in tqdm(list(data.keys())):
+    ID = '639'
+    transition = [int(ID)] + data[ID]
+    identicalLayout(G_layout=nx.graph_atlas(int(ID) ), graphIDs=transition)
 
     # # save graph image
     # saveGraph(data=df['index'])
