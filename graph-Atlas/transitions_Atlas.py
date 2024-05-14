@@ -406,7 +406,7 @@ def possible_transitions(n: int, intervention: str) -> None:
             delimiter ="\t",
             fmt ='% i') 
 
-def analyze_graphPairs(alpha: str, beta: str, n: int, efficient: bool = False):
+def top10_graphPairs(alpha: str, beta: str, n: int, efficient: bool = False):
     """
     Function to obtain/show top 10 highest and top 10 lowest for both Hellinger distance and global efficiency.
     
@@ -547,7 +547,7 @@ if __name__ == "__main__":
     #                             efficient=False) # if TRUE, adjust range as desired
 
     # # investigate graph pairs
-    # analyze_graphPairs(alpha=alpha, 
+    # top10_graphPairs(alpha=alpha, 
     #                    beta=beta, 
     #                    n=n,
     #                    efficient=False)
