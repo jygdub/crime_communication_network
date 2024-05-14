@@ -8,6 +8,7 @@ Written by Jade Dubbeld
 import pandas as pd, numpy as np, matplotlib.pyplot as plt, networkx as nx, pickle, json
 from tqdm import tqdm
 from itertools import product
+from typing import Tuple
 
 
 def hellinger(p: np.ndarray, q: np.ndarray) -> np.float64:
@@ -246,6 +247,7 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
     startGraphs = data_hellinger['index_graph1'].unique()
     bothMaximum = {}
     maxProbs = {}
+    maxStructuralChange = {}
 
     print(len(startGraphs))
 
@@ -265,11 +267,18 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
             graphID2 = int(subset['index_graph2'][index])
             
             # append final graph ID to dictionary if both Hellinger distance and global efficiency difference is maximum
-            if subset['Hellinger'][index] == maxHellinger and subset['GE_difference'][index] == maxGE:
-                if graphID1 in bothMaximum:
-                    bothMaximum.append(graphID2)
+            if subset['GE_difference'][index] == maxGE:
+
+                if graphID1 in maxStructuralChange:
+                    maxStructuralChange[graphID1].append(graphID2)
                 else:
-                    bothMaximum[graphID1] = [graphID2]
+                    maxStructuralChange[graphID1] = [graphID2]
+
+                if subset['Hellinger'][index] == maxHellinger:
+                    if graphID1 in bothMaximum:
+                        bothMaximum[graphID1].append(graphID2)
+                    else:
+                        bothMaximum[graphID1] = [graphID2]
 
         # compute probabilities of finding maximum values for both measures per start graph
         if graphID1 in bothMaximum:
@@ -278,31 +287,33 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
             maxProbs[graphID1] = 0.0
 
     print(len(bothMaximum))
+    print(len(maxStructuralChange))
 
     # serialize data into file:
     json.dump(maxProbs, open(f"data/probabilities-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w')) # NOTE: read JSON-file -> data = json.load( open( "file_name.json" ) )
     json.dump(bothMaximum, open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
+    json.dump(maxStructuralChange, open(f"data/graphTransitions-maxStructural-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
 
-    x = ['Maximal','Not maximal']
-    y = [len(bothMaximum),len(startGraphs)-len(bothMaximum)]
+    # x = ['Maximal','Not maximal']
+    # y = [len(bothMaximum),len(startGraphs)-len(bothMaximum)]
     
-    # barplot ratio success/fail maxGE-maxHellinger from start graphs
-    fig, ax = plt.subplots(figsize=(5,5))
-    ax.bar(x=x,
-           height=y,
-           color=['green','tab:red'])
+    # # barplot ratio success/fail maxGE-maxHellinger from start graphs
+    # fig, ax = plt.subplots(figsize=(5,5))
+    # ax.bar(x=x,
+    #        height=y,
+    #        color=['green','tab:red'])
 
-    addlabels(x, y)
+    # addlabels(x, y)
 
-    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
-    ax.set_ylabel("Frequency",fontsize=14)
-    ax.set_ylim(0,550)
-    ax.tick_params(axis="both",which="major",labelsize=14)
-    # ax.tick_params(axis='x', labelrotation=90)
+    # ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+    # ax.set_ylabel("Frequency",fontsize=14)
+    # ax.set_ylim(0,550)
+    # ax.tick_params(axis="both",which="major",labelsize=14)
+    # # ax.tick_params(axis='x', labelrotation=90)
 
-    plt.show()
-    fig.savefig(f"images/transitions/n={n}/binomialDistribution-{settings}-n={n}.png",bbox_inches='tight')
-    plt.close(fig)
+    # plt.show()
+    # fig.savefig(f"images/transitions/n={n}/binomialDistribution-{settings}-n={n}.png",bbox_inches='tight')
+    # plt.close(fig)
 
     # # plot distribution of maxGE-maxHellinger probability per start graph
     # fig,ax = plt.subplots()
@@ -474,16 +485,202 @@ def examineProbs_PairedMaxima():
             transition = data_hellinger[['index_graph1','index_graph2']][data_hellinger['index_graph1']==key]
             print(transition)
 
-def findCycles(graphs: list):
+def countDegreeFreq(distr: list) -> int:
+    degreeFreq = {0: 0,
+                  1: 0,
+                  2: 0,
+                  3: 0,
+                  4: 0,
+                  5: 0,
+                  6: 0}
 
-    G = nx.graph_atlas(graphs[0])
+    for d in distr:
+        degreeFreq[d[1]] += 1
+
+    return degreeFreq
+
+def countCycles(G: nx.classes.graph.Graph, n: int) -> int:
+    """
+    Function to count number of cycles up to size n.
+
+    Parameters:
+    - G (nx.classes.graph.Graph): Networkx graph object
+    - n (int): Maximum size of cycles
+
+    Returns:
+    - nCycles (int): Number of cycles with maximum size up to n
+    """
+    cycles = nx.simple_cycles(G=G,length_bound=n)
+
+    nCycle = 0
+
+    for c in cycles:
+        nCycle += 1
     
-    for id in graphs:#[1:]:
-        G = nx.graph_atlas(id)
-        print(id, nx.cycle_basis(G))
+    return nCycle
 
+def graphProperties(G: nx.classes.graph.Graph) -> Tuple[dict, int, int, int, int, int]:
+    """
+    Function to retrieve properties from given graph G.
+    - Degree distribution
+    - Number cycles (size up to 7)
 
+    Parameters:
+    - G (nx.classes.graph.Graph): Networkx graph object
+
+    Returns:
+    - degreeFreq (dict): Mapping of degree distribution (k,v) -> (degree, frequency)
+    - n3Cycles (int): Number of cycles size 3
+    - n4Cycles (int): Number of cycles size 4
+    - n5Cycles (int): Number of cycles size 5
+    - n6Cycles (int): Number of cycles size 6
+    - n7Cycles (int): Number of cycles size 7
+    """
+ 
+    
+    # get degree distribution
+    nodeDegree = G.degree
+    degreeFreq = countDegreeFreq(nodeDegree)
+
+    # get number of cycles of size 3
+    n3Cycles = countCycles(G=G,n=3)  
+
+    n4Cycles = countCycles(G=G,n=4)
+    n4Cycles -= n3Cycles
+
+    n5Cycles = countCycles(G=G,n=5)
+    n5Cycles -= (n4Cycles+n3Cycles)
+
+    n6Cycles = countCycles(G=G,n=6)
+    n6Cycles -= (n5Cycles+n4Cycles+n3Cycles)
+
+    n7Cycles = countCycles(G=G,n=7)
+    n7Cycles -= (n6Cycles+n5Cycles+n4Cycles+n3Cycles)
+
+    return degreeFreq, n3Cycles, n4Cycles, n5Cycles, n6Cycles, n7Cycles
+
+def findPropertyChange(from_graph: list, to_graph: list):
+    """
+    Function to analyze a few property changes due to single edge removal.
+    - Increase in number of isolated agents.
+    - Number of broken cycles of sizes 3 and 4.
+
+    Parameters:
+    - from_graph (list): List of graph IDs of representing graphs before transition
+    - to_graph (list): List of graph IDs of representing graphs after transition
+    """
+
+    # initialize counter variables
+    total3Cycles = 0
+    total4Cycles = 0
+    total5Cycles = 0
+    total6Cycles = 0
+    total7Cycles = 0
+
+    counterIsolated = 0
+    counterDecreaseMaxDegree = 0
+    counterChangeMaxDegree = 0
+    counterForced3Cycles = 0
+    counter3Cycles = 0
+    counter4Cycles = 0
+    counter5Cycles = 0
+    counter6Cycles = 0
+    counter7Cycles = 0
+    
+    for id1, id2 in tqdm(zip(from_graph,to_graph)):
+
+        # operations applied on start graph
+        G = nx.graph_atlas(int(id1))
+
+        degreeFreq1, n3Cycles1, n4Cycles1, n5Cycles1, n6Cycles1, n7Cycles1 = graphProperties(G=G)
+
+        if n3Cycles1 != 0:
+            total3Cycles += 1
+        # else:
+        #     print(f"ID without 3-cycle: {id1}")
+
+        if n3Cycles1 == 1 and n4Cycles1 == 0 and n5Cycles1 == 0 and n6Cycles1 == 0 and n7Cycles1 == 0:
+            counterForced3Cycles += 1
+            # print(f"ID with only 1x 3-cycle: {id1}")
+
+        if n4Cycles1 != 0:
+            total4Cycles += 1
+
+        if n5Cycles1 != 0:
+            total5Cycles += 1
+
+        if n6Cycles1 != 0:
+            total6Cycles += 1
+
+        if n7Cycles1 != 0:
+            total7Cycles += 1
+
+        # operations applied on final graph
+        G = nx.graph_atlas(int(id2))
+
+        degreeFreq2, n3Cycles2, n4Cycles2, n5Cycles2, n6Cycles2, n7Cycles2 = graphProperties(G=G)
+
+        # count number of additional isolated agents from transition
+        if degreeFreq2[1] > degreeFreq1[1]:
+            counterIsolated += 1
+
+        maxDegree1 = None
+        maxDegree2 = None
+
+        # search number maximum degree before and after transition and get corresponding frequency
+        for d in reversed(range(7)):
+
+            if degreeFreq1[d] != 0 and maxDegree1 == None:
+                maxDegree1 = d
+                            
+            if degreeFreq2[d] != 0 and maxDegree2 == None:
+                maxDegree2 = d
+
+        # count frequency of decrease in maximum degree
+        if maxDegree1 > maxDegree2:
+            counterDecreaseMaxDegree += 1
         
+        # count frequency of edge removal from agent with maximum degree (before transition)
+        if degreeFreq1[maxDegree1] > degreeFreq2[maxDegree1]:
+            counterChangeMaxDegree +=1
+
+        # count number broken cycles of size 3
+        if n3Cycles1 > n3Cycles2:
+            counter3Cycles += 1
+        
+        # count number broken cycles of size 4
+        if n4Cycles1 > n4Cycles2:
+            counter4Cycles += 1
+
+        # count number broken cycles of size 5
+        if n5Cycles1 > n5Cycles2:
+            counter5Cycles += 1
+
+        # count number broken cycles of size 6
+        if n6Cycles1 > n6Cycles2:
+            counter6Cycles += 1
+    
+        # count number broken cycles of size 7
+        if n7Cycles1 > n7Cycles2:
+            counter7Cycles += 1
+
+    print(f"Additional isolated agent: {counterIsolated} ({round(counterIsolated/len(from_graph)*100,3)}% of all transition pairs)")
+    print(f"Decrease maximum degree: {counterDecreaseMaxDegree} ({round(counterDecreaseMaxDegree/len(from_graph)*100,3)}% of all transition pairs)")
+    print(f"Remove from agent with maximum degree: {counterChangeMaxDegree} ({round(counterChangeMaxDegree/len(from_graph)*100,3)}% of all transition pairs)")
+    print(f"Broken cycle of size 3: {counter3Cycles} ({round(counter3Cycles/total3Cycles*100,3)}% of initial graphs with this cycle size)")
+    print(f"Broken cycle of size 4: {counter4Cycles} ({round(counter4Cycles/total4Cycles*100,3)}% of initial graphs with this cycle size)")
+    print(f"Broken cycle of size 5: {counter5Cycles} ({round(counter5Cycles/total5Cycles*100,3)}% of initial graphs with this cycle size)")
+    print(f"Broken cycle of size 6: {counter6Cycles} ({round(counter6Cycles/total6Cycles*100,3)}% of initial graphs with this cycle size)")
+    print(f"Broken cycle of size 7: {counter7Cycles} ({round(counter7Cycles/total7Cycles*100,3)}% of initial graphs with this cycle size)")
+    print(total3Cycles)
+    print(counterForced3Cycles)
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
 
@@ -560,9 +757,18 @@ if __name__ == "__main__":
 
     # examineProbs_PairedMaxima()
 
-    # # graphs = [730,550,573,578]
-    # graphs = [579, 447]
-    # findCycles(graphs=graphs)
+    # # find properties in successful transitions
+    # successful = json.load(open("data/graphTransitions-PairedMaxima-alpha1_00-beta0_00-n=7.json") )
 
+    # from_graph = list(successful.keys())
+    # to_graph = []
 
+    # temp = list(successful.values())
+    
+    # for d in temp:
+    #     to_graph.append(d[0])
 
+    # findPropertyChange(from_graph=from_graph, to_graph=to_graph)
+
+    # # find properties in all transitions
+    # findPropertyChange(from_graph=from_graph,to_graph=to_graph)
