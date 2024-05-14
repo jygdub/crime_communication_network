@@ -315,12 +315,15 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
     # fig.savefig(f"images/transitions/n={n}/freqPairedMaximum-{settings}-n={n}.png",bbox_inches='tight')
     # plt.close(fig)
 
-def possible_transitions(n: int) -> None:
+def possible_transitions(n: int, intervention: str) -> None:
     """
     Function to check possible transitions between graphs, given parameter settings.
+    - Transition is valid when final graph remains connected.
+    - Transition is valid when final graph remains connected.
 
     Parameters:
     - n (int): Graph size
+    - intervention (str): Indicate type of transition ('single_node','single_edge')
     """
     
     # load raw data
@@ -333,37 +336,75 @@ def possible_transitions(n: int) -> None:
     # initials
     from_graph = []
     to_graph = []
+    removeNode = []
 
-    # compare all graphs within the same graph size class
-    for i,j in tqdm(product(df['index'],df['index'])):
-        if j > i:
-            continue
+    if intervention == 'single_edge':
 
-        # load graphs
-        graph1 = 'G' + str(i)
-        file1 = f'graphs/{graph1}.pickle'
-        G1 = pickle.load(open(file1,'rb'))
+        # compare all graphs within the same graph size class
+        for i,j in tqdm(product(df['index'],df['index'])):
 
-        graph2 = 'G' + str(j)
-        file2 = f'graphs/{graph2}.pickle'
-        G2 = pickle.load(open(file2,'rb'))
+        
+            if j > i:
+                continue
 
-        # only account for single edge transitions
-        if nx.graph_edit_distance(G1,G2) == 1.0:
-            from_graph.append(i)
-            to_graph.append(j)
-    
-    # save transitions in order
-    np.savetxt(f"data/from_graph_n={n}.tsv",
-        from_graph,
-        delimiter ="\t",
-        fmt ='% i')
+            # load graphs
+            graph1 = 'G' + str(i)
+            file1 = f'graphs/{graph1}.pickle'
+            G1 = pickle.load(open(file1,'rb'))
 
-    np.savetxt(f"data/to_graph_n={n}.tsv",
-        to_graph,
-        delimiter ="\t",
-        fmt ='% i')
-    
+            graph2 = 'G' + str(j)
+            file2 = f'graphs/{graph2}.pickle'
+            G2 = pickle.load(open(file2,'rb'))
+
+            # only account for single edge transitions
+            if nx.graph_edit_distance(G1,G2) == 1.0:
+                from_graph.append(i)
+                to_graph.append(j)
+            
+        # save transitions in order
+        np.savetxt(f"data/singleEdge_from_graph_n={n}.tsv",
+            from_graph,
+            delimiter ="\t",
+            fmt ='% i')
+
+        np.savetxt(f"data/singleEdge_to_graph_n={n}.tsv",
+            to_graph,
+            delimiter ="\t",
+            fmt ='% i')
+
+    elif intervention == 'single_node':
+        for id in tqdm(df['index']):
+            # print(id)
+            
+            G = nx.graph_atlas(id)
+
+            for n in G.nodes:
+                # print(n)
+                G_copy = G.copy()
+                G_copy.remove_node(n)
+
+                if nx.is_connected(G_copy):
+                    from_graph.append(id) 
+                    removeNode.append(n)
+
+                    # print(nx.is_connected(G_copy))
+
+        # print(from_graph)
+        # print(removeNode)
+        print(len(from_graph))
+
+        # save transitions in order
+        np.savetxt(f"data/singleNode_from_graph_n={n}.tsv",
+            from_graph,
+            delimiter ="\t",
+            fmt ='% i')
+                
+
+        # save transitions in order
+        np.savetxt(f"data/singleNode_remove_node_n={n}.tsv",
+            removeNode,
+            delimiter ="\t",
+            fmt ='% i') 
 
 def analyze_graphPairs(alpha: str, beta: str, n: int, efficient: bool = False):
     """
@@ -415,6 +456,9 @@ def examineProbs_PairedMaxima():
     data = json.load(open("data/probabilities-PairedMaxima-alpha1_00-beta0_00-n=7.json") )
     data = {int(k):v for k,v in data.items()} # convert key strings back to ints
 
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha1_00-beta0_00-n=7.tsv",sep='\t')
+    print(data_hellinger)
+
     res=dict()
     x=list(data.values())    
     y=list(set(x))
@@ -427,14 +471,14 @@ def examineProbs_PairedMaxima():
 
     for key, value in data.items():
         if value == p:
-            print(key)
+            transition = data_hellinger[['index_graph1','index_graph2']][data_hellinger['index_graph1']==key]
+            print(transition)
 
 def findCycles(graphs: list):
 
     G = nx.graph_atlas(graphs[0])
-    print(id,nx.cycle_basis(G))
     
-    for id in graphs[1:]:
+    for id in graphs:#[1:]:
         G = nx.graph_atlas(id)
         print(id, nx.cycle_basis(G))
 
@@ -455,7 +499,7 @@ if __name__ == "__main__":
     ###############################
 
     # # check possible single edge transitions within graph size
-    # possible_transitions(n=n)
+    # possible_transitions(n=n, intervention='single_node')
 
     ### NOTE: CHOOSE GRAPHS TO COMPARE IN TRANSITIONS ###
     # automatically checked using networkx module graph_edit_distance
@@ -516,7 +560,8 @@ if __name__ == "__main__":
 
     # examineProbs_PairedMaxima()
 
-    # graphs = [730,550,573,578]
+    # # graphs = [730,550,573,578]
+    # graphs = [579, 447]
     # findCycles(graphs=graphs)
 
 
