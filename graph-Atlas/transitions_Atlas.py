@@ -770,5 +770,17 @@ if __name__ == "__main__":
 
     # findPropertyChange(from_graph=from_graph, to_graph=to_graph)
 
+    # # find properties in transitions resulting in maximum structural difference
+    # maxStruct = json.load(open("data/graphTransitions-maxStructural-alpha1_00-beta0_00-n=7.json") )
+
+    # from_graph = []
+    # to_graph = []
+
+    # for k,v in maxStruct.items():
+    #     from_graph = from_graph +([k]*len(v))
+    #     to_graph = to_graph + v
+
+    # findPropertyChange(from_graph=from_graph,to_graph=to_graph)
+
     # # find properties in all transitions
     # findPropertyChange(from_graph=from_graph,to_graph=to_graph)
