@@ -1452,11 +1452,12 @@ def GE_pathGraphSize(N: int):
         G = nx.path_graph(range(n))
         globalEfficiency.append(nx.global_efficiency(G))
 
-    fig,ax = plt.subplots()
+    fig,ax = plt.subplots(figsize=(13,5))
     ax.scatter(x=range(2,N),y=globalEfficiency)
-    ax.set_xlabel("Number of agents")
-    ax.set_ylabel("Global efficiency")
-    ax.set_title("Path graphs")
+    ax.set_xlabel("Number of agents",fontsize=16)
+    ax.set_ylabel("Global efficiency",fontsize=16)
+    plt.tick_params(axis="both",which="major",labelsize=16)
+    # ax.set_title("Path graphs",fontsize=16)
 
     plt.show()
     fig.savefig("images/GE-pathGraphSizes.png",bbox_inches='tight')
@@ -1473,8 +1474,8 @@ if __name__ == "__main__":
     betas = ['0_00','0_25', '0_50']                                                               
     #######################################################
 
-    # # show global efficiency measure per path graph size
-    # GE_pathGraphSize(100)
+    # show global efficiency measure per path graph size
+    GE_pathGraphSize(100)
 
     # # show raw data per metric (optional 3rd degree polynomial fit)
     # scatterALL(alpha=alpha,beta=beta,draw_polynomial=False)
