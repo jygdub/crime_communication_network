@@ -1064,23 +1064,23 @@ def quantifyNoiseDifference():
     dist3_6=np.linalg.norm(bc3-bc6)
     dist6_9=np.linalg.norm(bc6-bc9)
 
-    print("baricenter distance between distribution 1 and distribution 2 =", dist1_2)
-    print("baricenter distance between distribution 2 and distribution 3 =", dist2_3)
+    print("baricenter distance between a=1.00 b=0.00 and a=1.00 b=0.25 -> ", dist1_2)
+    print("baricenter distance between a=1.00 b=0.25 and a=1.00 b=0.50 -> ", dist2_3)
     print ("\n")
-    print("baricenter distance between distribution 4 and distribution 5 =", dist4_5)
-    print("baricenter distance between distribution 5 and distribution 6 =", dist5_6)
+    print("baricenter distance between a=0.75 b=0.00 and a=0.75 b=0.25 -> ", dist4_5)
+    print("baricenter distance between a=0.75 b=0.25 and a=0.75 b=0.50 -> ", dist5_6)
     print ("\n")
-    print("baricenter distance between distribution 7 and distribution 8 =", dist7_8)
-    print("baricenter distance between distribution 8 and distribution 9 =", dist8_9)
+    print("baricenter distance between a=0.50 b=0.00 and a=0.50 b=0.25 -> ", dist7_8)
+    print("baricenter distance between a=0.50 b=0.25 and a=0.50 b=0.50 -> ", dist8_9)
     print ("\n")
-    print("baricenter distance between distribution 1 and distribution 4 =", dist1_4)
-    print("baricenter distance between distribution 4 and distribution 7 =", dist4_7)
+    print("baricenter distance between a=1.00 b=0.00 and a=0.75 b=0.00 -> ", dist1_4)
+    print("baricenter distance between a=0.75 b=0.00 and a=0.50 b=0.00 -> ", dist4_7)
     print ("\n")
-    print("baricenter distance between distribution 2 and distribution 5 =", dist2_5)
-    print("baricenter distance between distribution 5 and distribution 8 =", dist5_8)
+    print("baricenter distance between a=1.00 b=0.25 and a=0.75 b=0.25 -> ", dist2_5)
+    print("baricenter distance between a=0.75 b=0.25 and a=0.50 b=0.25 -> ", dist5_8)
     print ("\n")
-    print("baricenter distance between distribution 3 and distribution 6 =", dist3_6)
-    print("baricenter distance between distribution 6 and distribution 9 =", dist6_9)
+    print("baricenter distance between a=1.00 b=0.50 and a=0.75 b=0.50 -> ", dist3_6)
+    print("baricenter distance between a=0.75 b=0.50 and a=0.50 b=0.50 -> ", dist6_9)
     print ("\n")
     print ("\n")
 
@@ -1116,28 +1116,28 @@ def quantifyNoiseDifference():
     spread3_6 = np.abs(stdev3-stdev6)
     spread6_9 = np.abs(stdev6-stdev9)
 
-    print("spread distance between distribution 1 and distribution 2 = ", spread1_2)
-    print("spread distance between distribution 2 and distribution 3 = ", spread2_3)
+    print("spread distance between a=1.00 b=0.00 and a=1.00 b=0.25 -> ", spread1_2)
+    print("spread distance between a=1.00 b=0.25 and a=1.00 b=0.50 -> ", spread2_3)
     print ("\n")
 
-    print("spread distance between distribution 4 and distribution 5 = ", spread4_5)
-    print("spread distance between distribution 5 and distribution 6 = ", spread5_6)
+    print("spread distance between a=0.75 b=0.00 and a=0.75 b=0.25 -> ", spread4_5)
+    print("spread distance between a=0.75 b=0.25 and a=0.75 b=0.50 -> ", spread5_6)
     print ("\n")
 
-    print("spread distance between distribution 7 and distribution 8 = ", spread7_8)
-    print("spread distance between distribution 8 and distribution 9 = ", spread8_9)
+    print("spread distance between a=0.50 b=0.00 and a=0.50 b=0.25 -> ", spread7_8)
+    print("spread distance between a=0.50 b=0.25 and a=0.50 b=0.50 -> ", spread8_9)
     print ("\n")
 
-    print("spread distance between distribution 1 and distribution 4 = ", spread1_4)
-    print("spread distance between distribution 4 and distribution 7 = ", spread4_7)
+    print("spread distance between a=1.00 b=0.00 and a=0.75 b=0.00 -> ", spread1_4)
+    print("spread distance between a=0.75 b=0.00 and a=0.50 b=0.00 -> ", spread4_7)
     print ("\n")
 
-    print("spread distance between distribution 2 and distribution 5 = ", spread2_5)
-    print("spread distance between distribution 5 and distribution 8 = ", spread5_8)
+    print("spread distance between a=1.00 b=0.25 and a=0.75 b=0.25 -> ", spread2_5)
+    print("spread distance between a=0.75 b=0.25 and a=0.50 b=0.25 -> ", spread5_8)
     print ("\n")
 
-    print("spread distance between distribution 3 and distribution 6 = ", spread3_6)
-    print("spread distance between distribution 6 and distribution 9 = ", spread6_9)
+    print("spread distance between a=1.00 b=0.50 and a=0.75 b=0.50 -> ", spread3_6)
+    print("spread distance between a=0.75 b=0.50 and a=0.50 b=0.50 -> ", spread6_9)
     print ("\n")
 
     # fig, ((ax1,ax2,ax3),(ax4,ax5,ax6),(ax7,ax8,ax9)) = plt.subplots(3,3,figsize=(10,8))
@@ -1474,8 +1474,8 @@ if __name__ == "__main__":
     betas = ['0_00','0_25', '0_50']                                                               
     #######################################################
 
-    # show global efficiency measure per path graph size
-    GE_pathGraphSize(100)
+    # # show global efficiency measure per path graph size
+    # GE_pathGraphSize(100)
 
     # # show raw data per metric (optional 3rd degree polynomial fit)
     # scatterALL(alpha=alpha,beta=beta,draw_polynomial=False)
@@ -1525,7 +1525,7 @@ if __name__ == "__main__":
     #                     fit='none',
     #                     without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
 
-    # quantifyNoiseDifference()
+    quantifyNoiseDifference()
 
     # # summary plot of noise effect
     # summary_noiseEffect(alphas=alphas,
