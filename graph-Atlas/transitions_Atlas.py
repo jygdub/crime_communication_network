@@ -248,6 +248,7 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
     bothMaximum = {}
     maxProbs = {}
     maxStructuralChange = {}
+    maxCommunicationChange = {}
 
     print(len(startGraphs))
 
@@ -280,6 +281,12 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
                     else:
                         bothMaximum[graphID1] = [graphID2]
 
+            if subset['Hellinger'][index] == maxHellinger:
+                if graphID1 in maxCommunicationChange:
+                    maxCommunicationChange[graphID1].append(graphID2)
+                else:
+                    maxCommunicationChange[graphID1] = [graphID2]
+
         # compute probabilities of finding maximum values for both measures per start graph
         if graphID1 in bothMaximum:
             maxProbs[graphID1] = len(bothMaximum[graphID1]) / len(subset)
@@ -288,12 +295,15 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
 
     print(len(bothMaximum))
     print(len(maxStructuralChange))
+    print(len(maxCommunicationChange))
 
     # serialize data into file:
     json.dump(maxProbs, open(f"data/probabilities-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w')) # NOTE: read JSON-file -> data = json.load( open( "file_name.json" ) )
     json.dump(bothMaximum, open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
     json.dump(maxStructuralChange, open(f"data/graphTransitions-maxStructural-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
+    json.dump(maxCommunicationChange, open(f"data/graphTransitions-maxCommunication-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
 
+    # # successful vs. failed transition (max-max vs. either one is not maximal)
     # x = ['Maximal','Not maximal']
     # y = [len(bothMaximum),len(startGraphs)-len(bothMaximum)]
     
@@ -410,7 +420,6 @@ def possible_transitions(n: int, intervention: str) -> None:
             delimiter ="\t",
             fmt ='% i')
                 
-
         # save transitions in order
         np.savetxt(f"data/singleNode_remove_node_n={n}.tsv",
             removeNode,
@@ -559,6 +568,281 @@ def graphProperties(G: nx.classes.graph.Graph) -> Tuple[dict, int, int, int, int
 
     return degreeFreq, n3Cycles, n4Cycles, n5Cycles, n6Cycles, n7Cycles
 
+
+def annotateProperties():
+
+    # load data
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha1_00-beta0_00-n={n}.tsv",sep='\t')
+    data_hellinger['index_graph1'] = data_hellinger['index_graph1'].astype(int)
+    data_hellinger['index_graph2'] = data_hellinger['index_graph2'].astype(int)
+    annotated = data_hellinger.copy()
+
+    print(annotated)
+
+    from_graph = data_hellinger['index_graph1'].tolist()
+    to_graph = data_hellinger['index_graph2'].tolist()
+
+    isolation = np.zeros(len(from_graph))
+    decreaseMaxDegree = np.zeros(len(from_graph))
+    removeFromMaxDegree = np.zeros(len(from_graph))
+    brokenCycle3 = np.zeros(len(from_graph))
+
+    for index, (id1, id2) in tqdm(enumerate(zip(from_graph,to_graph))):
+        # print(f"{index}: {id1}->{id2}")
+
+        # operations applied on start graph
+        G = nx.graph_atlas(int(id1))
+
+        degreeFreq1, n3Cycles1, n4Cycles1, n5Cycles1, n6Cycles1, n7Cycles1 = graphProperties(G=G)
+
+        # operations applied on final graph
+        G = nx.graph_atlas(int(id2))
+
+        degreeFreq2, n3Cycles2, n4Cycles2, n5Cycles2, n6Cycles2, n7Cycles2 = graphProperties(G=G)
+
+        # count number of additional isolated agents from transition
+        if degreeFreq2[1] > degreeFreq1[1]:
+            isolation[index] = 1
+
+        maxDegree1 = None
+        maxDegree2 = None
+
+        # search number maximum degree before and after transition and get corresponding frequency
+        for d in reversed(range(7)):
+
+            if degreeFreq1[d] != 0 and maxDegree1 == None:
+                maxDegree1 = d
+                            
+            if degreeFreq2[d] != 0 and maxDegree2 == None:
+                maxDegree2 = d
+
+        # count frequency of decrease in maximum degree
+        if maxDegree1 > maxDegree2:
+            decreaseMaxDegree[index] = 1
+        
+        # count frequency of edge removal from agent with maximum degree (before transition)
+        if degreeFreq1[maxDegree1] > degreeFreq2[maxDegree1]:
+            removeFromMaxDegree[index] = 1
+
+        # count number broken cycles of size 3
+        if n3Cycles1 > n3Cycles2:
+            brokenCycle3[index] = 1
+
+    annotated['isolation'] = isolation
+    annotated['decreased_maxDegree'] = decreaseMaxDegree
+    annotated['removed_from_maxDegree'] = removeFromMaxDegree
+    annotated['brokenCycle3'] = brokenCycle3
+
+    # print(annotated[['index_graph1','index_graph2','isolation','decreased_maxDegree','removed_from_maxDegree','brokenCycle3']])
+
+    annotated.to_csv(f"data/annotatedHellinger-data-alpha1_00-beta0_00-n=7.tsv",sep='\t',index=False)
+
+
+def countTransitions(dictionary: dict)->Tuple[list, list]:
+    from_graph = []
+    to_graph = []
+
+    for k,v in dictionary.items():
+        from_graph = from_graph +([k]*len(v))
+        to_graph = to_graph + v
+    
+    return from_graph, to_graph
+
+def ratioPropertyPlot():
+
+    annotated = pd.read_csv(f"data/annotatedHellinger-data-alpha1_00-beta0_00-n=7.tsv",sep='\t')
+    print(annotated)
+
+   
+    # find all start graphs
+    startGraphs = annotated['index_graph1'].unique()
+
+    print(f"\nNumber of start graphs: {len(startGraphs)}\n")
+
+    indicesMaxGE = []
+    indicesMaxHellinger = []
+    indicesOptimal = []
+
+    for s in startGraphs:
+
+        subset = annotated[annotated['index_graph1']==s]
+
+        # find maximum values for Hellinger distance and global efficiency difference
+        maxHellinger = max(subset['Hellinger'])
+        maxGE = max(subset['GE_difference'])
+
+        for index in subset.index:
+            
+            # store indices of transitions satisfying respective condition 
+            if subset['GE_difference'][index] == maxGE:
+                indicesMaxGE.append(index)
+            
+            if subset['Hellinger'][index] == maxHellinger:
+                indicesMaxHellinger.append(index)
+            
+            if subset['Hellinger'][index] == maxHellinger and subset['GE_difference'][index] == maxGE:
+                indicesOptimal.append(index)
+
+    # display total number of transitions per class
+    totalMaxGE = len(indicesMaxGE)
+    totalMaxHellinger = len(indicesMaxHellinger)
+    totalOptimal = len(indicesOptimal)
+    totalAll = len(annotated)
+    print(f"Number of transitions leading to maximum structure change: {totalMaxGE}")
+    print(f"Number of transitions leading to maximum communication change: {totalMaxHellinger}")
+    print(f"Number of transitions leading to optimal change in both ways: {totalOptimal}")
+    print(f"Number of all transitions: {totalAll}\n")
+
+    # calculate and display number of transition leading to maximum structure change per detected property
+    isolationStructural = sum(annotated['isolation'].iloc[indicesMaxGE])
+    decreasedDegreeStructural = sum(annotated['decreased_maxDegree'].iloc[indicesMaxGE])
+    removalDegreeStructural = sum(annotated['removed_from_maxDegree'].iloc[indicesMaxGE])
+    cycle3Structural = sum(annotated['brokenCycle3'].iloc[indicesMaxGE])
+    print(f"Nr. transitions (max structural) with isolation: {isolationStructural}")
+    print(f"Nr. transitions (max structural) with decrease max degree: {decreasedDegreeStructural}")
+    print(f"Nr. transitions (max structural) with removal from max degree: {removalDegreeStructural}")
+    print(f"Nr. transitions (max structural) with broken cycle size 3: {cycle3Structural}\n")
+
+    # calculate and display number of transition leading to maximum communication change per detected property
+    isolationCommunicative = sum(annotated['isolation'].iloc[indicesMaxHellinger])
+    decreasedDegreeCommunicative = sum(annotated['decreased_maxDegree'].iloc[indicesMaxHellinger])
+    removalDegreeCommunicative = sum(annotated['removed_from_maxDegree'].iloc[indicesMaxHellinger])
+    cycle3Communicative = sum(annotated['brokenCycle3'].iloc[indicesMaxHellinger])
+    print(f"Nr. transitions (max communication) with isolation: {isolationCommunicative}")
+    print(f"Nr. transitions (max communication) with decrease max degree: {decreasedDegreeCommunicative}")
+    print(f"Nr. transitions (max communication) with removal from max degree: {removalDegreeCommunicative}")
+    print(f"Nr. transitions (max communication) with broken cycle size 3: {cycle3Communicative}\n")
+    
+    # calculate and display number of transition leading to optimal intervention per detected property
+    isolationOptimal = sum(annotated['isolation'].iloc[indicesOptimal])
+    decreasedDegreeOptimal = sum(annotated['decreased_maxDegree'].iloc[indicesOptimal])
+    removalDegreeOptimal = sum(annotated['removed_from_maxDegree'].iloc[indicesOptimal])
+    cycle3Optimal = sum(annotated['brokenCycle3'].iloc[indicesOptimal])
+    print(f"Nr. transitions (optimal) with isolation: {isolationOptimal}")
+    print(f"Nr. transitions (optimal) with decrease max degree: {decreasedDegreeOptimal}")
+    print(f"Nr. transitions (optimal) with removal from max degree: {removalDegreeOptimal}")
+    print(f"Nr. transitions (optimal) with broken cycle size 3: {cycle3Optimal}\n")
+
+    # calculate and display all transitions per detected property
+    isolationAll = sum(annotated['isolation'])
+    decreasedDegreeAll = sum(annotated['decreased_maxDegree'])
+    removalDegreeAll = sum(annotated['removed_from_maxDegree'])
+    cycle3All = sum(annotated['brokenCycle3'])
+    print(f"Nr. transitions (all) with isolation: {isolationAll}")
+    print(f"Nr. transitions (all) with decrease max degree: {decreasedDegreeAll}")
+    print(f"Nr. transitions (all) with removal from max degree: {removalDegreeAll}")
+    print(f"Nr. transitions (all) with broken cycle size 3: {cycle3All}\n")
+
+    # calculate ratios for all transitions
+    ratioIsolationAll = isolationAll /  totalAll
+    ratioDecreaseAll = decreasedDegreeAll /  totalAll
+    ratioRemovalAll = removalDegreeAll /  totalAll
+    ratioCycle3All = cycle3All /  totalAll
+
+    # calculate ratios for maximum structure change
+    ratioIsolationStructural = isolationStructural /  totalMaxGE
+    ratioDecreaseStructural = decreasedDegreeStructural /  totalMaxGE
+    ratioRemovalStructural = removalDegreeStructural /  totalMaxGE
+    ratioCycle3Structural = cycle3Structural /  totalMaxGE
+    
+    # calculate and display ratios (fraction property from max structure change / fraction property from all)
+    print("Isolation | portion max GE difference : all")
+    print(f"                   {ratioIsolationStructural/ratioIsolationAll} : 1")
+    print("Decreased max degree | portion max GE difference : all")
+    print(f"                              {ratioDecreaseStructural/ratioDecreaseAll} : 1")
+    print("Removal from max degree | portion max GE difference : all")
+    print(f"                                 {ratioRemovalStructural/ratioRemovalAll} : 1")
+    print(f"Broken cycle size 3 | portion max GE difference : all")
+    print(f"                             {ratioCycle3Structural/ratioCycle3All} : 1\n")
+
+    # calculate ratios for maximum communication change
+    ratioIsolationCommunicative = isolationCommunicative /  totalMaxHellinger
+    ratioDecreaseCommunicative = decreasedDegreeCommunicative /  totalMaxHellinger
+    ratioRemovalCommunicative = removalDegreeCommunicative /  totalMaxHellinger
+    ratioCycle3Communicative = cycle3Communicative /  totalMaxHellinger
+
+    # calculate and display ratios (fraction property from max structure change / fraction property from all)
+    print("Isolation | portion max Hellinger difference : all")
+    print(f"                          {ratioIsolationCommunicative/ratioIsolationAll} : 1")
+    print("Decreased max degree | portion max Hellinger difference : all")
+    print(f"                                     {ratioDecreaseCommunicative/ratioDecreaseAll} : 1")
+    print("Removal from max degree | portion max Hellinger difference : all")
+    print(f"                                        {ratioRemovalCommunicative/ratioRemovalAll} : 1")
+    print(f"Broken cycle size 3 | portion max Hellinger difference : all")
+    print(f"                                    {ratioCycle3Communicative/ratioCycle3All} : 1\n")
+    
+    # calculate ratios for optimal change
+    ratioIsolationOptimal = isolationOptimal /  totalOptimal
+    ratioDecreaseOptimal = decreasedDegreeOptimal /  totalOptimal
+    ratioRemovalOptimal = removalDegreeOptimal /  totalOptimal
+    ratioCycle3Optimal = cycle3Optimal /  totalOptimal
+    print(ratioIsolationOptimal, isolationOptimal, totalOptimal)
+
+    # calculate and display ratios (fraction property from max structure change / fraction property from all)
+    print("Isolation | portion optimal vs. max Hellinger difference : all")
+    print(f"                                      {ratioIsolationOptimal/ratioIsolationCommunicative} : 1")
+    print("Decreased max degree | portion optimal vs. max Hellinger difference : all")
+    print(f"                                                 {ratioDecreaseOptimal/ratioDecreaseCommunicative} : 1")
+    print("Removal from max degree | portion optimal vs. max Hellinger difference : all")
+    print(f"                                                    {ratioRemovalOptimal/ratioRemovalCommunicative} : 1")
+    print(f"Broken cycle size 3 | portion optimal vs. max Hellinger difference : all")
+    print(f"                                                {ratioCycle3Optimal/ratioCycle3Communicative} : 1\n")
+   
+    # set width of bar 
+    barWidth = 0.2
+    fig,ax = plt.subplots(figsize =(12, 8)) 
+
+    # set height of bar 
+    GE = [ratioIsolationStructural/ratioIsolationAll,
+          ratioDecreaseStructural/ratioDecreaseAll,
+          ratioRemovalStructural/ratioRemovalAll,
+          ratioCycle3Structural/ratioCycle3All] 
+    HELLINGER = [ratioIsolationCommunicative/ratioIsolationAll,
+                 ratioDecreaseCommunicative/ratioDecreaseAll,
+                 ratioRemovalCommunicative/ratioRemovalAll,
+                 ratioCycle3Communicative/ratioCycle3All] 
+    OPTIMAL_COMM = [ratioIsolationOptimal/ratioIsolationCommunicative,
+                    ratioDecreaseOptimal/ratioDecreaseCommunicative,
+                    ratioRemovalOptimal/ratioRemovalCommunicative,
+                    ratioCycle3Optimal/ratioCycle3Communicative] 
+    OPTIMAL_STRUC = [ratioIsolationOptimal/ratioIsolationStructural,
+                     ratioDecreaseOptimal/ratioDecreaseStructural,
+                     ratioRemovalOptimal/ratioRemovalStructural,
+                     ratioCycle3Optimal/ratioCycle3Structural] 
+    
+    # set position of bar on X axis 
+    br1 = np.arange(len(GE)) 
+    br2 = [x + barWidth for x in br1]
+    br3 = [x + barWidth for x in br2]
+    br4 = [x + barWidth for x in br3]
+    
+    # plot individual bars per intervention characteristic
+    ax.bar(br1, GE, color ='saddlebrown', width = barWidth, 
+            edgecolor ='k', label =fr'$\Delta GE_{{max}}$ : ALL') 
+    ax.bar(br2, HELLINGER, color ='gold', width = barWidth, 
+            edgecolor ='k', label =fr'$Hellinger_{{max}}$ : ALL') 
+    ax.bar(br3,OPTIMAL_COMM,color ='tab:orange', width = barWidth, 
+            edgecolor ='k', label =fr'$\Delta GE_{{max}}$ & $Hellinger_{{max}}$ : $\Delta GE_{{max}}$') 
+    ax.bar(br4,OPTIMAL_STRUC,color ='tab:pink', width = barWidth, 
+            edgecolor ='k', label =fr'$\Delta GE_{{max}}$ & $Hellinger_{{max}}$ : $Hellinger_{{max}}$') 
+    
+    # plot horizontal line at ratio 1.0
+    ax.axhline(y=1., color='k', linestyle='--',alpha=0.5)
+    
+    # decorate plot and save
+    ax.set_xlabel('Intervention characteristic', fontsize = 16) 
+    ax.set_ylabel(fr"$\frac{{class}}{{all}}$-ratio", fontsize = 16) 
+    ax.set_xticks([r + 1.5*barWidth for r in range(len(GE))], 
+            ['Isolation','Decrease in degree','Removal from degree','Triad disruption'])
+    ax.tick_params(axis="both",which="major",labelsize=12)
+    
+    # plt.legend(title='Maximum change in:',fontsize=12,title_fontsize=12)
+    plt.legend(fontsize=12)
+    plt.show()
+    fig.savefig(fname="images/transitions/n=7/propertyTransition-structureVScommunication.png",bbox_inches='tight')
+    plt.close(fig)
+
+
 def findPropertyChange(from_graph: list, to_graph: list):
     """
     Function to analyze a few property changes due to single edge removal.
@@ -672,14 +956,35 @@ def findPropertyChange(from_graph: list, to_graph: list):
     print(f"Broken cycle of size 5: {counter5Cycles} ({round(counter5Cycles/total5Cycles*100,3)}% of initial graphs with this cycle size)")
     print(f"Broken cycle of size 6: {counter6Cycles} ({round(counter6Cycles/total6Cycles*100,3)}% of initial graphs with this cycle size)")
     print(f"Broken cycle of size 7: {counter7Cycles} ({round(counter7Cycles/total7Cycles*100,3)}% of initial graphs with this cycle size)")
-    print(total3Cycles)
-    print(counterForced3Cycles)
+    
+    print(f"From graph: {len(from_graph)}")
+    print(f"To graph: {len(to_graph)}")
+    print(f"Total graph with cycles 3: {total3Cycles}")
+    print(f"Total graph with only 1 cycle 3 (nothing else): {counterForced3Cycles}")
 
 
+def checkSuccesses(from_graph: list, to_graph: list):
+    # print(from_graph)
+    # print(to_graph)
 
+    # load data
+    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha1_00-beta0_00-n={n}.tsv",sep='\t')
+    # print(data_hellinger)
 
+    counter = 0
 
+    for id1, id2 in tqdm(zip(from_graph,to_graph)):
+        id1 = int(id1)
+        maxGE = max(data_hellinger['GE_difference'][data_hellinger['index_graph1']==id1])
+        # print(maxGE)
 
+        currentGE = max(data_hellinger['GE_difference'][data_hellinger['index_graph1']==id1][data_hellinger['index_graph2']==id2])
+        # print(f"Current GE{currentGE}")
+
+        if  currentGE == maxGE:
+            counter += 1
+    
+    return counter
 
 
 if __name__ == "__main__":
@@ -757,6 +1062,13 @@ if __name__ == "__main__":
 
     # examineProbs_PairedMaxima()
 
+    # # add applicable property labels to each transition
+    # annotateProperties()
+
+    # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
+    ratioPropertyPlot()
+
+    ########################################################################################################
     # # find properties in successful transitions
     # successful = json.load(open("data/graphTransitions-PairedMaxima-alpha1_00-beta0_00-n=7.json") )
 
@@ -768,8 +1080,11 @@ if __name__ == "__main__":
     # for d in temp:
     #     to_graph.append(d[0])
 
+    # print("All successful transitions (i.e. maximum difference global efficiency -> maximum difference in communication/Hellinger distance)")
     # findPropertyChange(from_graph=from_graph, to_graph=to_graph)
+    ########################################################################################################
 
+    ########################################################################################################
     # # find properties in transitions resulting in maximum structural difference
     # maxStruct = json.load(open("data/graphTransitions-maxStructural-alpha1_00-beta0_00-n=7.json") )
 
@@ -780,7 +1095,44 @@ if __name__ == "__main__":
     #     from_graph = from_graph +([k]*len(v))
     #     to_graph = to_graph + v
 
+    # print("All transitions that yield maximum difference in global efficiency")
     # findPropertyChange(from_graph=from_graph,to_graph=to_graph)
+    ########################################################################################################
 
-    # # find properties in all transitions
+    ########################################################################################################
+    # find properties in transitions resulting in maximum communication difference
+    # maxStruct = json.load(open("data/graphTransitions-maxCommunication-alpha1_00-beta0_00-n=7.json") )
+
+    # from_graph = []
+    # to_graph = []
+
+    # for k,v in maxStruct.items():
+    #     from_graph = from_graph +([k]*len(v))
+    #     to_graph = to_graph + v
+
+    # print("All transitions that yield maximum difference in communication (Hellinger)")
     # findPropertyChange(from_graph=from_graph,to_graph=to_graph)
+    ########################################################################################################
+
+    ########################################################################################################
+    # # find properties in all transitions
+    # print("All possible transitions")
+    # findPropertyChange(from_graph=from_graph,to_graph=to_graph)
+    ########################################################################################################
+
+
+    ########################################################################################################
+    # # count number of successes in max communication change
+    # maxStruct = json.load(open("data/graphTransitions-maxCommunication-alpha1_00-beta0_00-n=7.json") )
+
+    # from_graph = []
+    # to_graph = []
+
+    # for k,v in maxStruct.items():
+    #     from_graph = from_graph +([k]*len(v))
+    #     to_graph = to_graph + v
+
+    # print("Number of successes in maximum Hellinger distance (i.e. also max GE difference)")
+    # nSuccess = checkSuccesses(from_graph=from_graph,to_graph=to_graph)
+    # print(nSuccess)
+    ########################################################################################################
