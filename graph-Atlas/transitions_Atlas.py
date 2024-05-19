@@ -570,6 +570,15 @@ def graphProperties(G: nx.classes.graph.Graph) -> Tuple[dict, int, int, int, int
 
 
 def annotateProperties():
+    """
+    Function to label transitions with applicable properties and saves TSV-file to disk.
+    
+    Opting for the following properties:
+    - Additional isolated agent
+    - Decreased maximum degree in network
+    - Edge removal from agent with highest degree
+    - Triad disturbance (cycle of size 3 is broken up)
+    """
 
     # load data
     data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha1_00-beta0_00-n={n}.tsv",sep='\t')
@@ -639,6 +648,17 @@ def annotateProperties():
 
 
 def countTransitions(dictionary: dict)->Tuple[list, list]:
+    """
+    Function to count all transitions from dictionary (keys = start graph, values = all possible final graphs).
+
+    Parameters:
+    - dictionary (dict): Mapping of transitions from start graph (keys) to all final graphs (values)
+
+    Returns:
+    - from_graph (list): Dictionary keys containing start graph IDs transformed to list
+    - to_graph (list): Dictionary values containing final graph IDs transformed to list
+    """
+    
     from_graph = []
     to_graph = []
 
@@ -649,6 +669,17 @@ def countTransitions(dictionary: dict)->Tuple[list, list]:
     return from_graph, to_graph
 
 def ratioPropertyPlot():
+    """
+    Function that computes and displays ratios of transition properties (class:all or class1:class2).
+
+    Displays in terminal:
+    - number of unique start graphs 
+    - number of transitions per category (max. structure, max. communication, both, all)
+    - number of transitions per category per property
+    - ratios per category per property
+
+    Saves ratio plot to disk in PNG-file.
+    """
 
     annotated = pd.read_csv(f"data/annotatedHellinger-data-alpha1_00-beta0_00-n=7.tsv",sep='\t')
     print(annotated)
