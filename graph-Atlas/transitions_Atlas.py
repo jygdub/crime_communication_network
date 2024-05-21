@@ -832,7 +832,7 @@ def ratioPropertyPlot():
     
     # decorate plot and save
     ax.set_xlabel('Intervention characteristic', fontsize = 16) 
-    ax.set_ylabel(fr"$\frac{{class}}{{all}}$-ratio", fontsize = 16) 
+    ax.set_ylabel(fr"Ratio", fontsize = 16) 
     ax.set_xticks([r + 1.5*barWidth for r in range(len(GE))], 
             ['Isolation','Decrease in degree','Removal from degree','Triad disruption'])
     ax.tick_params(axis="both",which="major",labelsize=12)
@@ -1176,11 +1176,12 @@ if __name__ == "__main__":
     # # add applicable property labels to each transition
     # annotateProperties()
 
-    # # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
-    # ratioPropertyPlot()
+    # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
+    ratioPropertyPlot()
 
     # binomialSuccessFail(alpha='1_00',beta='0_00',condition='Hellinger')
-    distributionMaxima(alpha='1_00',beta='0_00')
+    
+    # distributionMaxima(alpha='1_00',beta='0_00')
 
     ########################################################################################################
     # # find properties in successful transitions
