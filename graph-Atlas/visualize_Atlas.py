@@ -150,12 +150,12 @@ def identicalLayout(G_layout: nx.classes.graph.Graph, graphIDs: list):
         elif graphIDs[0] == 639 and id == 525:
             G = nx.relabel_nodes(G, {0: 1, 1: 0, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6})
 
-        nx.draw(G=G,pos=pos,ax=axs[index],node_color="tab:blue",with_labels=True)
+        nx.draw(G=G,pos=pos,ax=axs[index],node_color="tab:blue")#,with_labels=True)
         axs[index].set_title(f"G{id}")
 
     plt.show()
 
-    # fig.savefig(fname=f"images/transitions/n=7/successfulTransitions/G{graphIDs[0]}-G{graphIDs[1]}.png",bbox_inches='tight')
+    fig.savefig(fname=f"images/transitions/n=7/successfulTransitions/structuredLayout/G{graphIDs[0]}-G{graphIDs[1]}.png",bbox_inches='tight')
 
     plt.close(fig)
 
