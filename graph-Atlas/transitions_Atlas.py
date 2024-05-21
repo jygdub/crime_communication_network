@@ -1014,7 +1014,11 @@ def binomialSuccessFail(alpha: str, beta: str, condition: str):
 
     addlabels(x, y)
 
-    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+    if condition == 'GE':
+        ax.set_title(fr"$\Delta GE_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+    elif condition == 'Hellinger':
+        ax.set_title(fr"Hellinger$_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+
     ax.set_ylabel("Frequency",fontsize=14)
     ax.tick_params(axis="both",which="major",labelsize=14)
     # ax.tick_params(axis='x', labelrotation=90)
@@ -1023,6 +1027,52 @@ def binomialSuccessFail(alpha: str, beta: str, condition: str):
     fig.savefig(f"images/transitions/n={n}/binomialDistribution-{condition}-{settings}-n={n}.png",bbox_inches='tight')
     plt.close(fig)
 
+
+def distributionMaxima(alpha: str, beta: str):
+    """
+    Function to plot binomial distribution (success/fail) within class (max. Hellinger/max. GE).
+    
+    Parameters:
+    - alpha (str): Setting value of alpha noise 
+    - beta (str): Setting value of beta noise
+    """
+
+    # set paths
+    settings = f"alpha{alpha}-beta{beta}"  
+
+    # load data
+    successData = json.load(open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json"))
+    GEData = json.load(open(f"data/graphTransitions-maxStructural-alpha{alpha}-beta{beta}-n={n}.json"))
+    hellingerData = json.load(open(f"data/graphTransitions-maxCommunication-alpha{alpha}-beta{beta}-n={n}.json"))
+    transitionsData = pd.read_csv("data/from_graph_n=7.tsv",sep='\t')
+
+    nTransitions = len(transitionsData)
+    _,nSuccess = countTransitions(successData)
+    _,nGE = countTransitions(GEData)
+    _,nHellinger = countTransitions(hellingerData)
+
+
+    # distribution of all transition classes
+    x = ["Total",fr"$\Delta GE_{{max}}$",fr"Hellinger$_{{max}}$","Successful"]
+    y = [nTransitions,len(nGE),len(nHellinger),len(nSuccess)]
+    
+    # barplot distributions
+    fig, ax = plt.subplots(figsize=(5,5))
+    ax.bar(x=x,
+           height=y,
+           color=['mediumseagreen','deepskyblue','mediumslateblue','deeppink'])
+
+    addlabels(x, y)
+
+    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+
+    ax.set_ylabel("Frequency",fontsize=14)
+    ax.tick_params(axis="both",which="major",labelsize=14)
+    ax.tick_params(axis='x', labelrotation=45)
+
+    plt.show()
+    fig.savefig(f"images/transitions/n={n}/transitionClasses-{settings}-n={n}.png",bbox_inches='tight')
+    plt.close(fig)   
 
 def checkSuccesses(from_graph: list, to_graph: list):
     # print(from_graph)
@@ -1129,7 +1179,8 @@ if __name__ == "__main__":
     # # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
     # ratioPropertyPlot()
 
-    binomialSuccessFail(alpha='1_00',beta='0_00',condition='GE')
+    # binomialSuccessFail(alpha='1_00',beta='0_00',condition='Hellinger')
+    distributionMaxima(alpha='1_00',beta='0_00')
 
     ########################################################################################################
     # # find properties in successful transitions
