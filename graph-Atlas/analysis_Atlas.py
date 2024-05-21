@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from tqdm import tqdm
 from itertools import product
 from typing import Tuple
-from scipy import stats
+from scipy import stats, optimize
 from statistics import mode
 import numpy as np, pandas as pd, seaborn as sns, networkx as nx
 
@@ -1554,10 +1554,8 @@ def noiseEffectComparison():
                                               medianYaxis_a0_50b0_25,
                                               medianYaxis_a0_50b0_50)
             
-        # initialize column
+        # initialize column and colors
         columns = df.columns[1:]
-
-        # TODO initialize colors 
         colors = ['tab:blue','tab:gray','tab:green','tab:brown','tab:pink','tab:red','tab:orange','tab:purple','goldenrod']
 
         # initialize figure
@@ -1565,105 +1563,127 @@ def noiseEffectComparison():
         
         # plot kernel density estimate (KDE) for respective measures
         for column, color in zip(columns,colors):
-            sns.kdeplot(data=df, x=column,color=color, fill=True, alpha=0.1,label=column) 
+            l = column.replace('_','.').replace('alpha',fr'$\alpha=$').replace('beta',fr' & $\beta=$')
+            sns.kdeplot(data=df, x=column,color=color, fill=True, alpha=0.1,label=l) 
 
         # statistically compare measures
         print(f"{measure}")
 
+        # display pairwise statistical distribution comparison (KS-test) between noise conditions
         for c1,c2 in product(columns,columns):
             ks, pval  = stats.ks_2samp(df[c1],df[c2])
             print(f"{c1} vs. {c2} | p-value: {pval}")
 
-        # ks, pval  = stats.ks_2samp(df['mode'],df['median'])
-        # print(f"mode vs. median | p-value: {pval}")
-
-        # ks, pval  = stats.ks_2samp(df['mean'],df['median'])
-        # print(f"mean vs. median | p-value: {pval}")
-
+        # decorate KDE plot
         plt.legend(fontsize=16)
-
         plt.xlabel("Convergence time",fontsize=16)
         plt.ylabel("Density",fontsize=16)
         plt.title(fr"{measure} & n$\in${{3,4,5,6,7}}",fontsize=16)
-
         plt.tick_params(axis="both",which="major",labelsize=16)
         
         fig.savefig(fname=f"images/relations/noiseEffect/KDE-{measure}.png",bbox_inches='tight')
-        
-        plt.show()
+        # plt.show()
         plt.close(fig)
 
+        # scatterplot measure (mode/mean/median) of convergence against global efficiency per noise condition
         fig,ax = plt.subplots(figsize=(13,8))
 
         for column,color in zip(df.columns[1:],colors):
-            ax.scatter(x=df['GE'],y=df[column],color=color,label=column)
+            l = column.replace('_','.').replace('alpha',fr'$\alpha=$').replace('beta',fr' & $\beta=$')
+            ax.scatter(x=df['GE'],y=df[column],color=color,label=l)
 
+        # decorate scatter plot centrality measure 
         ax.legend(fontsize=16,bbox_to_anchor=(1,1))
-
         ax.set_xlabel("Global efficiency",fontsize=16)
         ax.set_ylabel("Convergence time",fontsize=16)
         ax.set_yscale("log")
         ax.set_title(fr"{measure} & n$\in${{3,4,5,6,7}}",fontsize=16)
-
         plt.tick_params(axis="both",which="major",labelsize=16)
 
         fig.savefig(fname=f"images/relations/noiseEffect/scatter-{measure}.png",bbox_inches='tight')
+        # plt.show()
+        plt.close(fig)
 
-        plt.show()
+        fig,ax = plt.subplots(figsize=(13,8))
+
+        # display pairwise statistical distribution comparison (KS-test) between noise conditions
+        for column,color in zip(df.columns[1:],colors):
+
+            X = np.linspace(0.5,1.0,100)
+            l = column.replace('_','.').replace('alpha',fr'$\alpha=$').replace('beta',fr' & $\beta=$')
+            ax.scatter(x=df['GE'],y=df[column],color=color,label=l,alpha=0.5)
+
+            # coef = optimize.curve_fit(lambda t,a,b: np.exp(a*t+b),  df['GE'],  df[column])
+            # print(coef)
+            # Y = np.exp(coef[0][0]*X+coef[0][1])
+            # ax.plot(X,Y,label=fr'$C={round(coef[0][0],2)} \cdot e^{{{round(coef[0][1],2)}*GE}}$',color=color)
+
+            test_result = stats.linregress(df['GE'], np.log(df[column]))     
+            Y = np.exp(test_result.slope*X+test_result.intercept)
+            ax.plot(X,Y,label=fr'p={test_result.pvalue}|$C={round(test_result.slope,2)} \cdot e^{{{round(test_result.intercept,2)}*GE}}$',color=color)
+            print(test_result.pvalue)
+
+        # decorate scatter plot centrality measure 
+        ax.legend(fontsize=12,bbox_to_anchor=(1,1))
+        ax.set_xlabel("Global efficiency",fontsize=16)
+        ax.set_ylabel("Convergence time",fontsize=16)
+        ax.set_yscale("log")
+        ax.set_title(fr"{measure} & n$\in${{3,4,5,6,7}}",fontsize=16)
+        plt.tick_params(axis="both",which="major",labelsize=16)
+
+        fig.savefig(fname=f"images/relations/noiseEffect/fitScatter-{measure}.png",bbox_inches='tight')
+        # plt.show()
         plt.close(fig)
 
 
-
-
-def fit(b,g,t):
-    return b*g**t
-
-def noiseLogNormal():
+def noiseExpMeasure():
     """
-    Function that fits a log normal distribution to all noise effect distributions (convergence time against 
-    global efficiency) and statistically compares difference in distribution.
+    Function that fits an exponential fit to all noise effect distributions (convergence time against 
+    global efficiency) and statistically compares difference in coefficients.
     """
 
     # load all data
     a1_00b0_00 = pd.read_csv(f'data/relationData-alpha1_00-beta0_00-Atlas.tsv', sep='\t')
-    a1_00b0_25 = pd.read_csv(f'data/relationData-alpha1_00-beta0_25-Atlas.tsv', sep='\t')
-    a1_00b0_50 = pd.read_csv(f'data/relationData-alpha1_00-beta0_50-Atlas.tsv', sep='\t')
-    a0_75b0_00 = pd.read_csv(f'data/relationData-alpha0_75-beta0_00-Atlas.tsv', sep='\t')
-    a0_75b0_25 = pd.read_csv(f'data/relationData-alpha0_75-beta0_25-Atlas.tsv', sep='\t')
-    a0_75b0_50 = pd.read_csv(f'data/relationData-alpha0_75-beta0_50-Atlas.tsv', sep='\t')
-    a0_50b0_00 = pd.read_csv(f'data/relationData-alpha0_50-beta0_00-Atlas.tsv', sep='\t')
-    a0_50b0_25 = pd.read_csv(f'data/relationData-alpha0_50-beta0_25-Atlas.tsv', sep='\t')
-    a0_50b0_50 = pd.read_csv(f'data/relationData-alpha0_50-beta0_50-Atlas.tsv', sep='\t')
+    # a1_00b0_25 = pd.read_csv(f'data/relationData-alpha1_00-beta0_25-Atlas.tsv', sep='\t')
+    # a1_00b0_50 = pd.read_csv(f'data/relationData-alpha1_00-beta0_50-Atlas.tsv', sep='\t')
+    # a0_75b0_00 = pd.read_csv(f'data/relationData-alpha0_75-beta0_00-Atlas.tsv', sep='\t')
+    # a0_75b0_25 = pd.read_csv(f'data/relationData-alpha0_75-beta0_25-Atlas.tsv', sep='\t')
+    # a0_75b0_50 = pd.read_csv(f'data/relationData-alpha0_75-beta0_50-Atlas.tsv', sep='\t')
+    # a0_50b0_00 = pd.read_csv(f'data/relationData-alpha0_50-beta0_00-Atlas.tsv', sep='\t')
+    # a0_50b0_25 = pd.read_csv(f'data/relationData-alpha0_50-beta0_25-Atlas.tsv', sep='\t')
+    # a0_50b0_50 = pd.read_csv(f'data/relationData-alpha0_50-beta0_50-Atlas.tsv', sep='\t')
     
     # eliminate graph size n=2
     a1_00b0_00 = a1_00b0_00.drop(range(0,100))
-    a1_00b0_25 = a1_00b0_25.drop(range(0,100))
-    a1_00b0_50 = a1_00b0_50.drop(range(0,100))
+    # a1_00b0_25 = a1_00b0_25.drop(range(0,100))
+    # a1_00b0_50 = a1_00b0_50.drop(range(0,100))
 
-    a0_75b0_00 = a0_75b0_00.drop(range(0,100))
-    a0_75b0_25 = a0_75b0_25.drop(range(0,100))
-    a0_75b0_50 = a0_75b0_50.drop(range(0,100))
+    # a0_75b0_00 = a0_75b0_00.drop(range(0,100))
+    # a0_75b0_25 = a0_75b0_25.drop(range(0,100))
+    # a0_75b0_50 = a0_75b0_50.drop(range(0,100))
 
-    a0_50b0_00 = a0_50b0_00.drop(range(0,100))
-    a0_50b0_25 = a0_50b0_25.drop(range(0,100))
-    a0_50b0_50 = a0_50b0_50.drop(range(0,100))
+    # a0_50b0_00 = a0_50b0_00.drop(range(0,100))
+    # a0_50b0_25 = a0_50b0_25.drop(range(0,100))
+    # a0_50b0_50 = a0_50b0_50.drop(range(0,100))
 
+    # compute mode, mean, and median of convergence data
+    Xaxis_a1_00b0_00, modeYaxis_a1_00b0_00, meanYaxis_a1_00b0_00, medianYaxis_a1_00b0_00 = computeMeasures(a1_00b0_00)
+    # Xaxis_a1_00b0_25, modeYaxis_a1_00b0_25, meanYaxis_a1_00b0_25, medianYaxis_a1_00b0_25 = computeMeasures(a1_00b0_25)
+    # Xaxis_a1_00b0_50, modeYaxis_a1_00b0_50, meanYaxis_a1_00b0_50, medianYaxis_a1_00b0_50 = computeMeasures(a1_00b0_50)
+
+    # Xaxis_a0_75b0_00, modeYaxis_a0_75b0_00, meanYaxis_a0_75b0_00, medianYaxis_a0_75b0_00 = computeMeasures(a0_75b0_00)
+    # Xaxis_a0_75b0_25, modeYaxis_a0_75b0_25, meanYaxis_a0_75b0_25, medianYaxis_a0_75b0_25 = computeMeasures(a0_75b0_25)
+    # Xaxis_a0_75b0_50, modeYaxis_a0_75b0_50, meanYaxis_a0_75b0_50, medianYaxis_a0_75b0_50 = computeMeasures(a0_75b0_50)
+
+    # Xaxis_a0_50b0_00, modeYaxis_a0_50b0_00, meanYaxis_a0_50b0_00, medianYaxis_a0_50b0_00 = computeMeasures(a0_50b0_00)
+    # Xaxis_a0_50b0_25, modeYaxis_a0_50b0_25, meanYaxis_a0_50b0_25, medianYaxis_a0_50b0_25 = computeMeasures(a0_50b0_25)
+    # Xaxis_a0_50b0_50, modeYaxis_a0_50b0_50, meanYaxis_a0_50b0_50, medianYaxis_a0_50b0_50 = computeMeasures(a0_50b0_50)
+    
 
     GE_a1_00b0_00 = list(a1_00b0_00['globalEff'])
     nM_a1_00b0_00 = list(a1_00b0_00['nMessages'])
 
-    print(len(GE_a1_00b0_00))
 
-    # arr2 = np.array([list(a1_00b0_25['globalEff']),list(a1_00b0_25['nMessages'])])
-    # arr3 = np.array([list(a1_00b0_50['globalEff']),list(a1_00b0_50['nMessages'])])
-
-    # arr4 = np.array([list(a0_75b0_00['globalEff']),list(a0_75b0_00['nMessages'])])
-    # arr5 = np.array([list(a0_75b0_25['globalEff']),list(a0_75b0_25['nMessages'])])
-    # arr6 = np.array([list(a0_75b0_50['globalEff']),list(a0_75b0_50['nMessages'])])
-
-    # arr7 = np.array([list(a0_50b0_00['globalEff']),list(a0_50b0_00['nMessages'])])
-    # arr8 = np.array([list(a0_50b0_25['globalEff']),list(a0_50b0_25['nMessages'])])
-    # arr9 = np.array([list(a0_50b0_50['globalEff']),list(a0_50b0_50['nMessages'])])  
 
 
 def check_initEffect(alpha: str, beta: str, without2: bool = True):
@@ -1886,14 +1906,14 @@ if __name__ == "__main__":
     # # quantify difference alpha- and beta-noise using baricenters and spread
     # quantifyNoiseDifference()
 
-    # # quantify difference alpha- and beta-noise using mode/mean/median linear fit
+    # # quantify difference between mode/mean/median linear fit
     # noiseMeasureComparison()
 
     # quantify difference alpha- and beta-noise using mode/mean/median linear fit
     noiseEffectComparison()
 
-    # # quantify difference alpha- and beta-noise using log-normal fit
-    # noiseLogNormal()
+    # # quantify difference alpha- and beta-noise using exponential fit through centrality measure
+    # noiseExpMeasure()
 
     # # summary plot of noise effect
     # summary_noiseEffect(alphas=alphas,
