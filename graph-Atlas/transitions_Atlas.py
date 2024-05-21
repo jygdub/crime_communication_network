@@ -210,18 +210,6 @@ def correlate_hellinger_globalEff(alpha: str, beta: str, n: int, startGraph: boo
             plt.close(fig)
 
 
-def addlabels(x: list, y: list):
-    """
-    Function to add value labels.
-
-    Parameters:
-    - x (list): x-values
-    - y (list): y-values
-    """
-
-    for i in range(len(x)):
-        plt.text(i, y[i]+5, y[i], ha = 'center', fontsize=14)
-
 def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
     """
     Function to investigate difference in efficiency, both structural and operational, 
@@ -302,28 +290,6 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
     json.dump(bothMaximum, open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
     json.dump(maxStructuralChange, open(f"data/graphTransitions-maxStructural-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
     json.dump(maxCommunicationChange, open(f"data/graphTransitions-maxCommunication-alpha{alpha}-beta{beta}-n={n}.json", 'w'))
-
-    # # successful vs. failed transition (max-max vs. either one is not maximal)
-    # x = ['Maximal','Not maximal']
-    # y = [len(bothMaximum),len(startGraphs)-len(bothMaximum)]
-    
-    # # barplot ratio success/fail maxGE-maxHellinger from start graphs
-    # fig, ax = plt.subplots(figsize=(5,5))
-    # ax.bar(x=x,
-    #        height=y,
-    #        color=['green','tab:red'])
-
-    # addlabels(x, y)
-
-    # ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
-    # ax.set_ylabel("Frequency",fontsize=14)
-    # ax.set_ylim(0,550)
-    # ax.tick_params(axis="both",which="major",labelsize=14)
-    # # ax.tick_params(axis='x', labelrotation=90)
-
-    # plt.show()
-    # fig.savefig(f"images/transitions/n={n}/binomialDistribution-{settings}-n={n}.png",bbox_inches='tight')
-    # plt.close(fig)
 
     # # plot distribution of maxGE-maxHellinger probability per start graph
     # fig,ax = plt.subplots()
@@ -494,6 +460,7 @@ def examineProbs_PairedMaxima():
             transition = data_hellinger[['index_graph1','index_graph2']][data_hellinger['index_graph1']==key]
             print(transition)
 
+
 def countDegreeFreq(distr: list) -> int:
     degreeFreq = {0: 0,
                   1: 0,
@@ -507,6 +474,7 @@ def countDegreeFreq(distr: list) -> int:
         degreeFreq[d[1]] += 1
 
     return degreeFreq
+
 
 def countCycles(G: nx.classes.graph.Graph, n: int) -> int:
     """
@@ -527,6 +495,7 @@ def countCycles(G: nx.classes.graph.Graph, n: int) -> int:
         nCycle += 1
     
     return nCycle
+
 
 def graphProperties(G: nx.classes.graph.Graph) -> Tuple[dict, int, int, int, int, int]:
     """
@@ -658,7 +627,7 @@ def countTransitions(dictionary: dict)->Tuple[list, list]:
     - from_graph (list): Dictionary keys containing start graph IDs transformed to list
     - to_graph (list): Dictionary values containing final graph IDs transformed to list
     """
-    
+
     from_graph = []
     to_graph = []
 
@@ -667,6 +636,7 @@ def countTransitions(dictionary: dict)->Tuple[list, list]:
         to_graph = to_graph + v
     
     return from_graph, to_graph
+
 
 def ratioPropertyPlot():
     """
@@ -994,6 +964,66 @@ def findPropertyChange(from_graph: list, to_graph: list):
     print(f"Total graph with only 1 cycle 3 (nothing else): {counterForced3Cycles}")
 
 
+def addlabels(x: list, y: list):
+    """
+    Function to add value labels to binomial histogram.
+
+    Parameters:
+    - x (list): x-values
+    - y (list): y-values
+    """
+
+    for i in range(len(x)):
+        plt.text(i, y[i]+5, y[i], ha = 'center', fontsize=14)
+
+
+def binomialSuccessFail(alpha: str, beta: str, condition: str):
+    """
+    Function to plot binomial distribution (success/fail) within class (max. Hellinger/max. GE).
+    
+    Parameters:
+    - alpha (str): Setting value of alpha noise 
+    - beta (str): Setting value of beta noise
+    - condition (str): Indicate class ('GE','Hellinger')
+    """
+
+    # set paths
+    settings = f"alpha{alpha}-beta{beta}"  
+
+    transitionData = None
+
+    successData = json.load(open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json"))
+    
+    if condition == 'GE':
+        transitionData = json.load(open(f"data/graphTransitions-maxStructural-alpha{alpha}-beta{beta}-n={n}.json"))
+    elif condition == 'Hellinger':
+        transitionData = json.load(open(f"data/graphTransitions-maxCommunication-alpha{alpha}-beta{beta}-n={n}.json"))
+
+    _,nTotal = countTransitions(transitionData)
+    _,nSuccess = countTransitions(successData)
+
+    # successful vs. failed transition (max-max vs. either one is not maximal)
+    x = ['Success','Fail']
+    y = [len(nSuccess),len(nTotal)-len(nSuccess)]
+    
+    # barplot ratio success/fail maxGE-maxHellinger from start graphs
+    fig, ax = plt.subplots(figsize=(5,5))
+    ax.bar(x=x,
+           height=y,
+           color=['green','tab:red'])
+
+    addlabels(x, y)
+
+    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+    ax.set_ylabel("Frequency",fontsize=14)
+    ax.tick_params(axis="both",which="major",labelsize=14)
+    # ax.tick_params(axis='x', labelrotation=90)
+
+    plt.show()
+    fig.savefig(f"images/transitions/n={n}/binomialDistribution-{condition}-{settings}-n={n}.png",bbox_inches='tight')
+    plt.close(fig)
+
+
 def checkSuccesses(from_graph: list, to_graph: list):
     # print(from_graph)
     # print(to_graph)
@@ -1096,8 +1126,10 @@ if __name__ == "__main__":
     # # add applicable property labels to each transition
     # annotateProperties()
 
-    # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
-    ratioPropertyPlot()
+    # # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
+    # ratioPropertyPlot()
+
+    binomialSuccessFail(alpha='1_00',beta='0_00',condition='GE')
 
     ########################################################################################################
     # # find properties in successful transitions
