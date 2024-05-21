@@ -1010,7 +1010,8 @@ def binomialSuccessFail(alpha: str, beta: str, condition: str):
     fig, ax = plt.subplots(figsize=(5,5))
     ax.bar(x=x,
            height=y,
-           color=['green','tab:red'])
+           color=['green','tab:red'],
+           edgecolor ='k')
 
     addlabels(x, y)
 
@@ -1060,7 +1061,8 @@ def distributionMaxima(alpha: str, beta: str):
     fig, ax = plt.subplots(figsize=(5,5))
     ax.bar(x=x,
            height=y,
-           color=['mediumseagreen','deepskyblue','mediumslateblue','deeppink'])
+           color=['mediumseagreen','deepskyblue','mediumslateblue','deeppink'],
+           edgecolor ='k')
 
     addlabels(x, y)
 
@@ -1176,8 +1178,8 @@ if __name__ == "__main__":
     # # add applicable property labels to each transition
     # annotateProperties()
 
-    # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
-    ratioPropertyPlot()
+    # # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
+    # ratioPropertyPlot()
 
     # binomialSuccessFail(alpha='1_00',beta='0_00',condition='Hellinger')
     
