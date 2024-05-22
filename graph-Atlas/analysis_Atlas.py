@@ -1571,9 +1571,26 @@ def noiseEffectComparison():
         print(f"{measure}")
 
         # display pairwise statistical distribution comparison (KS-test) between noise conditions
-        for c1,c2 in product(columns,columns):
-            ks, pval  = stats.ks_2samp(df[c1],df[c2])
-            print(f"{c1} vs. {c2} | p-value: {pval}")
+        comparisonMapping = np.array([[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8]])
+        for mapping in comparisonMapping:
+            distribution1 = df[columns[mapping[0]]]
+            distribution2 = df[columns[mapping[1]]]
+            ks, pval  = stats.ks_2samp(data1=distribution1,data2=distribution2,alternative='greater')
+            print(f"{columns[mapping[0]]} vs. {columns[mapping[1]]} | p-value: {pval}")
+
+            distribution1 = df[columns[mapping[1]]]
+            distribution2 = df[columns[mapping[2]]]
+            ks, pval  = stats.ks_2samp(data1=distribution1,data2=distribution2,alternative='greater')
+            print(f"{columns[mapping[1]]} vs. {columns[mapping[2]]} | p-value: {pval}")
+            
+            # distribution1 = df[columns[mapping[0]]]
+            # distribution2 = df[columns[mapping[2]]]
+            # ks, pval  = stats.ks_2samp(data1=distribution1,data2=distribution2,alternative='greater')
+            # print(f"{columns[mapping[0]]} vs. {columns[mapping[2]]} | p-value: {pval}")
+
+        # for c1,c2 in product(columns,columns):
+        #     ks, pval  = stats.ks_2samp(df[c1],df[c2])
+        #     print(f"{c1} vs. {c2} | p-value: {pval}")
 
         # decorate KDE plot
         plt.legend(fontsize=16)
@@ -1607,7 +1624,8 @@ def noiseEffectComparison():
 
         fig,ax = plt.subplots(figsize=(13,8))
 
-        # display pairwise statistical distribution comparison (KS-test) between noise conditions
+        # display regression of coefficients for noise conditions
+        print("\nRegression of coefficients")
         for column,color in zip(df.columns[1:],colors):
 
             X = np.linspace(0.5,1.0,100)
@@ -1621,18 +1639,25 @@ def noiseEffectComparison():
 
             test_result = stats.linregress(df['GE'], np.log(df[column]))     
             Y = np.exp(test_result.slope*X+test_result.intercept)
-            ax.plot(X,Y,color=color,label=fr'p={test_result.pvalue}|$C={round(test_result.slope,2)} \cdot e^{{{round(test_result.intercept,2)}*GE}}$')
-            print(test_result.pvalue)
+            ax.plot(X,Y,color=color)#,label=fr'p={test_result.pvalue}|$C={round(test_result.slope,2)} \cdot e^{{{round(test_result.intercept,2)}*GE}}$')
+            print(f"{column} | p-value: {test_result.pvalue}")
 
         # decorate scatter plot centrality measure 
-        ax.legend(fontsize=16,bbox_to_anchor=(1,1))
+        handles = [
+            plt.scatter([], [], color=c, label=l,alpha=1.0)
+            for c, l in zip(colors, fr"$\alpha=1.00$ & $\beta=0.00$,$\alpha=1.00$ & $\beta=0.25$,$\alpha=1.00$ & $\beta=0.50$,$\alpha=0.75$ & $\beta=0.00$,$\alpha=0.75$ & $\beta=0.25$,$\alpha=0.75$ & $\beta=0.50$,$\alpha=0.50$ & $\beta=0.00$,$\alpha=0.50$ & $\beta=0.25$,$\alpha=0.50$ & $\beta=0.50$".split(','))
+        ]
+        ax.legend(handles=handles,fontsize=16,bbox_to_anchor=(1,1))
+
+        # ax.legend(fontsize=16,bbox_to_anchor=(1,1))
+
         ax.set_xlabel("Global efficiency",fontsize=16)
         ax.set_ylabel("Convergence time",fontsize=16)
         ax.set_yscale("log")
-        ax.set_title(fr"{measure} & n$\in${{3,4,5,6,7}}",fontsize=16)
+        ax.set_title(fr"{measure.capitalize()} & n$\in${{3,4,5,6,7}}",fontsize=16)
         plt.tick_params(axis="both",which="major",labelsize=16)
 
-        fig.savefig(fname=f"images/relations/noiseEffect/fitScatter-{measure}.png",bbox_inches='tight')
+        fig.savefig(fname=f"images/relations/noiseEffect/FINALfitScatter-{measure}.png",bbox_inches='tight')
         # plt.show()
         plt.close(fig)
 
