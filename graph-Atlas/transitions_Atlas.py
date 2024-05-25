@@ -794,29 +794,29 @@ def ratioPropertyPlot():
     fig,ax = plt.subplots(figsize =(12, 8)) 
 
     # set height of bar 
-    GE = [ratioIsolationStructural/ratioIsolationAll,
-          ratioDecreaseStructural/ratioDecreaseAll,
-          ratioRemovalStructural/ratioRemovalAll,
-          ratioCycle3Structural/ratioCycle3All] 
-    HELLINGER = [ratioIsolationCommunicative/ratioIsolationAll,
-                 ratioDecreaseCommunicative/ratioDecreaseAll,
-                 ratioRemovalCommunicative/ratioRemovalAll,
-                 ratioCycle3Communicative/ratioCycle3All] 
-    OPTIMAL_COMM = [ratioIsolationOptimal/ratioIsolationCommunicative,
-                    ratioDecreaseOptimal/ratioDecreaseCommunicative,
-                    ratioRemovalOptimal/ratioRemovalCommunicative,
-                    ratioCycle3Optimal/ratioCycle3Communicative] 
-    OPTIMAL_STRUC = [ratioIsolationOptimal/ratioIsolationStructural,
-                     ratioDecreaseOptimal/ratioDecreaseStructural,
-                     ratioRemovalOptimal/ratioRemovalStructural,
-                     ratioCycle3Optimal/ratioCycle3Structural] 
+    GE = [round(ratioIsolationStructural/ratioIsolationAll,3),
+          round(ratioDecreaseStructural/ratioDecreaseAll,3),
+          round(ratioRemovalStructural/ratioRemovalAll,3),
+          round(ratioCycle3Structural/ratioCycle3All,3)] 
+    HELLINGER = [round(ratioIsolationCommunicative/ratioIsolationAll,3),
+                 round(ratioDecreaseCommunicative/ratioDecreaseAll,3),
+                 round(ratioRemovalCommunicative/ratioRemovalAll,3),
+                 round(ratioCycle3Communicative/ratioCycle3All,3)] 
+    OPTIMAL_COMM = [round(ratioIsolationOptimal/ratioIsolationCommunicative,3),
+                    round(ratioDecreaseOptimal/ratioDecreaseCommunicative,3),
+                    round(ratioRemovalOptimal/ratioRemovalCommunicative,3),
+                    round(ratioCycle3Optimal/ratioCycle3Communicative,3)] 
+    OPTIMAL_STRUC = [round(ratioIsolationOptimal/ratioIsolationStructural,3),
+                     round(ratioDecreaseOptimal/ratioDecreaseStructural,3),
+                     round(ratioRemovalOptimal/ratioRemovalStructural,3),
+                     round(ratioCycle3Optimal/ratioCycle3Structural,3)] 
     
     # set position of bar on X axis 
-    br1 = np.arange(len(GE)) 
+    br1 = np.arange(len(GE))
     br2 = [x + barWidth for x in br1]
     br3 = [x + barWidth for x in br2]
     br4 = [x + barWidth for x in br3]
-    
+
     # plot individual bars per intervention characteristic
     ax.bar(br1, GE, color ='saddlebrown', width = barWidth, 
             edgecolor ='k', label =fr'$\Delta GE_{{max}}$ : ALL') 
@@ -829,8 +829,13 @@ def ratioPropertyPlot():
     
     # plot horizontal line at ratio 1.0
     ax.axhline(y=1., color='k', linestyle='--',alpha=0.5)
-    
+
     # decorate plot and save
+    addlabels(br1,GE,.01,10)
+    addlabels(br2,HELLINGER,.01,10)
+    addlabels(br3,OPTIMAL_COMM,.01,10)
+    addlabels(br4,OPTIMAL_STRUC,.01,10)
+    
     ax.set_xlabel('Intervention characteristic', fontsize = 14) 
     ax.set_ylabel(fr"Ratio", fontsize = 14) 
     ax.set_xticks([r + 1.5*barWidth for r in range(len(GE))], 
@@ -964,17 +969,19 @@ def findPropertyChange(from_graph: list, to_graph: list):
     print(f"Total graph with only 1 cycle 3 (nothing else): {counterForced3Cycles}")
 
 
-def addlabels(x: list, y: list):
+def addlabels(x: list, y: list, padding: float, fs: int):
     """
     Function to add value labels to binomial histogram.
 
     Parameters:
     - x (list): x-values
     - y (list): y-values
+    - padding (float): additional space at the top of bar
+    - fs (int): text size
     """
 
-    for i in range(len(x)):
-        plt.text(i, y[i]+5, y[i], ha = 'center', fontsize=14)
+    for index,value in enumerate(x):
+        plt.text(value, y[index]+padding, y[index], ha = 'center', fontsize=fs)
 
 
 def binomialSuccessFail(alpha: str, beta: str, condition: str):
@@ -1013,7 +1020,7 @@ def binomialSuccessFail(alpha: str, beta: str, condition: str):
            color=['green','tab:red'],
            edgecolor ='k')
 
-    addlabels(x, y)
+    addlabels(range(len(x)), y, 5, 14)
 
     if condition == 'GE':
         ax.set_title(fr"$\Delta GE_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
@@ -1064,7 +1071,7 @@ def distributionMaxima(alpha: str, beta: str):
            color=['mediumseagreen','deepskyblue','mediumslateblue','deeppink'],
            edgecolor ='k')
 
-    addlabels(x, y)
+    addlabels(range(len(x)), y, 5, 14)
 
     ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
 
