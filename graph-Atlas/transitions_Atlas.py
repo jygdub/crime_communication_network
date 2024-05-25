@@ -831,14 +831,14 @@ def ratioPropertyPlot():
     ax.axhline(y=1., color='k', linestyle='--',alpha=0.5)
     
     # decorate plot and save
-    ax.set_xlabel('Intervention characteristic', fontsize = 16) 
-    ax.set_ylabel(fr"Ratio", fontsize = 16) 
+    ax.set_xlabel('Intervention characteristic', fontsize = 14) 
+    ax.set_ylabel(fr"Ratio", fontsize = 14) 
     ax.set_xticks([r + 1.5*barWidth for r in range(len(GE))], 
             ['Isolation','Decrease in degree','Removal from degree','Triad disruption'])
-    ax.tick_params(axis="both",which="major",labelsize=12)
+    ax.tick_params(axis="both",which="major",labelsize=14)
     
     # plt.legend(title='Maximum change in:',fontsize=12,title_fontsize=12)
-    plt.legend(fontsize=12)
+    plt.legend(fontsize=14)
     plt.show()
     fig.savefig(fname="images/transitions/n=7/propertyTransition-structureVScommunication.png",bbox_inches='tight')
     plt.close(fig)
@@ -1178,11 +1178,13 @@ if __name__ == "__main__":
     # # add applicable property labels to each transition
     # annotateProperties()
 
-    # # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
-    # ratioPropertyPlot()
+    # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
+    ratioPropertyPlot()
 
+    # # success rate for optimal intervention
     # binomialSuccessFail(alpha='1_00',beta='0_00',condition='Hellinger')
     
+    # # frequency of maximal impact per perspective
     # distributionMaxima(alpha='1_00',beta='0_00')
 
     ########################################################################################################
