@@ -390,13 +390,13 @@ def my_floor(a: float, precision: int = 0) -> np.float64:
     return np.true_divide(np.floor(a * 10**precision), 10**precision)
 
 
-def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2: bool, metric: str = None, fixed: bool = False, efficient: bool = False):
+def violin_per_params(alphas: list, betas: list, perN: bool, fit: str, without2: bool, metric: str = None, fixed: bool = False, efficient: bool = False):
     """ 
     Violinplot distribution of convergence time per metric per bin (size=0.1).
 
     Parameters:
-    - alpha (float): Alpha noise
-    - beta (float): Beta noise
+    - alphas (list): Alpha noise settings
+    - betas (list): Beta noise settings
     - perN (bool): False if combined data; True if per graph size
     - fit (str): Fitting linear fit ('linear') or exponential fit ('exponential) or no fit ('none')
     - without2 (bool): Indicator to remove graph size n=2 from data
@@ -405,167 +405,229 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
     - efficient (bool): False for random dynamics; True for efficient dynamics
     """
     
-    # set paths
-    settings = f'alpha{alpha}-beta{beta}'   
-    images_path = f'images/relations/{settings}/all-datapoints'  
-    
-    if fixed:
-        settings = f'fixed-alpha{alpha}-beta{beta}'  
-        images_path = f'images/relations/{settings}'  
-    if efficient:
-        settings = f'efficient-alpha{alpha}-beta{beta}'     
-        images_path = f'images/relations/{settings}'           
-    
-    # load all data
-    data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
-    
-    # eliminate graph size n=2, if desired
-    if without2:
-        data = data.drop(range(0,100))
+    intercepts = np.zeros(9)
+    slopes = np.zeros(9)
 
-    # set iterative for for-loop
-    iterative = None
-    if metric != None and not perN:
-        iterative = product([metric], [0])
-    elif metric != None and perN:
-        iterative = product([metric], [3,4,5,6,7])
-    elif perN:
-        iterative = product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7])
-    else:
-        iterative = product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[0])
-    
-    # generate plots according to iterative
-    for metric, n in tqdm(iterative):
-
-        # set initials
-        efficiency = False
-        coefficient = False
-
-        # set variables and booleans according to metric
-        if metric == 'global':
-            column = 'globalEff'
-            efficiency = True
-        elif metric == 'local':
-            column = 'localEff'
-            efficiency = True
-        elif metric == 'clustering':
-            column = 'clustering'
-            coefficient = True
-        else:
-            column = metric
-
-        # select correct data according to desired iterative
-        if perN:
-            nData = data[data['nodes']==n] 
-        else:
-            nData = data
-
-        # initialize figure
-        fig,ax = plt.subplots(figsize=(13,8))
-        max_density = []
-
-        # plot violins per binsize = 0.1 in range 0 to 1
-        for th in np.arange(0.0,1.0,0.1):
-
-            # set subset accordingly
-            if th == 0.9:
-                subset = nData[nData[column]<=th+0.1][nData[column]>=th]
-            else:
-                subset = nData[nData[column]<th+0.1][nData[column]>=th]
-
-            # skip empty subsets
-            if not subset.empty:
-
-                # keep track of higest probability density
-                pdf = plt.figure()
-                density = subset['nMessages'].plot.kde().get_lines()[0].get_xydata()
-                max_density.append(density[np.argmax(density[:,1])][0])
-                plt.close(pdf)
-
-                # scatter plot all raw data per binsize
-                ax.scatter(subset[column],subset['nMessages'],color='lightgrey',alpha=0.1)
-
-                # plot violin per binsize
-                plots = ax.violinplot(subset['nMessages'],positions=[th+0.05],widths=[0.1])
-
-                # style violinplot
-                for vp in plots['bodies']:
-                    vp.set_facecolor("tab:blue")
-                    vp.set_edgecolor("black")
-                
-                # more styling violinplot
-                for i, partname in enumerate(('cbars', 'cmins', 'cmaxes')): 
-                    vp = plots[partname]
-                    vp.set_edgecolor("tab:blue")
-                    vp.set_linewidth(1)
-
-        # define x-axis
-        min_th = my_floor(min(nData[column]),1)
-        Xaxis = np.linspace(min_th+0.05,min_th+0.05+(len(max_density)-1.)*0.1,len(max_density))
-
-
-        if fit == 'linear':
+    for iteration, (alpha, beta) in enumerate(product(alphas,betas)):
+        print(f'alpha={alpha} & beta={beta}')
             
-            # linear polyfit
-            coef_lin = np.polyfit(Xaxis, max_density, 1)
-            poly1d_fn_lin = np.poly1d(coef_lin) 
-
-            # plot maximum probability density
-            ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
-            ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), poly1d_fn_lin(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05)), 
-                    'g--', 
-                    label=f'C = {round(coef_lin[0],2)} * GE + {round(coef_lin[1],2)}')
+        # set paths
+        settings = f'alpha{alpha}-beta{beta}'   
+        images_path = f'images/relations/{settings}/all-datapoints'  
         
-        elif fit == 'exponential':
-
-            # exponential polyfit
-            coef_exp = np.polyfit(Xaxis, np.log(max_density), 1)
-            poly1d_fn_exp = np.poly1d(coef_exp) 
-
-            # plot maximum probability density
-            ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
-            ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), 
-                    np.exp(poly1d_fn_exp(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05))), 
-                    'k--', 
-                    label=fr"$C = {round(np.exp(coef_exp[1]),2)} \cdot e^{{{round(coef_exp[0],2)} \cdot GE}}$")
+        if fixed:
+            settings = f'fixed-alpha{alpha}-beta{beta}'  
+            images_path = f'images/relations/{settings}'  
+        if efficient:
+            settings = f'efficient-alpha{alpha}-beta{beta}'     
+            images_path = f'images/relations/{settings}'           
         
-        elif fit == 'none':
-            # plot maximum probability density
-            ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
+        # load all data
+        data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
+        
+        # eliminate graph size n=2, if desired
+        if without2:
+            data = data.drop(range(0,100))
 
-        # decorate figure
-        plt.legend(loc='upper right',fontsize=10)
-
-        if efficiency:
-            ax.set_xlabel(f"{metric.capitalize()} efficiency",fontsize=16)
-        elif coefficient:
-            ax.set_xlabel(f"{metric.capitalize()} coefficient",fontsize=16)
-        elif metric == 'CFbetweenness':
-            ax.set_xlabel(f"Current flow betweenness centrality",fontsize=16)
+        # set iterative for for-loop
+        iterative = None
+        if metric != None and not perN:
+            iterative = product([metric], [0])
+        elif metric != None and perN:
+            iterative = product([metric], [3,4,5,6,7])
+        elif perN:
+            iterative = product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[3,4,5,6,7])
         else:
-            ax.set_xlabel(f"{metric.capitalize()} centrality",fontsize=16)
+            iterative = product(['degree','betweenness','CFbetweenness','closeness','clustering','global','local'],[0])
+        
+        # generate plots according to iterative
+        for metric, n in tqdm(iterative):
 
-        ax.set_ylabel("Convergence time",fontsize=16)
+            # set initials
+            efficiency = False
+            coefficient = False
 
-        if perN:
-            ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}',fontsize=16)
-        else:
-            ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
+            # set variables and booleans according to metric
+            if metric == 'global':
+                column = 'globalEff'
+                efficiency = True
+            elif metric == 'local':
+                column = 'localEff'
+                efficiency = True
+            elif metric == 'clustering':
+                column = 'clustering'
+                coefficient = True
+            else:
+                column = metric
 
-        # set log scale on y-axis (visualization purposes)
-        ax.set_yscale("symlog")
-        plt.tick_params(axis='both', which='major', labelsize=16)
+            # select correct data according to desired iterative
+            if perN:
+                nData = data[data['nodes']==n] 
+            else:
+                nData = data
 
-        # plt.show()
+            # initialize figure
+            fig,ax = plt.subplots(figsize=(13,8))
+            max_density = []
 
-        #######################################################
-        # NOTE: CHANGE FILENAME ACCORDINGLY 
-        # (add LOG if log-scale; add lineFit for linear line or expFit for exponential
-        # change allN to withoutN=2 if applied)
-        # fig.savefig(f"{images_path}/expFit-LOGdistribution-n={n}-convergence-per-{metric}-violin.png",bbox_inches='tight')
-        fig.savefig(f"{images_path}/expFit-LOGdistribution-withoutN=2-convergence-per-{metric}-violin.png",bbox_inches='tight')
-        plt.close(fig)
+            # plot violins per binsize = 0.1 in range 0 to 1
+            for th in np.arange(0.0,1.0,0.1):
 
+                # set subset accordingly
+                if th == 0.9:
+                    subset = nData[nData[column]<=th+0.1][nData[column]>=th]
+                else:
+                    subset = nData[nData[column]<th+0.1][nData[column]>=th]
+
+                # skip empty subsets
+                if not subset.empty:
+
+                    # keep track of higest probability density
+                    pdf = plt.figure()
+                    density = subset['nMessages'].plot.kde().get_lines()[0].get_xydata()
+                    max_density.append(density[np.argmax(density[:,1])][0])
+                    plt.close(pdf)
+
+                    # scatter plot all raw data per binsize
+                    ax.scatter(subset[column],subset['nMessages'],color='lightgrey',alpha=0.1)
+
+                    # plot violin per binsize
+                    plots = ax.violinplot(subset['nMessages'],positions=[th+0.05],widths=[0.1])
+
+                    # style violinplot
+                    for vp in plots['bodies']:
+                        vp.set_facecolor("tab:blue")
+                        vp.set_edgecolor("black")
+                    
+                    # more styling violinplot
+                    for i, partname in enumerate(('cbars', 'cmins', 'cmaxes')): 
+                        vp = plots[partname]
+                        vp.set_edgecolor("tab:blue")
+                        vp.set_linewidth(1)
+
+            # define x-axis
+            min_th = my_floor(min(nData[column]),1)
+            Xaxis = np.linspace(min_th+0.05,min_th+0.05+(len(max_density)-1.)*0.1,len(max_density))
+
+
+            if fit == 'linear':
+                
+                # linear polyfit
+                coef_lin = np.polyfit(Xaxis, max_density, 1)
+                poly1d_fn_lin = np.poly1d(coef_lin) 
+
+                # plot maximum probability density
+                ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
+                ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), poly1d_fn_lin(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05)), 
+                        'g--', 
+                        label=f'C = {round(coef_lin[0],2)} * GE + {round(coef_lin[1],2)}')
+            
+            elif fit == 'exponential':
+
+                # exponential polyfit
+                coef_exp = np.polyfit(Xaxis, np.log(max_density), 1)
+                poly1d_fn_exp = np.poly1d(coef_exp) 
+
+                # plot maximum probability density
+                ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
+                ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), 
+                        np.exp(poly1d_fn_exp(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05))), 
+                        'k--', 
+                        label=fr"$C = {round(np.exp(coef_exp[1]),2)} \cdot e^{{{round(coef_exp[0],2)} \cdot GE}}$")
+
+                # store coefficients (fitted against log(y) -> exp(ax+b))
+                slopes[iteration] = round(coef_exp[0],2)
+                intercepts[iteration] = round(coef_exp[1],2)
+
+            elif fit == 'none':
+                # plot maximum probability density
+                ax.plot(Xaxis, max_density, 'ro', label='Maximum probability density')
+
+            # decorate figure
+            plt.legend(loc='upper right',fontsize=10)
+
+            if efficiency:
+                ax.set_xlabel(f"{metric.capitalize()} efficiency",fontsize=16)
+            elif coefficient:
+                ax.set_xlabel(f"{metric.capitalize()} coefficient",fontsize=16)
+            elif metric == 'CFbetweenness':
+                ax.set_xlabel(f"Current flow betweenness centrality",fontsize=16)
+            else:
+                ax.set_xlabel(f"{metric.capitalize()} centrality",fontsize=16)
+
+            ax.set_ylabel("Convergence time",fontsize=16)
+
+            if perN:
+                ax.set_title(fr'$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}',fontsize=16)
+            else:
+                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
+
+            # set log scale on y-axis (visualization purposes)
+            ax.set_yscale("symlog")
+            plt.tick_params(axis='both', which='major', labelsize=16)
+
+            # plt.show()
+
+            #######################################################
+            # NOTE: CHANGE FILENAME ACCORDINGLY 
+            # (add LOG if log-scale; add lineFit for linear line or expFit for exponential
+            # change allN to withoutN=2 if applied)
+            # fig.savefig(f"{images_path}/expFit-LOGdistribution-n={n}-convergence-per-{metric}-violin.png",bbox_inches='tight')
+            fig.savefig(f"{images_path}/expFit-LOGdistribution-withoutN=2-convergence-per-{metric}-violin.png",bbox_inches='tight')
+            plt.close(fig)
+
+    intercepts = np.reshape(intercepts,(3,3))
+    slopes = np.reshape(slopes,(3,3))
+
+    fig, axes = plt.subplots(1,2,layout="tight")
+    
+    im1 = axes[0].imshow(intercepts,cmap="RdPu")
+    
+    for i in range(3):
+        for j in range(3):
+            if j == 0:
+                text = axes[0].text(j, i, intercepts[i, j],
+                            ha="center", va="center", color="k",fontsize=14)
+            else:
+                text = axes[0].text(j, i, intercepts[i, j],
+                            ha="center", va="center", color="w",fontsize=14)
+    
+    axes[0].set_xticks(np.arange(3),labels=["0.00","0.25","0.50"],fontsize=14)
+    axes[0].set_yticks(np.arange(3),labels=["1.00","0.75","0.50"],fontsize=14)
+    axes[0].set_xlabel(fr"$\beta$-noise",fontsize=14)
+    axes[0].set_ylabel(fr"$\alpha$-noise",fontsize=14)
+    axes[0].set_title("Intercepts",fontsize=14)
+    
+    cax = fig.add_axes([axes[0].get_position().x1+0.00000001,axes[0].get_position().y0,0.02,axes[0].get_position().height])
+    cbar1 = fig.colorbar(im1,cax=cax)
+    cbar1.ax.tick_params(labelsize=14)
+    
+    im2 = axes[1].imshow(slopes,cmap="GnBu")
+
+    for i in range(3):
+        for j in range(3):
+            if (j == 1 and (i == 1 or i == 2)) or (j == 2 and i == 0):
+                text = axes[1].text(j, i, slopes[i, j],
+                            ha="center", va="center", color="k",fontsize=14)
+            else:
+                text = axes[1].text(j, i, slopes[i, j],
+                            ha="center", va="center", color="w",fontsize=14)
+            
+    axes[1].set_xticks(np.arange(3),labels=["0.00","0.25","0.50"],fontsize=14)
+    axes[1].set_yticks(np.arange(3),labels=["1.00","0.75","0.50"],fontsize=14)
+    axes[1].set_xlabel(fr"$\beta$-noise",fontsize=14)
+    axes[1].set_ylabel(fr"$\alpha$-noise",fontsize=14)
+    axes[1].set_title("Slopes",fontsize=14)
+
+    cax = fig.add_axes([axes[1].get_position().x1+0.12,axes[1].get_position().y0,0.02,axes[1].get_position().height])
+    cbar2 = fig.colorbar(im2,cax=cax)
+    cbar2.ax.tick_params(labelsize=14)
+
+    plt.tight_layout(w_pad=6)
+
+    plt.show()
+    fig.savefig(f"images/relations/summaryConvergence.png",bbox_inches='tight')
+    plt.close(fig)
 
 def hist_per_violin(alpha: float, beta: float, perN: bool):
     """ 
@@ -1780,7 +1842,7 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
 
     plt.close(fig)
     plt.close(merged)
-    
+
 
 def check_redundantMessaging():
     """ 
@@ -1931,16 +1993,16 @@ if __name__ == "__main__":
 
     #     print(f'alpha={alpha} & beta={beta}')
 
-    #     # NOTE NOTE: RUN SCRIPT USING -W "ignore" to suppress warning messages :NOTE NOTE #
-    #     # show probability distribution per parameter settings per metric (optionally per graph size)
-    #     violin_per_params(alpha=alpha,
-    #                         beta=beta,
-    #                         perN=False,
-    #                         fit='exponential',
-    #                         without2=True,
-    #                         metric='global',
-    #                         fixed=False,
-    #                         efficient=False) # NOTE: CHANGE FILENAME (@end function!)
+    # NOTE NOTE: RUN SCRIPT USING -W "ignore" to suppress warning messages :NOTE NOTE #
+    # show probability distribution per parameter settings per metric (optionally per graph size)
+    violin_per_params(alphas=alphas,
+                      betas=betas,
+                      perN=False,
+                      fit='exponential',
+                      without2=True,
+                      metric='global',
+                      fixed=False,
+                      efficient=False) # NOTE: CHANGE FILENAME (@end function!)
 
         # # show histogram distribution per violin (per parameter settings, per metric, optionally per graph size)
         # hist_per_violin(alpha=alpha,
@@ -1973,9 +2035,9 @@ if __name__ == "__main__":
     #                     vary='beta',
     #                     without2=True)
 
-    # show relation between convergence and initial mean Hamming distance
-    check_initEffect(alpha=alpha,
-                     beta=beta,
-                     without2=True) # NOTE: CHANGE FILENAME (@end function!)
+    # # show relation between convergence and initial mean Hamming distance
+    # check_initEffect(alpha=alpha,
+    #                  beta=beta,
+    #                  without2=True) # NOTE: CHANGE FILENAME (@end function!)
 
     # check_redundantMessaging()
