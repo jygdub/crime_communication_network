@@ -527,7 +527,7 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
             ax.plot(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05), 
                     np.exp(poly1d_fn_exp(np.linspace(Xaxis[0]-0.05,Xaxis[-1]+0.05))), 
                     'k--', 
-                    label=f'C = exp({round(coef_exp[0],2)} * GE + {round(coef_exp[1],2)})')
+                    label=fr"$C = {round(np.exp(coef_exp[1]),2)} \cdot e^{{{round(coef_exp[0],2)} \cdot GE}}$")
         
         elif fit == 'none':
             # plot maximum probability density
@@ -553,7 +553,7 @@ def violin_per_params(alpha: float, beta: float, perN: bool, fit: str, without2:
             ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
 
         # set log scale on y-axis (visualization purposes)
-        ax.set_yscale("log")
+        ax.set_yscale("symlog")
         plt.tick_params(axis='both', which='major', labelsize=16)
 
         # plt.show()
@@ -747,8 +747,8 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
 
         ########################################
         # NOTE: SET CORRECT FOR-LOOP
-        # for i, alpha in enumerate(alphas):
-        for i, beta in enumerate(betas):
+        for i, alpha in enumerate(alphas):
+        # for i, beta in enumerate(betas):
         ########################################
             
             # set path
@@ -857,13 +857,13 @@ def violin_noiseEffect(fixed_param: str, varying_param: list, variable: str, met
         #######################################################
         # NOTE: add LOG for regular log scale; add linePlot for linear fit; change allN to withoutN=2 if applied
         if variable == 'alpha':
-            fig.savefig(f"{images_path}/LOG-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            # fig.savefig(f"{images_path}/LOG-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
             # fig.savefig(f"{images_path}/linePlot-noiseEffect-varyingAlpha-allN-{metric}-violin{counter}.png",bbox_inches='tight')
-            # fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingAlpha-beta={beta}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
         elif variable == 'beta':
-            fig.savefig(f"{images_path}/LOG-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            # fig.savefig(f"{images_path}/LOG-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
             # fig.savefig(f"{images_path}/linePlot-noiseEffect-varyingBeta-allN-{metric}-violin{counter}.png",bbox_inches='tight')
-            # fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
+            fig.savefig(f"{images_path}/expPlot-noiseEffect-varyingBeta-alpha={alpha}-withoutN=2-{metric}-violin{counter}.png",bbox_inches='tight')
         #######################################################
 
         plt.close(fig)
@@ -880,66 +880,120 @@ def summary_noiseEffect(alphas: list, betas: list, vary: str, without2: bool):
     - without2 (bool): Indicator to remove graph size n=2 from data
     """
 
-    # NOTE: CHANGE ACCORDING TO VARYING PARAMETER (choose fixed parameter)
-    for alpha in alphas: 
-    # for beta in betas:
-        fig, ax = plt.subplots(figsize=(13,8))
+    merge, axs = plt.subplots(3,2,figsize=(8,10),sharex=True)
+    axs = axs.ravel()
 
-        colors = []
-        if vary == 'beta':
-            colors = ['maroon','forestgreen','indigo']
-        elif vary == 'alpha':
-            colors = ['darkorange','mediumblue','mediumvioletred']
+    for vary in ['alpha','beta']:
+        varList = []
+        fixList = []
+        alpha = ''
+        beta = ''
+        data = None
 
-        # NOTE: CHANGE ACCORDING TO VARYING PARAMETER (choose varying parameter)
-        for i, beta in enumerate(betas):
-        # for i, alpha in enumerate(alphas):
+        if vary == 'alpha':
+            varList = alphas
+            fixList = betas
+        elif vary == 'beta':
+            varList = betas
+            fixList = alphas
 
-            # set paths
-            settings = f'alpha{alpha}-beta{beta}'   
+        for num, f in enumerate(fixList):
 
-            # load all data
-            data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
+            fig, ax = plt.subplots(figsize=(13,8))
+
+            colors = []
+            if vary == 'beta':
+                colors = ['maroon','forestgreen','indigo']
+            elif vary == 'alpha':
+                colors = ['darkorange','mediumblue','mediumvioletred']
+
+            for i, v in enumerate(varList):
+
+                if vary == 'alpha':
+                    alpha = v
+                    beta = f
+                elif vary == 'beta':
+                    alpha = f
+                    beta = v
+
+                # set paths
+                settings = f'alpha{alpha}-beta{beta}'   
+
+                # load all data
+                data = pd.read_csv(f'data/relationData-{settings}-Atlas.tsv', sep='\t')
+                
+                # eliminate graph size n=2, if desired
+                if without2:
+                    data = data.drop(range(0,100))
+
+                ax.scatter(x=data['globalEff'],y=data['nMessages'],c=colors[i],alpha=0.2)
+
+                plt.figure(merge)
+                pos = num
+
+                if vary == 'alpha':
+                    pos *= 2
+                if vary == 'beta':
+                    pos = pos*2 + 1
+                axs[pos].scatter(x=data['globalEff'],y=data['nMessages'],c=colors[i],alpha=0.2)
+                axs[pos].set_yscale("symlog")
+                axs[pos].tick_params(axis='both', which='major', labelsize=14)
+
+                if vary == 'alpha':
+                    axs[pos].set_title(fr"$\beta$={beta.replace('_','.')}",fontsize=14)
+                    axs[pos].set_ylabel("Convergence time",fontsize=14)
+                elif vary == 'beta':
+                    axs[pos].set_title(fr"$\alpha$={alpha.replace('_','.')}",fontsize=14)
+
+            plt.figure(fig)
+            handles = []
+            if vary == 'beta':
+                handles = [
+                    plt.scatter([], [], color=c, label=l)
+                    for c, l in zip("maroon forestgreen indigo".split(), fr"$\beta$=0.00 $\beta$=0.25 $\beta$=0.50".split())
+                ]
+            elif vary == 'alpha':
+                handles = [
+                    plt.scatter([], [], color=c, label=l)
+                    for c, l in zip("darkorange mediumblue mediumvioletred".split(), fr"$\alpha$=1.00 $\alpha$=0.75 $\alpha$=0.50".split())
+                ]
+
+            ax.legend(handles=handles,fontsize=14,loc='upper left', bbox_to_anchor=(1, 1))
+            ax.set_xlabel("Global efficiency",fontsize=16)
+            ax.set_ylabel("Convergence time",fontsize=16)
+
+            if vary == 'beta':
+                ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
+            elif vary == 'alpha':
+                ax.set_title(fr"$\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)  
             
-            # eliminate graph size n=2, if desired
-            if without2:
-                data = data.drop(range(0,100))
+            plt.tick_params(axis="both",which="major",labelsize=16)
+            
+            ax.set_yscale("symlog")
 
-            ax.scatter(x=data['globalEff'],y=data['nMessages'],c=colors[i],alpha=0.2)
+            if vary == 'beta':
+                fig.savefig(f"images/relations/noiseEffect/summaryNoise-alpha={alpha}-varyingBeta.png",bbox_inches="tight")
+            elif vary == 'alpha':
+                fig.savefig(f"images/relations/noiseEffect/summaryNoise-beta={beta}-varyingAlpha.png",bbox_inches="tight")
+            
+            # plt.show()
+            plt.close(fig)
 
-        handles = []
-        if vary == 'beta':
-            handles = [
-                plt.scatter([], [], color=c, label=l)
-                for c, l in zip("maroon forestgreen indigo".split(), fr"$\beta$=0.00 $\beta$=0.25 $\beta$=0.50".split())
-            ]
-        elif vary == 'alpha':
-            handles = [
-                plt.scatter([], [], color=c, label=l)
-                for c, l in zip("darkorange mediumblue mediumvioletred".split(), fr"$\alpha$=1.00 $\alpha$=0.75 $\alpha$=0.50".split())
-            ]
+    plt.figure(merge)
 
-        ax.legend(handles=handles,fontsize=14,loc='upper left', bbox_to_anchor=(1, 1))
-        ax.set_xlabel("Global efficiency",fontsize=16)
-        ax.set_ylabel("Convergence time",fontsize=16)
+    handles = [
+        plt.scatter([], [], color=c, label=l)
+        for c, l in zip("darkorange mediumblue mediumvioletred maroon forestgreen indigo".split(), fr"$\alpha$=1.00 $\alpha$=0.75 $\alpha$=0.50 $\beta$=0.00 $\beta$=0.25 $\beta$=0.50".split())
+    ]
+    merge.tight_layout() 
+    merge.subplots_adjust(bottom=0.1)
+    merge.legend(handles=handles, loc="lower center", ncol=6,fontsize=12)
+    axs[4].set_xlabel("Global efficiency",fontsize=14)
+    axs[5].set_xlabel("Global efficiency",fontsize=14)
 
-        if vary == 'beta':
-            ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
-        elif vary == 'alpha':
-            ax.set_title(fr"$\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)  
-        
-        plt.tick_params(axis="both",which="major",labelsize=16)
-        
-        ax.set_yscale("log")
-
-        if vary == 'beta':
-            fig.savefig(f"images/relations/noiseEffect/summaryNoise-alpha={alpha}-varyingBeta.png",bbox_inches="tight")
-        elif vary == 'alpha':
-            fig.savefig(f"images/relations/noiseEffect/summaryNoise-beta={beta}-varyingAlpha.png",bbox_inches="tight")
-        
-        plt.show()
-
-        plt.close(fig)
+    merge.savefig(f"images/relations/noiseEffect/mergedSummaryNoise.png",bbox_inches="tight")
+    # plt.show()
+    plt.close(merge)
 
 
 def hellinger(p: np.ndarray, q: np.ndarray) -> np.float64:
@@ -1577,7 +1631,7 @@ def noiseEffectComparison():
         ax.legend(fontsize=16,bbox_to_anchor=(1,1))
         ax.set_xlabel("Global efficiency",fontsize=16)
         ax.set_ylabel("Convergence time",fontsize=16)
-        ax.set_yscale("log")
+        ax.set_yscale("symlog")
         ax.set_title(fr"{measure} & n$\in${{3,4,5,6,7}}",fontsize=16)
         plt.tick_params(axis="both",which="major",labelsize=16)
 
@@ -1616,7 +1670,7 @@ def noiseEffectComparison():
 
         ax.set_xlabel("Global efficiency",fontsize=16)
         ax.set_ylabel("Convergence time",fontsize=16)
-        ax.set_yscale("log")
+        ax.set_yscale("symlog")
         ax.set_title(fr"{measure.capitalize()} & n$\in${{3,4,5,6,7}}",fontsize=16)
         plt.tick_params(axis="both",which="major",labelsize=16)
 
@@ -1648,6 +1702,14 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
         graphData = graphData[graphData['nodes']!=2]
 
     fig, ax = plt.subplots(figsize=(13,7))
+    
+    merged = plt.figure(figsize=(10, 6), layout="constrained")
+    spec = merged.add_gridspec(3, 3)
+
+    ax0 = merged.add_subplot(spec[:2, :])
+    ax10 = merged.add_subplot(spec[2, 0])
+    ax11 = merged.add_subplot(spec[2, 1])
+    ax12 = merged.add_subplot(spec[2, 2])
 
     cmap = {'0.5-0.6': 'darkblue',
             '0.6-0.7': 'darkorange',
@@ -1678,21 +1740,27 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
         GE = graphData['globalEff'][i]
 
         color = ''
+        dev = 0
 
         # set color according global efficiency bins
         if GE >= 0.9:
             color = cmap['0.9-1.0']
+            dev = 0.002
         elif GE >= 0.8:
             color = cmap['0.8-0.9']
+            dev = 0.001
         elif GE >= 0.7:
             color = cmap['0.7-0.8']
         elif GE >= 0.6:
             color = cmap['0.6-0.7']
+            dev = -0.001
         elif GE >= 0.5:
             color = cmap['0.5-0.6']
+            dev = -0.002
         
         # scatter convergence against Hamming distance with pre-defined colormap
-        ax.scatter(x=initStates,y=nMessages,c=color,alpha=0.3)
+        ax.scatter(x=initStates+dev,y=nMessages,c=color,alpha=0.3)
+        ax0.scatter(x=initStates+dev,y=nMessages,c=color,alpha=0.3)
 
     # decorate plot
     handles = [
@@ -1703,17 +1771,18 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
     ax.set_xlabel("Initial Hamming distance",fontsize=16)
     ax.set_ylabel("Convergence time",fontsize=16)
     ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
-    plt.tick_params(axis="both",which="major",labelsize=16)
+    ax.tick_params(axis="both",which="major",labelsize=16)
     
-    ax.set_yscale("log")
+    ax.set_yscale("symlog")
 
     fig.savefig(f"images/relations/LOGconvergence-initialStates-{settings}.png",bbox_inches="tight")
     plt.show()
 
     plt.close(fig)
+    plt.close(merged)
+    
 
-
-def summary_redundantMessaging():
+def check_redundantMessaging():
     """ 
     Effect of redundant messages on variation in convergence time.
     """
@@ -1726,10 +1795,22 @@ def summary_redundantMessaging():
     dataRandom = dataRandom.drop(range(0,100))
     dataEfficient = dataEfficient.drop(range(0,100))
 
+    # regrRandom = stats.linregress(dataRandom['globalEff'], np.log(dataRandom['nMessages']))
+    # regrEff = stats.linregress(dataEfficient['globalEff'], np.log(dataEfficient['nMessages']))
+    # X = np.linspace(0.5,1.0,100)   
+    # YR = np.exp(regrRandom.slope*X+regrRandom.intercept)
+    # YE = np.exp(regrEff.slope*X+regrEff.intercept)
+    # # YR = np.exp(regrRandom.slope*X+regrRandom.intercept)
+    # # YE = np.exp(regrEff.slope*X+regrEff.intercept)
+    # print(f"Random\nslope={regrRandom.slope} & intercept={regrRandom.intercept}\n")
+    # print(f"Efficient\nslope={regrEff.slope} & intercept={regrEff.intercept}")
+
     fig, ax = plt.subplots(figsize=(13,7))
 
     ax.scatter(dataRandom['globalEff'],dataRandom['nMessages'],color='darkcyan',alpha=0.3)
     ax.scatter(dataEfficient['globalEff'],dataEfficient['nMessages'],color='sandybrown',alpha=0.3)
+    # ax.plot(X,YR,color='darkcyan')
+    # ax.plot(X,YE,color='sandybrown')
 
     handles = [
         plt.scatter([], [], color=c, label=l)
@@ -1742,7 +1823,7 @@ def summary_redundantMessaging():
     ax.set_ylabel("Convergence time",fontsize=16)
     ax.set_xlabel("Global efficiency",fontsize=16)
 
-    ax.set_yscale("log")
+    ax.set_yscale("symlog")
     plt.tick_params(axis='both', which='major', labelsize=16)
 
     # plt.show()
@@ -1850,16 +1931,16 @@ if __name__ == "__main__":
 
     #     print(f'alpha={alpha} & beta={beta}')
 
-        # # NOTE NOTE: RUN SCRIPT USING -W "ignore" :NOTE NOTE #
-        # # show probability distribution per parameter settings per metric (optionally per graph size)
-        # violin_per_params(alpha=alpha,
-        #                     beta=beta,
-        #                     perN=False,
-        #                     fit='exponential',
-        #                     without2=True,
-        #                     metric='global',
-        #                     fixed=False,
-        #                     efficient=True) # NOTE: CHANGE FILENAME (@end function!)
+    #     # NOTE NOTE: RUN SCRIPT USING -W "ignore" to suppress warning messages :NOTE NOTE #
+    #     # show probability distribution per parameter settings per metric (optionally per graph size)
+    #     violin_per_params(alpha=alpha,
+    #                         beta=beta,
+    #                         perN=False,
+    #                         fit='exponential',
+    #                         without2=True,
+    #                         metric='global',
+    #                         fixed=False,
+    #                         efficient=False) # NOTE: CHANGE FILENAME (@end function!)
 
         # # show histogram distribution per violin (per parameter settings, per metric, optionally per graph size)
         # hist_per_violin(alpha=alpha,
@@ -1867,14 +1948,14 @@ if __name__ == "__main__":
         #                 perN=False) # NOTE: CHANGE FILENAME (@end function!)
 
 
-    # for alpha in alphas:
-    # # for beta in betas:
+    # # for alpha in alphas:
+    # for beta in betas:
     #     # show shift in probability distribution for varying noise per metric
-    #     violin_noiseEffect(fixed_param=alpha,
-    #                     varying_param=betas,
-    #                     variable='beta',
+    #     violin_noiseEffect(fixed_param=beta,
+    #                     varying_param=alphas,
+    #                     variable='alpha',
     #                     metric='global',
-    #                     fit='none',
+    #                     fit='exponential',
     #                     without2=True) # NOTE: CHANGE FOR-LOOP AND FILENAME AS DESIRED (in function!)
 
     # # quantify difference alpha- and beta-noise using baricenters and spread
@@ -1890,11 +1971,11 @@ if __name__ == "__main__":
     # summary_noiseEffect(alphas=alphas,
     #                     betas=betas,
     #                     vary='beta',
-    #                     without2=True) # NOTE: CHANGE FOR-LOOPS ACCORDING TO VARYING NOISE PARAMETER
+    #                     without2=True)
 
     # show relation between convergence and initial mean Hamming distance
     check_initEffect(alpha=alpha,
                      beta=beta,
                      without2=True) # NOTE: CHANGE FILENAME (@end function!)
 
-    summary_redundantMessaging()
+    # check_redundantMessaging()
