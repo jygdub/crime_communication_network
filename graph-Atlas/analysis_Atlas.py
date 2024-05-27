@@ -6,6 +6,7 @@ Written by Jade Dubbeld
 """
 
 from matplotlib import pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from tqdm import tqdm
 from itertools import product
 from typing import Tuple
@@ -390,9 +391,10 @@ def my_floor(a: float, precision: int = 0) -> np.float64:
     return np.true_divide(np.floor(a * 10**precision), 10**precision)
 
 
-def violin_per_params(alphas: list, betas: list, perN: bool, fit: str, without2: bool, metric: str = None, fixed: bool = False, efficient: bool = False):
+def results_per_params(alphas: list, betas: list, perN: bool, fit: str, without2: bool, metric: str = None, fixed: bool = False, efficient: bool = False):
     """ 
     Violinplot distribution of convergence time per metric per bin (size=0.1).
+    Summarized in 3x3 heatmap containing slopes and coefficients of fitted exponential.
 
     Parameters:
     - alphas (list): Alpha noise settings
@@ -598,10 +600,18 @@ def violin_per_params(alphas: list, betas: list, perN: bool, fit: str, without2:
     axes[0].set_ylabel(fr"$\alpha$-noise",fontsize=14)
     axes[0].set_title("Intercepts",fontsize=14)
     
-    cax = fig.add_axes([axes[0].get_position().x1+0.00000001,axes[0].get_position().y0,0.02,axes[0].get_position().height])
-    cbar1 = fig.colorbar(im1,cax=cax)
+    axins = inset_axes(
+        axes[0],
+        width="5%",  # width: 5% of parent_bbox width
+        height="100%",  # height: 100%
+        loc="lower left",
+        bbox_to_anchor=(1.05, 0., 1, 1),
+        bbox_transform=axes[0].transAxes,
+        borderpad=0,
+    )
+    cbar1 = fig.colorbar(im1, cax=axins)
     cbar1.ax.tick_params(labelsize=14)
-    
+
     im2 = axes[1].imshow(slopes,cmap="GnBu")
 
     for i in range(3):
@@ -619,13 +629,21 @@ def violin_per_params(alphas: list, betas: list, perN: bool, fit: str, without2:
     axes[1].set_ylabel(fr"$\alpha$-noise",fontsize=14)
     axes[1].set_title("Slopes",fontsize=14)
 
-    cax = fig.add_axes([axes[1].get_position().x1+0.12,axes[1].get_position().y0,0.02,axes[1].get_position().height])
-    cbar2 = fig.colorbar(im2,cax=cax)
+    axins = inset_axes(
+        axes[1],
+        width="5%",  # width: 5% of parent_bbox width
+        height="100%",  # height: 100%
+        loc="lower left",
+        bbox_to_anchor=(1.05, 0., 1, 1),
+        bbox_transform=axes[1].transAxes,
+        borderpad=0,
+    )
+    cbar2 = fig.colorbar(im2, cax=axins)
     cbar2.ax.tick_params(labelsize=14)
 
-    plt.tight_layout(w_pad=6)
-
-    plt.show()
+    fig.tight_layout(w_pad=6)
+    
+    # plt.show()
     fig.savefig(f"images/relations/summaryConvergence.png",bbox_inches='tight')
     plt.close(fig)
 
@@ -1049,7 +1067,8 @@ def summary_noiseEffect(alphas: list, betas: list, vary: str, without2: bool):
     ]
     merge.tight_layout() 
     merge.subplots_adjust(bottom=0.1)
-    merge.legend(handles=handles, loc="lower center", ncol=6,fontsize=12)
+    # merge.legend(handles=handles, loc="lower center", ncol=6,fontsize=12)
+    merge.legend(handles=handles,loc = "upper left", bbox_to_anchor = (1.0, 0.968),fontsize=12)
     axs[4].set_xlabel("Global efficiency",fontsize=14)
     axs[5].set_xlabel("Global efficiency",fontsize=14)
 
@@ -1993,16 +2012,16 @@ if __name__ == "__main__":
 
     #     print(f'alpha={alpha} & beta={beta}')
 
-    # NOTE NOTE: RUN SCRIPT USING -W "ignore" to suppress warning messages :NOTE NOTE #
-    # show probability distribution per parameter settings per metric (optionally per graph size)
-    violin_per_params(alphas=alphas,
-                      betas=betas,
-                      perN=False,
-                      fit='exponential',
-                      without2=True,
-                      metric='global',
-                      fixed=False,
-                      efficient=False) # NOTE: CHANGE FILENAME (@end function!)
+    # # NOTE NOTE: RUN SCRIPT USING -W "ignore" to suppress warning messages :NOTE NOTE #
+    # # show probability distribution per parameter settings per metric (optionally per graph size)
+    # results_per_params(alphas=alphas,
+    #                   betas=betas,
+    #                   perN=False,
+    #                   fit='exponential',
+    #                   without2=True,
+    #                   metric='global',
+    #                   fixed=False,
+    #                   efficient=False) # NOTE: CHANGE FILENAME (@end function!)
 
         # # show histogram distribution per violin (per parameter settings, per metric, optionally per graph size)
         # hist_per_violin(alpha=alpha,
@@ -2010,7 +2029,7 @@ if __name__ == "__main__":
         #                 perN=False) # NOTE: CHANGE FILENAME (@end function!)
 
 
-    # # for alpha in alphas:
+    # # # for alpha in alphas:
     # for beta in betas:
     #     # show shift in probability distribution for varying noise per metric
     #     violin_noiseEffect(fixed_param=beta,
