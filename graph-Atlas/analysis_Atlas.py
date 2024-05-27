@@ -1876,22 +1876,10 @@ def check_redundantMessaging():
     dataRandom = dataRandom.drop(range(0,100))
     dataEfficient = dataEfficient.drop(range(0,100))
 
-    # regrRandom = stats.linregress(dataRandom['globalEff'], np.log(dataRandom['nMessages']))
-    # regrEff = stats.linregress(dataEfficient['globalEff'], np.log(dataEfficient['nMessages']))
-    # X = np.linspace(0.5,1.0,100)   
-    # YR = np.exp(regrRandom.slope*X+regrRandom.intercept)
-    # YE = np.exp(regrEff.slope*X+regrEff.intercept)
-    # # YR = np.exp(regrRandom.slope*X+regrRandom.intercept)
-    # # YE = np.exp(regrEff.slope*X+regrEff.intercept)
-    # print(f"Random\nslope={regrRandom.slope} & intercept={regrRandom.intercept}\n")
-    # print(f"Efficient\nslope={regrEff.slope} & intercept={regrEff.intercept}")
-
     fig, ax = plt.subplots(figsize=(13,7))
 
     ax.scatter(dataRandom['globalEff'],dataRandom['nMessages'],color='darkcyan',alpha=0.3)
     ax.scatter(dataEfficient['globalEff'],dataEfficient['nMessages'],color='sandybrown',alpha=0.3)
-    # ax.plot(X,YR,color='darkcyan')
-    # ax.plot(X,YE,color='sandybrown')
 
     handles = [
         plt.scatter([], [], color=c, label=l)
