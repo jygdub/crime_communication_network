@@ -165,22 +165,83 @@ def compareSuccessTransitions(G_layout: nx.classes.graph.Graph, graphIDs: list):
 
     pos = nx.kamada_kawai_layout(G_layout)
     
+def plotExampleProperties():
+    """
+    Function that shows examples for all four considered transition properties.
+    - Isolation
+    - Decrease of maximum degree
+    - Remove from maximum degree
+    - Triad breaking
+    """
+
+    fig, axs = plt.subplots(2,4,figsize=(20,8))
+
+    from_graph = [561,486,440,383]
+    to_graph = [432,411,337,320]
+    # graphs = [561,432,486,411,440,337,383,320]
+
+    row = 0
+    col = 0
+
+    labels = ["(1) Isolation", "(2) Decrease max. degree", "(3) Remove from max. degree", "(4) Triad disruption"]
+    
+    for graphs in [from_graph,to_graph]:
+        
+        for i in range(4):
+            
+            G = nx.graph_atlas(graphs[i])
+            pos = nx.kamada_kawai_layout(G)
+            print(graphs[i])
+
+            if graphs[i] == 432:
+                pos = nx.kamada_kawai_layout(nx.graph_atlas(from_graph[i]))
+                G = nx.relabel_nodes(G, {0: 0, 1: 4, 2: 3, 3: 5, 4: 1, 5: 2, 6: 6})
+            elif graphs[i] == 411:
+                pos = nx.kamada_kawai_layout(nx.graph_atlas(from_graph[i]))
+                G = nx.relabel_nodes(G, {0: 3, 1: 5, 2: 0, 3: 1, 4: 2, 5: 4, 6: 6})
+            elif graphs[i] == 337:
+                pos = nx.kamada_kawai_layout(nx.graph_atlas(from_graph[i]))
+                G = nx.relabel_nodes(G, {0: 0, 1: 4, 2: 2, 3: 3, 4: 6, 5: 5, 6: 1})
+            elif graphs[i] == 320:
+                pos = nx.kamada_kawai_layout(nx.graph_atlas(from_graph[i]))
+                G = nx.relabel_nodes(G, {0: 0, 1: 2, 2: 5, 3: 6, 4: 3, 5: 4, 6: 1})
+
+            nx.draw(G=G,pos=pos,ax=axs[row][col],node_size=200)
+
+            if row == 0:
+                axs[row][i].set_title(labels[i],fontsize=16)
+
+            if col < 3:
+                col += 1
+            elif col == 3:
+                col = 0
+                row = 1
+
+
+
+    fig.savefig("images/transitions/examples.png",bbox_inches="tight")
+    plt.show()
+    plt.close(fig)
+        
+
 
 if __name__ == "__main__":
+
+    plotExampleProperties()
 
     # # load data
     # df = pd.read_csv('data/data-GraphAtlas.tsv',usecols=['index'],sep='\t')
 
-    alpha = '1_00'
-    beta = '0_00'
-    n = 7
+    # alpha = '1_00'
+    # beta = '0_00'
+    # n = 7
 
-    data = json.load(open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json"))
+    # data = json.load(open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json"))
 
-    # for ID in tqdm(list(data.keys())):
-    ID = '639'
-    transition = [int(ID)] + data[ID]
-    identicalLayout(G_layout=nx.graph_atlas(int(ID) ), graphIDs=transition)
+    # # for ID in tqdm(list(data.keys())):
+    # ID = '639'
+    # transition = [int(ID)] + data[ID]
+    # identicalLayout(G_layout=nx.graph_atlas(int(ID) ), graphIDs=transition)
 
     # # save graph image
     # saveGraph(data=df['index'])
