@@ -823,9 +823,9 @@ def ratioPropertyPlot():
     ax.bar(br2, HELLINGER, color ='gold', width = barWidth, 
             edgecolor ='k', label =fr'$Hellinger_{{max}}$ : ALL') 
     ax.bar(br3,OPTIMAL_COMM,color ='tab:orange', width = barWidth, 
-            edgecolor ='k', label =fr'$\Delta GE_{{max}}$ & $Hellinger_{{max}}$ : $\Delta GE_{{max}}$') 
+            edgecolor ='k', label =fr'$Successful$ : $\Delta GE_{{max}}$') 
     ax.bar(br4,OPTIMAL_STRUC,color ='tab:pink', width = barWidth, 
-            edgecolor ='k', label =fr'$\Delta GE_{{max}}$ & $Hellinger_{{max}}$ : $Hellinger_{{max}}$') 
+            edgecolor ='k', label =fr'$Successful$ : $Hellinger_{{max}}$') 
     
     # plot horizontal line at ratio 1.0
     ax.axhline(y=1., color='k', linestyle='--',alpha=0.5)
@@ -1065,19 +1065,19 @@ def distributionMaxima(alpha: str, beta: str):
     y = [nTransitions,len(nGE),len(nHellinger),len(nSuccess)]
     
     # barplot distributions
-    fig, ax = plt.subplots(figsize=(5,5))
+    fig, ax = plt.subplots(figsize=(10,5))
     ax.bar(x=x,
            height=y,
            color=['mediumseagreen','deepskyblue','mediumslateblue','deeppink'],
            edgecolor ='k')
 
-    addlabels(range(len(x)), y, 5, 14)
+    addlabels(range(len(x)), y, 20, 14)
 
     ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
 
     ax.set_ylabel("Frequency",fontsize=14)
     ax.tick_params(axis="both",which="major",labelsize=14)
-    ax.tick_params(axis='x', labelrotation=45)
+    ax.tick_params(axis='x')#, labelrotation=45)
 
     plt.show()
     fig.savefig(f"images/transitions/n={n}/transitionClasses-{settings}-n={n}.png",bbox_inches='tight')
