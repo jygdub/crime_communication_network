@@ -971,7 +971,7 @@ def findPropertyChange(from_graph: list, to_graph: list):
 
 def addlabels(x: list, y: list, padding: float, fs: int):
     """
-    Function to add value labels to binomial histogram.
+    Function to add value labels to histograms.
 
     Parameters:
     - x (list): x-values
@@ -982,6 +982,8 @@ def addlabels(x: list, y: list, padding: float, fs: int):
 
     for index,value in enumerate(x):
         plt.text(value, y[index]+padding, y[index], ha = 'center', fontsize=fs)
+        print(index,value)
+        print(value, y[index]+padding, y[index])
 
 
 def binomialSuccessFail(alpha: str, beta: str, condition: str):
@@ -994,46 +996,66 @@ def binomialSuccessFail(alpha: str, beta: str, condition: str):
     - condition (str): Indicate class ('GE','Hellinger')
     """
 
-    # set paths
-    settings = f"alpha{alpha}-beta{beta}"  
+    conditions = ['GE','Hellinger']
 
-    transitionData = None
+    merged, axs = plt.subplots(1,2,figsize=(10,5),layout="constrained")
 
-    successData = json.load(open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json"))
-    
-    if condition == 'GE':
-        transitionData = json.load(open(f"data/graphTransitions-maxStructural-alpha{alpha}-beta{beta}-n={n}.json"))
-    elif condition == 'Hellinger':
-        transitionData = json.load(open(f"data/graphTransitions-maxCommunication-alpha{alpha}-beta{beta}-n={n}.json"))
+    for p, condition in enumerate(conditions):
 
-    _,nTotal = countTransitions(transitionData)
-    _,nSuccess = countTransitions(successData)
+        # set paths
+        settings = f"alpha{alpha}-beta{beta}"  
 
-    # successful vs. failed transition (max-max vs. either one is not maximal)
-    x = ['Success','Fail']
-    y = [len(nSuccess),len(nTotal)-len(nSuccess)]
-    
-    # barplot ratio success/fail maxGE-maxHellinger from start graphs
-    fig, ax = plt.subplots(figsize=(5,5))
-    ax.bar(x=x,
-           height=y,
-           color=['green','tab:red'],
-           edgecolor ='k')
+        transitionData = None
 
-    addlabels(range(len(x)), y, 5, 14)
+        successData = json.load(open(f"data/graphTransitions-PairedMaxima-alpha{alpha}-beta{beta}-n={n}.json"))
+        
+        if condition == 'GE':
+            transitionData = json.load(open(f"data/graphTransitions-maxStructural-alpha{alpha}-beta{beta}-n={n}.json"))
+        elif condition == 'Hellinger':
+            transitionData = json.load(open(f"data/graphTransitions-maxCommunication-alpha{alpha}-beta{beta}-n={n}.json"))
 
-    if condition == 'GE':
-        ax.set_title(fr"$\Delta GE_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
-    elif condition == 'Hellinger':
-        ax.set_title(fr"Hellinger$_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+        _,nTotal = countTransitions(transitionData)
+        _,nSuccess = countTransitions(successData)
 
-    ax.set_ylabel("Frequency",fontsize=14)
-    ax.tick_params(axis="both",which="major",labelsize=14)
-    # ax.tick_params(axis='x', labelrotation=90)
+        # successful vs. failed transition (max-max vs. either one is not maximal)
+        x = ['Successful','Unsuccessful']
+        y = [len(nSuccess),len(nTotal)-len(nSuccess)]
+
+        # barplot ratio success/fail maxGE-maxHellinger from start graphs
+        bar_plot = axs[p].bar(x=x,
+                   height=y,
+                   color=['green','tab:red'],
+                   edgecolor ='k')
+        axs[p].bar_label(bar_plot,fontsize=14)
+        axs[p].set_ylabel("Frequency",fontsize=14)
+        axs[p].tick_params(axis="both",which="major",labelsize=14)
+
+        fig, ax = plt.subplots(figsize=(5,5))
+        ax.bar(x=x,
+            height=y,
+            color=['green','tab:red'],
+            edgecolor ='k')
+
+        addlabels(range(len(x)), y, 5, 14)
+
+        if condition == 'GE':
+            ax.set_title(fr"$\Delta GE_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+            axs[p].set_title(fr"$\Delta GE_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+        elif condition == 'Hellinger':
+            ax.set_title(fr"Hellinger$_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+            axs[p].set_title(fr"Hellinger$_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
+
+
+        ax.set_ylabel("Frequency",fontsize=14)
+        ax.tick_params(axis="both",which="major",labelsize=14)
+        # ax.tick_params(axis='x', labelrotation=90)
+
+        fig.savefig(f"images/transitions/n={n}/binomialDistribution-{condition}-{settings}-n={n}.png",bbox_inches='tight')
+        plt.close(fig)
 
     plt.show()
-    fig.savefig(f"images/transitions/n={n}/binomialDistribution-{condition}-{settings}-n={n}.png",bbox_inches='tight')
-    plt.close(fig)
+    merged.savefig(f"images/transitions/n={n}/mergedBinomialDistribution.png",bbox_inches='tight')
+    plt.close(merged)
 
 
 def distributionMaxima(alpha: str, beta: str):
@@ -1185,11 +1207,11 @@ if __name__ == "__main__":
     # # add applicable property labels to each transition
     # annotateProperties()
 
-    # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
-    ratioPropertyPlot()
+    # # plot ratio property presence in class 1 vs. property presence in class 2 (or all)
+    # ratioPropertyPlot()
 
-    # # success rate for optimal intervention
-    # binomialSuccessFail(alpha='1_00',beta='0_00',condition='Hellinger')
+    # success rate for optimal intervention
+    binomialSuccessFail(alpha='1_00',beta='0_00',condition='Hellinger')
     
     # # frequency of maximal impact per perspective
     # distributionMaxima(alpha='1_00',beta='0_00')
