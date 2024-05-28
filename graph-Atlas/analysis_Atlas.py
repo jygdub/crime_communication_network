@@ -321,6 +321,7 @@ def polynomialFit_compareSingleNoise(changing: str):
         
         plt.close(fig)
 
+
 def polynomialFit_compareALL():
     """
     Function to compare ALL model parameter settings using the 3rd degree polynomial fit 
@@ -646,6 +647,7 @@ def results_per_params(alphas: list, betas: list, perN: bool, fit: str, without2
     # plt.show()
     fig.savefig(f"images/relations/summaryConvergence.png",bbox_inches='tight')
     plt.close(fig)
+
 
 def hist_per_violin(alpha: float, beta: float, perN: bool):
     """ 
@@ -1408,6 +1410,7 @@ def quantifyNoiseDifference():
     # plt.show()
     # plt.close(fig)
 
+
 def computeMeasures(data: pd.DataFrame) -> Tuple[list,list,list,list]:
     """
     Function to compute measures on convergence time distribution.
@@ -1461,6 +1464,7 @@ def computeMeasures(data: pd.DataFrame) -> Tuple[list,list,list,list]:
 
     return Xaxis, modeYaxis, meanYaxis, medianYaxis
 
+
 def constructDataFrameMeasures(Xaxis: list, modeYaxis: list, meanYaxis: list, medianYaxis:list)->pd.DataFrame:
     """
     Function that constructs DataFrame from centrality measure data of convergence times.
@@ -1479,6 +1483,7 @@ def constructDataFrameMeasures(Xaxis: list, modeYaxis: list, meanYaxis: list, me
     df = pd.DataFrame(data=data)
 
     return df
+
 
 def constructDataFramePerMeasure(GE: list, measures1: list, measures2: list, measures3: list, measures4: list, measures5: list, measures6: list, measures7: list, measures8: list, measures9: list)->pd.DataFrame:
     """
@@ -1507,6 +1512,7 @@ def constructDataFramePerMeasure(GE: list, measures1: list, measures2: list, mea
     df = pd.DataFrame(data=data)
 
     return df
+
 
 def noiseMeasureComparison():
     """
@@ -1801,6 +1807,7 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
     maximum = [0.]
     minimum = [1.]
 
+    # show real initialization examples 
     G = nx.graph_atlas(730)
     G.nodes[0]['state'] = '100'
     G.nodes[1]['state'] = '000'

@@ -302,6 +302,7 @@ def successTransitions(alpha: str, beta: str, n: int, efficient: bool = False):
     # fig.savefig(f"images/transitions/n={n}/freqPairedMaximum-{settings}-n={n}.png",bbox_inches='tight')
     # plt.close(fig)
 
+
 def possible_transitions(n: int, intervention: str) -> None:
     """
     Function to check possible transitions between graphs, given parameter settings.
@@ -391,47 +392,6 @@ def possible_transitions(n: int, intervention: str) -> None:
             removeNode,
             delimiter ="\t",
             fmt ='% i') 
-
-def top10_graphPairs(alpha: str, beta: str, n: int, efficient: bool = False):
-    """
-    Function to obtain/show top 10 highest and top 10 lowest for both Hellinger distance and global efficiency.
-    
-    Parameters:
-    - alpha (str): Setting value of alpha noise 
-    - beta (str): Setting value of beta noise
-    - n (int): Graph size
-    - efficient (bool): False for random dynamics; True for efficient dynamics
-    """
-
-    # set paths
-    settings = f"alpha{alpha}-beta{beta}"  
-
-    if efficient:
-        settings = f"efficient-alpha{alpha}-beta{beta}" 
-
-    data_hellinger = pd.read_csv(f"data/Hellinger-data-{settings}-n={n}.tsv",sep='\t')
-
-    # find top 10 graph pairs with highest Hellinger distance
-    sortedHellinger = data_hellinger.sort_values(by=['Hellinger'],axis=0,ascending=False)
-    print("Top 10 HIGHEST Helliger distance")
-    print(sortedHellinger.head(10))
-    print()
-
-    # find top 10 graph pairs with highest global efficiency difference
-    sortedGE = data_hellinger.sort_values(by=['GE_difference'],axis=0,ascending=False)
-    print("Top 10 HIGHEST global efficiency difference")
-    print(sortedGE.head(10))
-    print()
-
-    # find top 10 graph pairs with highest Hellinger distance
-    sortedHellinger = data_hellinger.sort_values(by=['Hellinger'],axis=0,ascending=False)
-    print("Top 10 LOWEST Helliger distance")
-    print(sortedHellinger.tail(10))
-
-    # find top 10 graph pairs with highest global efficiency difference
-    sortedGE = data_hellinger.sort_values(by=['GE_difference'],axis=0,ascending=False)
-    print("Top 10 LOWEST global efficiency difference")
-    print(sortedGE.tail(10))
 
 
 def examineProbs_PairedMaxima():
@@ -1038,6 +998,7 @@ def binomialSuccessFail(alpha: str, beta: str, condition: str):
 
         addlabels(range(len(x)), y, 5, 14)
 
+        # decorate plot
         if condition == 'GE':
             ax.set_title(fr"$\Delta GE_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
             axs[p].set_title(fr"$\Delta GE_{{max}}$|$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n={n}",fontsize=14)
@@ -1076,6 +1037,7 @@ def distributionMaxima(alpha: str, beta: str):
     hellingerData = json.load(open(f"data/graphTransitions-maxCommunication-alpha{alpha}-beta{beta}-n={n}.json"))
     transitionsData = pd.read_csv("data/from_graph_n=7.tsv",sep='\t')
 
+    # count transitions per class
     nTransitions = len(transitionsData)
     _,nSuccess = countTransitions(successData)
     _,nGE = countTransitions(GEData)
@@ -1104,29 +1066,6 @@ def distributionMaxima(alpha: str, beta: str):
     plt.show()
     fig.savefig(f"images/transitions/n={n}/transitionClasses-{settings}-n={n}.png",bbox_inches='tight')
     plt.close(fig)   
-
-def checkSuccesses(from_graph: list, to_graph: list):
-    # print(from_graph)
-    # print(to_graph)
-
-    # load data
-    data_hellinger = pd.read_csv(f"data/Hellinger-data-alpha1_00-beta0_00-n={n}.tsv",sep='\t')
-    # print(data_hellinger)
-
-    counter = 0
-
-    for id1, id2 in tqdm(zip(from_graph,to_graph)):
-        id1 = int(id1)
-        maxGE = max(data_hellinger['GE_difference'][data_hellinger['index_graph1']==id1])
-        # print(maxGE)
-
-        currentGE = max(data_hellinger['GE_difference'][data_hellinger['index_graph1']==id1][data_hellinger['index_graph2']==id2])
-        # print(f"Current GE{currentGE}")
-
-        if  currentGE == maxGE:
-            counter += 1
-    
-    return counter
 
 
 if __name__ == "__main__":

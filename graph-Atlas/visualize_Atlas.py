@@ -8,6 +8,7 @@ Written by Jade Dubbeld
 import pandas as pd, matplotlib.pyplot as plt, networkx as nx, pickle, json
 from tqdm import tqdm
 
+
 def visualize(G: nx.classes.graph.Graph) -> None:
     """
     Function to visualize a given graph/network G.
@@ -77,56 +78,23 @@ def graphsSideBySide(graphIDs: list):
     plt.close(fig)
 
 
-
 def identicalLayout(G_layout: nx.classes.graph.Graph, graphIDs: list):
+    """
+    Function to display network transitions in the exact same layout for easy comparison.
+
+    Parameters:
+    - G_layout (nx.classes.graph.Graph): Networkx graph object used as main layout
+    - graphIDs (list): List of graph IDs to draw in the same layout as G_layout
+    """
 
     fig, axs = plt.subplots(nrows=1,ncols=len(graphIDs),figsize=(13,8))
 
     pos = nx.kamada_kawai_layout(G_layout)
 
-    # edgesLayout = G_layout.edges()
-    # print(edgesLayout)
-
-    # degreeLayout = {}
-    
-    # for node in G_layout.nodes():
-    #     degreeLayout[node] = G_layout.degree(node)
-
-    # print(degreeLayout)
-
-    # print("---------------")
-
     for index,id in enumerate(graphIDs):
 
         G = nx.graph_atlas(id)
 
-        # degreeDict = {}
-        
-        # for node in G.nodes():
-        #     degreeDict[node] = G.degree(node)
-        
-        # print(degreeDict)
-
-
-        # if id == 271:
-        #     G = nx.relabel_nodes(G, {0: 2, 1: 1, 2: 0, 3: 3, 4: 4, 5: 5, 6: 6})
-
-        # edgesG = G.edges()
-        # print(edgesG)
-
-        # if id == 271:
-        #     G = nx.relabel_nodes(G, {0: 3, 1: 6, 2: 0, 3: 2, 4: 4, 5: 5, 6: 1})
-        # if id == 270:
-        #     G = nx.relabel_nodes(G, {0: 6, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 0})
-
-        # if nx.is_isomorphic(G,G_layout):
-        #     nx.draw(G=G_layout,pos=nx.kamada_kawai_layout(G_layout),ax=axs[index],node_color="tab:green",with_labels=True)
-        # else:
-        #     nx.draw(G=G,pos=pos,ax=axs[index],node_color="tab:blue",with_labels=True)
-
-
-        # G = nx.relabel_nodes(G, {0: -, 1: -, 2: -, 3: -, 4: -, 5: -, 6: -})
-        # G = nx.relabel_nodes(G, {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6})
         if graphIDs[0] == 317 and id == 276:
             G = nx.relabel_nodes(G, {0: 2, 1: 4, 2: 0, 3: 5, 4: 1, 5: 3, 6: 6})
         elif graphIDs[0] == 324 and id == 276:
@@ -159,11 +127,6 @@ def identicalLayout(G_layout: nx.classes.graph.Graph, graphIDs: list):
 
     plt.close(fig)
 
-def compareSuccessTransitions(G_layout: nx.classes.graph.Graph, graphIDs: list):
-    
-    fig, axs = plt.subplots(nrows=1,ncols=len(graphIDs),figsize=(13,8))
-
-    pos = nx.kamada_kawai_layout(G_layout)
     
 def plotExampleProperties():
     """
@@ -217,13 +180,10 @@ def plotExampleProperties():
                 col = 0
                 row = 1
 
-
-
     fig.savefig("images/transitions/examples.png",bbox_inches="tight")
     plt.show()
     plt.close(fig)
         
-
 
 if __name__ == "__main__":
 
