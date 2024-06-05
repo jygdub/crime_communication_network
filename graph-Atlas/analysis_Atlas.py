@@ -1790,13 +1790,13 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
 
     fig, ax = plt.subplots(figsize=(13,7))
     
-    merged = plt.figure(figsize=(10, 8), layout="constrained")
-    spec = merged.add_gridspec(3, 3)
+    merged = plt.figure(figsize=(11, 9.5))#, layout="constrained")
+    spec = merged.add_gridspec(2, 3, hspace=0.2, height_ratios=[0.7,0.3])
 
-    ax0 = merged.add_subplot(spec[:2, :])
-    ax10 = merged.add_subplot(spec[2, 0])
-    ax11 = merged.add_subplot(spec[2, 1])
-    ax12 = merged.add_subplot(spec[2, 2])
+    ax0 = merged.add_subplot(spec[0, :])
+    ax10 = merged.add_subplot(spec[1, 0])
+    ax11 = merged.add_subplot(spec[1, 1])
+    ax12 = merged.add_subplot(spec[1, 2])
 
     cmap = {'0.5-0.6': 'darkblue',
             '0.6-0.7': 'darkorange',
@@ -1807,45 +1807,47 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
     maximum = [0.]
     minimum = [1.]
 
+    pos = nx.kamada_kawai_layout(nx.graph_atlas(618))
+
     # show real initialization examples 
     G = nx.graph_atlas(730)
-    G.nodes[0]['state'] = '100'
+    G.nodes[0]['state'] = '000'
     G.nodes[1]['state'] = '000'
     G.nodes[2]['state'] = '000'
     G.nodes[3]['state'] = '000'
     G.nodes[4]['state'] = '000'
-    G.nodes[5]['state'] = '000'
+    G.nodes[5]['state'] = '100'
     G.nodes[6]['state'] = '000'
 
-    nx.draw(G=G,ax=ax10,node_size=600, labels=nx.get_node_attributes(G,'state'),node_color='firebrick',font_color='w')
-    ax10.set_title(fr"$d_{{avg}}=0.095$",y=-.2, fontsize=14)
+    nx.draw(G=G,pos=pos,ax=ax10,node_size=600, labels=nx.get_node_attributes(G,'state'),node_color='firebrick',font_color='w')
+    ax10.set_title(fr"$d_{{avg}}=0.0952$",y=-.2, fontsize=14)
 
-    G = nx.graph_atlas(1252)
-    G.nodes[0]['state'] = '100'
-    G.nodes[1]['state'] = '100'
-    G.nodes[2]['state'] = '100'
-    G.nodes[3]['state'] = '100'
-    G.nodes[4]['state'] = '101'
+    G = nx.graph_atlas(1023)
+    G.nodes[0]['state'] = '010'
+    G.nodes[1]['state'] = '101'
+    G.nodes[2]['state'] = '110'
+    G.nodes[3]['state'] = '110'
+    G.nodes[4]['state'] = '110'
     G.nodes[5]['state'] = '110'
     G.nodes[6]['state'] = '111'
 
-    nx.draw(G=G,ax=ax11,node_size=600, labels=nx.get_node_attributes(G,'state'),node_color='darkmagenta',font_color='w')
-    ax11.set_title(fr"$d_{{avg}}=0.317$",y=-.2, fontsize=14)
+    nx.draw(G=G,pos=pos,ax=ax11,node_size=600, labels=nx.get_node_attributes(G,'state'),node_color='firebrick',font_color='w')
+    ax11.set_title(fr"$d_{{avg}}=0.3492$",y=-.2, fontsize=14)
 
-    G = nx.graph_atlas(270)
+    G = nx.graph_atlas(618)
     G.nodes[0]['state'] = '111'
-    G.nodes[1]['state'] = '001'
-    G.nodes[2]['state'] = '001'
-    G.nodes[3]['state'] = '010'
+    G.nodes[1]['state'] = '000'
+    G.nodes[2]['state'] = '011'
+    G.nodes[3]['state'] = '001'
     G.nodes[4]['state'] = '100'
     G.nodes[5]['state'] = '110'
-    G.nodes[6]['state'] = '000'
+    G.nodes[6]['state'] = '110'
 
-    nx.draw(G=G,ax=ax12,node_size=600, labels=nx.get_node_attributes(G,'state'),node_color='darkorange',font_color='w')
-    ax12.set_title(fr"$d_{{avg}}=0.571$",y=-.2, fontsize=14)
+    nx.draw(G=G,pos=pos,ax=ax12,node_size=600, labels=nx.get_node_attributes(G,'state'),node_color='firebrick',font_color='w')
+    ax12.set_title(fr"$d_{{avg}}=0.5714$",y=-.2, fontsize=14)
 
     # scatter all repeats per graph with distinction between global efficiency bins
-    for i in graphData['index'].index:
+    for i in graphData['index'][graphData['nodes']==7].index:
 
         ID = graphData['index'][i]
 
@@ -1856,17 +1858,17 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
         data['meanHammingDist'] = data['meanHammingDist'].apply(lambda x : x.strip('][').split(', '))
         data['nMessages'] = data['nMessages'].apply(lambda x : float(x))
 
-        if graphData['nodes'][i] == 7:
+        # if graphData['nodes'][i] == 7:
 
-            for run in range(len(data['meanHammingDist'])):
-                if float(data['meanHammingDist'][run][0]) > 0.3 and float(data['meanHammingDist'][run][0]) < 0.4:
-                    print(ID,run, graphData['nodes'][i], data['meanHammingDist'][run][0], graphData['globalEff'][i])
+        #     for run in range(len(data['meanHammingDist'])):
+        #         if float(data['meanHammingDist'][run][0]) > 0.3 and float(data['meanHammingDist'][run][0]) < 0.4 and graphData['globalEff'][i] <= 0.8 and graphData['globalEff'][i] >= 0.7:
+        #             print(ID,run, graphData['nodes'][i], data['meanHammingDist'][run][0], graphData['globalEff'][i])
                 
-                if float(data['meanHammingDist'][run][0]) > maximum[0]:
-                    maximum = [float(data['meanHammingDist'][run][0]),ID,run, graphData['nodes'][i], graphData['globalEff'][i]]
+        #         if float(data['meanHammingDist'][run][0]) > maximum[0] and graphData['globalEff'][i] <= 0.8 and graphData['globalEff'][i] >= 0.7:
+        #             maximum = [float(data['meanHammingDist'][run][0]),ID,run, graphData['nodes'][i], graphData['globalEff'][i]]
                 
-                if float(data['meanHammingDist'][run][0]) < minimum[0]:
-                    minimum = [float(data['meanHammingDist'][run][0]),ID,run, graphData['nodes'][i], graphData['globalEff'][i]]
+        #         if float(data['meanHammingDist'][run][0]) < minimum[0] and graphData['globalEff'][i] <= 0.8 and graphData['globalEff'][i] >= 0.7:
+        #             minimum = [float(data['meanHammingDist'][run][0]),ID,run, graphData['nodes'][i], graphData['globalEff'][i]]
 
         # retrieve convergence times
         nMessages = data['nMessages']
@@ -1900,8 +1902,8 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
         ax.scatter(x=initStates+dev,y=nMessages,c=color,alpha=0.3)
         ax0.scatter(x=initStates+dev,y=nMessages,c=color,alpha=0.3)
 
-    print(maximum)
-    print(minimum)
+    # print(maximum)
+    # print(minimum)
 
     # decorate plot
     handles = [
@@ -1911,21 +1913,49 @@ def check_initEffect(alpha: str, beta: str, without2: bool = True):
     ax.legend(handles=handles,title="Global efficiency",fontsize=14,bbox_to_anchor=(1,1),title_fontsize=14)
     ax.set_xlabel(fr"Initial $d_{{avg}}$",fontsize=16)
     ax.set_ylabel("Convergence time",fontsize=16)
-    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
+    # ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=16)
+    ax.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n=7",fontsize=16)
     ax.tick_params(axis="both",which="major",labelsize=16)
     
-    ax0.set_yscale("symlog")
+    ax.set_yscale("symlog")
 
     ax0.legend(handles=handles,title="Global efficiency",fontsize=12,bbox_to_anchor=(1,1),title_fontsize=12)
-    ax0.set_xlabel(fr"Initial $d_{{avg}}$",fontsize=14)
+    ax0.set_xlabel(fr"Initial Hamming distance $d_{{avg}}$",fontsize=14)
     ax0.set_ylabel("Convergence time",fontsize=14)
-    ax0.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=14)
+    # ax0.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n$\in${{3,4,5,6,7}}",fontsize=14)
+    ax0.set_title(fr"$\alpha$={alpha.replace('_','.')} & $\beta$={beta.replace('_','.')} & n=7",fontsize=14)
     ax0.tick_params(axis="both",which="major",labelsize=14)
     
     ax0.set_yscale("symlog")
 
-    fig.savefig(f"images/relations/LOGconvergence-initialStates-{settings}.png",bbox_inches="tight")
-    merged.savefig(f"images/relations/summaryLOGconvergence-initialStates-{settings}.png",bbox_inches="tight")
+    props = dict(
+            connectionstyle="arc3,rad=0.2",
+            linewidth=1,
+            width=1,
+            color="k",
+        )
+    
+    # ax[-1].scatter(x, y)
+    ax = [ax10,ax11,ax12]
+    txt = [(0.0952,4),(0.3492,30),(0.5714,127)]
+    for i,axi in enumerate(ax):
+        # nx.draw(g, pos = pos, ax = axi, node_size = 128)
+        # axi.axis("equal")
+        # target = np.random.randint(0, len(x))
+        source = axi
+        to = ax0
+        axi.annotate("", xytext = txt[i],
+                    xy = [0.1, 0.9],
+                    textcoords = to.transData,
+                    xycoords = source.transData,
+                    arrowprops =  props,
+                    # zorder = 10,
+                    # annotation_clip = False,
+                    )
+    ax0.set_facecolor("none")
+
+    fig.savefig(f"images/relations/LOGconvergence-initialStates-{settings}-n=7.png",bbox_inches="tight")
+    merged.savefig(f"images/relations/summaryLOGconvergence-initialStates-red-{settings}-n=7.png",bbox_inches="tight")
 
     plt.show()
 
